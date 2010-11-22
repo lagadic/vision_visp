@@ -1,0 +1,2 @@
+bool is_tracking
+geometry_msgs/TransformStamped cMo

@@ -1,0 +1,6 @@
+input:
+- image (each)
+- model (once)
+
+output:
+- cMo (each)

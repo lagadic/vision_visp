@@ -1,0 +1,20 @@
+<package>
+  <description brief="visp_tracker">
+
+    This components wraps the object trackers provided by the ViSP
+    library.
+
+  </description>
+  <author>Thomas Moulard</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/visp_tracker</url>
+  <depend package="std_msgs"/>
+  <depend package="roscpp"/>
+  <depend package="rospy"/>
+  <depend package="sensor_msgs"/>
+  <depend package="image_transport"/>
+  <depend package="geometry_msgs"/>
+
+  <rosdep name="libvisp-dev"/>
+</package>
