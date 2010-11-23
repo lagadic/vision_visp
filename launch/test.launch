@@ -1,6 +1,5 @@
 <launch>
   <node pkg="camera1394" name="camera" type="camera1394_node"/>
 
-  <!-- FIXME: model filename is hard coded for now! -->
-  <node pkg="visp_tracker" name="tracker" type="tracker_mbt" args=""/>
+  <node pkg="visp_tracker" name="tracker" type="tracker_mbt" respawn="true" />
 </launch>
