@@ -1,5 +1,10 @@
 <launch>
-  <node pkg="camera1394" name="camera" type="camera1394_node"/>
+  <node pkg="camera1394" name="camera" type="camera1394_node">
+    <param name="auto_gain" value="3" />
+    <param name="auto_shutter" value="3" />
+    <param name="gain" value="209.0" />
+    <param name="shutter" value="709.0" />
+  </node>
 
   <node pkg="visp_tracker" name="tracker" type="tracker_mbt" respawn="true" />
 </launch>
