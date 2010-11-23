@@ -1,3 +1,7 @@
+std_msgs/String model_path
+std_msgs/String model_name
+std_msgs/String model_configuration
+
 geometry_msgs/Transform initial_cMo
 ---
 bool initialization_succeed

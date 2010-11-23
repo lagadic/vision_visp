@@ -2,6 +2,5 @@
   <node pkg="camera1394" name="camera" type="camera1394_node"/>
 
   <!-- FIXME: model filename is hard coded for now! -->
-  <node pkg="visp_tracker" name="tracker" type="tracker_mbt"
-	args="_model_path:=/home/thomas/profiles/laas/src/unstable/jrl/ModelTrackerData/model/laas-robotics-room/laas-robotics-room.wrl"/>
+  <node pkg="visp_tracker" name="tracker" type="tracker_mbt" args=""/>
 </launch>

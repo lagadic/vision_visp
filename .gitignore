@@ -1,8 +1,9 @@
 bin/
 build/
+lib/
 msg/lisp/
 msg_gen/
-src/visp_tracker/
 src/lisp/
-srv_gen/
+src/visp_tracker/
 srv/lisp/
+srv_gen/

@@ -16,5 +16,7 @@
   <depend package="image_transport"/>
   <depend package="geometry_msgs"/>
 
+  <depend package="bullet"/>
+
   <rosdep name="libvisp-dev"/>
 </package>
