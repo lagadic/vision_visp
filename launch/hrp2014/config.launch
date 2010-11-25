@@ -1,0 +1,13 @@
+<launch>
+  <machine name="hrp2v"
+	   address="hrp2014v.laas.fr"
+	   ros-root="/home/tmoulard/ros/ros"
+	   ros-package-path="/home/tmoulard/ros/stacks/visualization_tutorials:/home/tmoulard/ros/stacks/visualization_common:/home/tmoulard/ros/stacks/visualization:/home/tmoulard/ros/stacks/vision_opencv:/home/tmoulard/ros/stacks/sound_drivers:/home/tmoulard/ros/stacks/slam_gmapping:/home/tmoulard/ros/stacks/simulator_stage:/home/tmoulard/ros/stacks/simulator_gazebo:/home/tmoulard/ros/stacks/rx:/home/tmoulard/ros/stacks/roslisp_support:/home/tmoulard/ros/stacks/ros_tutorials:/home/tmoulard/ros/stacks/robot_model:/home/tmoulard/ros/stacks/point_cloud_perception:/home/tmoulard/ros/stacks/physics_ode:/home/tmoulard/ros/stacks/navigation:/home/tmoulard/ros/stacks/laser_pipeline:/home/tmoulard/ros/stacks/laser_drivers:/home/tmoulard/ros/stacks/joystick_drivers_tutorials:/home/tmoulard/ros/stacks/joystick_drivers:/home/tmoulard/ros/stacks/imu_drivers:/home/tmoulard/ros/stacks/image_transport_plugins:/home/tmoulard/ros/stacks/image_pipeline:/home/tmoulard/ros/stacks/image_common:/home/tmoulard/ros/stacks/geometry_tutorials:/home/tmoulard/ros/stacks/geometry:/home/tmoulard/ros/stacks/driver_common:/home/tmoulard/ros/stacks/diagnostics:/home/tmoulard/ros/stacks/common_tutorials:/home/tmoulard/ros/stacks/common_msgs:/home/tmoulard/ros/stacks/common:/home/tmoulard/ros/stacks/camera_drivers"
+	   user="tmoulard"
+	   default="true" />
+
+  <machine name="hrp2c"
+	   address="hrp2014c.laas.fr"
+	   user="tmoulard"
+	   default="false" />
+</launch>
