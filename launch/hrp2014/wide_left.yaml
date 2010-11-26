@@ -1,19 +1,5 @@
-image_width: 640
-image_height: 480
-camera_name: 00b09d01005c0721
-camera_matrix:
-  rows: 3
-  cols: 3
-  data: [393.389520, 0, 334.349137, 0, 394.181504, 277.167932, 0, 0, 1]
-distortion_coefficients:
-  rows: 1
-  cols: 5
-  data: [-0.255253 0.064795 -0.000078 0.000563 0]
-rectification_matrix:
-  rows: 3
-  cols: 3
-  data: [1, 0, 0, 0, 1, 0, 0, 0, 1]
-projection_matrix:
-  rows: 3
-  cols: 4
-  data: [393.38952, 0, 334.349137, 0, 0, 394.181504, 277.167932, 0, 0, 0, 1, 0]
+guid: 00b09d01005c0721
+#video_mode:
+frame_id: camera_narrow_left
+bayer_method: ""
+bayer_pattern: grbg

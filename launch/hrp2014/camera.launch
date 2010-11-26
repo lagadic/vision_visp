@@ -1,114 +1,65 @@
 <launch>
-  <!-- camera nodes -->
-  <node name="camera"
-	pkg="camera1394"
-	type="camera1394_node"
-	machine="hrp2v"
-	ns="narrow_left"
-	respawn="true"
-	args="">
-    <param name="guid" value="00b09d01005c070d"/>
+  <group ns="narrow_left" >
+    <node pkg="camera1394"
+	  type="camera1394_node"
+	  name="camera1394_node"
+	  machine="hrp2v"
+	  respawn="true" >
+      <param
+	 name="camera_info_url"
+	 value="file://$(find visp_tracker)/launch/$(env ROBOT)/calibration/narrow_left.yaml" />
+      <rosparam
+	 file="$(find visp_tracker)/launch/$(env ROBOT)/narrow_left.yaml" />
+    </node>
+    <include
+       file="$(find visp_tracker)/launch/$(env ROBOT)/image_pipeline.launch" />
+  </group>
 
-    <param name="frame_id" value=""/>
-<!--
-    <param name="camera_info_url"
-	   value="$(find visp_tracker)/launch/$(env ROBOT)/narrow_left.yaml"/>
- -->
-    <param name="bayer_method" value=""/>
-    <param name="bayer_pattern" value="grbg"/>
-  </node>
+  <group ns="narrow_right" >
+    <node pkg="camera1394"
+	  type="camera1394_node"
+	  name="camera1394_node"
+	  machine="hrp2v"
+	  respawn="true" >
+      <param
+	 name="camera_info_url"
+	 value="file://$(find visp_tracker)/launch/$(env ROBOT)/calibration/narrow_right.yaml" />
+      <rosparam
+	 file="$(find visp_tracker)/launch/$(env ROBOT)/narrow_right.yaml" />
+    </node>
+    <include
+       file="$(find visp_tracker)/launch/$(env ROBOT)/image_pipeline.launch" />
+  </group>
 
-  <node name="camera"
-	pkg="camera1394"
-	type="camera1394_node"
-	machine="hrp2v"
-	ns="narrow_right"
-	respawn="true"
-	args="">
-    <param name="guid" value="00b09d01005c071b"/>
+  <group ns="wide_left" >
+    <node pkg="camera1394"
+	  type="camera1394_node"
+	  name="camera1394_node"
+	  machine="hrp2v"
+	  respawn="true" >
+      <param
+	 name="camera_info_url"
+	 value="file://$(find visp_tracker)/launch/$(env ROBOT)/calibration/wide_left.yaml" />
+      <rosparam
+	 file="$(find visp_tracker)/launch/$(env ROBOT)/wide_left.yaml" />
+    </node>
+    <include
+       file="$(find visp_tracker)/launch/$(env ROBOT)/image_pipeline.launch" />
+  </group>
 
-    <param name="frame_id" value=""/>
-<!--
-    <param name="camera_info_url"
-	   value="$(find visp_tracker)/launch/$(env ROBOT)/narrow_right.yaml"/> 
--->
-    <param name="bayer_method" value=""/>
-    <param name="bayer_pattern" value="grbg"/>
-  </node>
-
-  <node name="camera"
-	pkg="camera1394"
-	type="camera1394_node"
-	machine="hrp2v"
-	ns="wide_left"
-	respawn="true"
-	args="">
-    <param name="guid" value="00b09d01005c0721"/>
-
-    <param name="frame_id" value=""/>
-<!--
-    <param name="camera_info_url"
-	   value="$(find visp_tracker)/launch/$(env ROBOT)/wide_left.yaml"/>
--->
-    <param name="bayer_method" value=""/>
-    <param name="bayer_pattern" value="grbg"/>
-  </node>
-
-  <node name="camera"
-	pkg="camera1394"
-	type="camera1394_node"
-	machine="hrp2v"
-	ns="wide_right"
-	respawn="true"
-	args="">
-    <param name="guid" value="00b09d01005c0722"/>
-
-    <param name="frame_id" value=""/>
-<!--
-    <param name="camera_info_url"
-	   value="$(find visp_tracker)/launch/$(env ROBOT)/wide_right.yaml"/>
--->
-    <param name="bayer_method" value=""/>
-    <param name="bayer_pattern" value="grbg"/>
-  </node>
-
-
-  <!-- rectification nodes -->
-
-  <node name="image_proc"
-	pkg="image_proc"
-	type="image_proc"
-	machine="hrp2v"
-	ns="narrow_left/camera"
-	respawn="true"
-	args="">
-  </node>
-
-  <node name="image_proc"
-	pkg="image_proc"
-	type="image_proc"
-	machine="hrp2v"
-	ns="narrow_right/camera"
-	respawn="true"
-	args="">
-  </node>
-
-  <node name="image_proc"
-	pkg="image_proc"
-	type="image_proc"
-	machine="hrp2v"
-	ns="wide_left/camera"
-	respawn="true"
-	args="">
-  </node>
-
-  <node name="image_proc"
-	pkg="image_proc"
-	type="image_proc"
-	machine="hrp2v"
-	ns="wide_right/camera"
-	respawn="true"
-	args="">
-  </node>
-
+  <group ns="wide_right" >
+    <node pkg="camera1394"
+	  type="camera1394_node"
+	  name="camera1394_node"
+	  machine="hrp2v"
+	  respawn="true" >
+      <param
+	 name="camera_info_url"
+	 value="file://$(find visp_tracker)/launch/$(env ROBOT)/calibration/wide_right.yaml" />
+      <rosparam
+	 file="$(find visp_tracker)/launch/$(env ROBOT)/wide_right.yaml" />
+    </node>
+    <include
+       file="$(find visp_tracker)/launch/$(env ROBOT)/image_pipeline.launch" />
+  </group>
 </launch>
