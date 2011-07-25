@@ -33,3 +33,8 @@ target_link_libraries(tracker_mbt tools visp-2)
 # Client
 rosbuild_add_executable(tracker_mbt_client src/tracker_mbt_client.cpp)
 target_link_libraries(tracker_mbt_client tools visp-2)
+
+
+# Viewer
+rosbuild_add_executable(tracker_mbt_viewer src/tracker_mbt_viewer.cpp)
+target_link_libraries(tracker_mbt_viewer tools visp-2)
