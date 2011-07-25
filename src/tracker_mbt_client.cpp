@@ -29,6 +29,8 @@ int main(int argc, char **argv)
   std::string model_name;
   std::string model_configuration;
 
+  std::string init_service;
+
   image_t I;
 
   ros::init(argc, argv, "tracker_mbt_client");
@@ -43,6 +45,9 @@ int main(int argc, char **argv)
   ros::param::param<std::string>("~model_name", model_name, "");
   ros::param::param<std::string>("~model_configuration",
 				 model_configuration, "default");
+
+  ros::param::param<std::string>("~init_service",
+				 init_service, "/tracker_mbt/init_tracker");
 
   // Camera subscriber.
   image_transport::CameraSubscriber sub =
@@ -95,6 +100,7 @@ int main(int argc, char **argv)
 
   bool ok = false;
   vpHomogeneousMatrix cMo;
+  vpImagePoint point (10, 10);
   while (!ok)
     {
       try
@@ -103,14 +109,16 @@ int main(int argc, char **argv)
 	  vpDisplay::display(I);
 	  vpDisplay::flush(I);
 	  tracker.initClick(I, init_path.c_str());
-
-	  // Track once to make sure initialization is correct.
 	  tracker.getPose(cMo);
 
-	  tracker.track(I);
+	  // Track once to make sure initialization is correct.
 	  vpDisplay::display(I);
+	  tracker.track(I);
 	  tracker.display(I, cMo, cam, vpColor::red);
+	  vpDisplay::displayCharString
+	    (I, point, "first tracking", vpColor::red);
 	  vpDisplay::flush(I);
+	  vpDisplay::getClick(I);
 
 	  tracker.getPose(cMo);
 	  ok = true;
@@ -123,8 +131,7 @@ int main(int argc, char **argv)
 
   ROS_INFO_STREAM("Initialization done, sending initial cMo:\n" << cMo);
 
-  ros::ServiceClient client =
-    n.serviceClient<visp_tracker::Init>("/tracker_mbt/init_tracker");
+  ros::ServiceClient client = n.serviceClient<visp_tracker::Init>(init_service);
   visp_tracker::Init srv;
 
   srv.request.model_path.data = model_path;
