@@ -1,7 +1,9 @@
 #include <cstdlib>
 #include <fstream>
+#include <sstream>
 
 #include <boost/bind.hpp>
+#include <boost/format.hpp>
 #include <boost/optional.hpp>
 
 #include <ros/ros.h>
@@ -27,7 +29,10 @@ void resultCallback(boost::optional<vpHomogeneousMatrix>& cMo,
 		    const visp_tracker::TrackingResult::ConstPtr& msg)
 {
   if (!msg->is_tracking)
-    cMo.reset();
+    {
+      cMo = boost::none;
+      return;
+    }
 
   cMo = vpHomogeneousMatrix();
   transformToVpHomogeneousMatrix(*cMo, msg->cMo.transform);
@@ -135,7 +140,11 @@ int main(int argc, char **argv)
 	  tracker.setPose(*cMo);
 	  tracker.display(I, *cMo, cam, vpColor::red);
 
-	  vpDisplay::displayCharString(I, point, "tracking", vpColor::red);
+	  ROS_DEBUG_STREAM_THROTTLE(10, "cMo:\n" << *cMo);
+
+	  boost::format fmt("tracking (x=%f y=%f z=%f)");
+	  fmt % (*cMo)[0][3] % (*cMo)[1][3] % (*cMo)[2][3];
+	  vpDisplay::displayCharString(I, point, fmt.str().c_str(), vpColor::red);
 	}
       else
 	vpDisplay::displayCharString(I, point, "tracking failed", vpColor::red);
