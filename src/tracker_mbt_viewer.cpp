@@ -109,8 +109,6 @@ int main(int argc, char **argv)
 
   // Subscribe to tracker.
   boost::optional<vpHomogeneousMatrix> cMo;
-  cMo = vpHomogeneousMatrix();
-  cMo->eye();
   ros::Subscriber subResult = n.subscribe("result", 1000, bindResultCallback(cMo));
 
   // Wait for the image to be initialized.
@@ -129,7 +127,7 @@ int main(int argc, char **argv)
 	{
 	  tracker.setPose(*cMo);
 	  tracker.display(I, *cMo, cam, vpColor::red);
-	  //std::cout << "tracking" << std::endl;
+	  std::cout << "tracking" << std::endl;
 	}
       else
 	std::cout << "no tracking" << std::endl;
