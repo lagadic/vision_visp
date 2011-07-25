@@ -46,7 +46,7 @@ int main(int argc, char **argv)
 
   // Camera subscriber.
   image_transport::CameraSubscriber sub =
-    it.subscribeCamera(image_topic, 1, bindImageCallback(I));
+    it.subscribeCamera(image_topic, 100, bindImageCallback(I));
 
   vpMbEdgeTracker tracker;
 
