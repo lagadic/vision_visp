@@ -63,7 +63,8 @@ bool initCallback(State& state,
     {
       ROS_DEBUG("Trying to load the model `%s'.", model_path.c_str());
       tracker.loadModel
-	(getModelFileFromModelName(model_name, model_path).c_str());
+	(getModelFileFromModelName
+	 (model_name, model_path).external_file_string().c_str());
     }
   catch(...)
     {

@@ -86,11 +86,10 @@ int main(int argc, char **argv)
   vpMbEdgeTracker tracker;
 
   // Model loading.
-  std::string vrml_path = getModelFileFromModelName(model_name, model_path);
-  std::string init_path = getInitFileFromModelName(model_name, model_path);
+  std::string vrml_path =
+    getModelFileFromModelName(model_name, model_path).external_file_string();
 
   ROS_DEBUG("VRML file: %s", vrml_path.c_str());
-  ROS_DEBUG("Init file: %s.init", init_path.c_str());
 
   try
     {
@@ -104,12 +103,6 @@ int main(int argc, char **argv)
     }
   ROS_DEBUG("Model has been successfully loaded.");
 
-  if (!fileExists(init_path + ".init"))
-    {
-      ROS_ERROR("Failed to load initialization points `%s.init'.",
-		init_path.c_str());
-      return 1;
-    }
 
 
   //FIXME: replace by real camera parameters of the rectified camera.
@@ -144,7 +137,8 @@ int main(int argc, char **argv)
 
 	  boost::format fmt("tracking (x=%f y=%f z=%f)");
 	  fmt % (*cMo)[0][3] % (*cMo)[1][3] % (*cMo)[2][3];
-	  vpDisplay::displayCharString(I, point, fmt.str().c_str(), vpColor::red);
+	  vpDisplay::displayCharString
+	    (I, point, fmt.str().c_str(), vpColor::red);
 	}
       else
 	vpDisplay::displayCharString(I, point, "tracking failed", vpColor::red);

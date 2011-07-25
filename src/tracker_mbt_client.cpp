@@ -56,11 +56,17 @@ int main(int argc, char **argv)
   vpMbEdgeTracker tracker;
 
   // Model loading.
-  std::string vrml_path = getModelFileFromModelName(model_name, model_path);
-  std::string init_path = getInitFileFromModelName(model_name, model_path);
+  std::string vrml_path =
+    getModelFileFromModelName(model_name, model_path).external_file_string();
+  std::string init_path =
+    getInitFileFromModelName(model_name, model_path).external_file_string();
+  std::string xml_path =
+    getConfigurationFileFromModelName
+    (model_name, model_path).external_file_string();
 
   ROS_DEBUG("VRML file: %s", vrml_path.c_str());
   ROS_DEBUG("Init file: %s.init", init_path.c_str());
+  ROS_DEBUG("Configuration file: %s", xml_path.c_str());
 
   try
     {
