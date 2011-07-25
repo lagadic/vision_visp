@@ -52,6 +52,8 @@ int main(int argc, char **argv)
   std::string model_name;
   std::string model_configuration;
 
+  std::string tracker_result;
+
   image_t I;
 
   ros::init(argc, argv, "tracker_mbt_viewer");
@@ -66,6 +68,9 @@ int main(int argc, char **argv)
   ros::param::param<std::string>("~model_name", model_name, "");
   ros::param::param<std::string>("~model_configuration",
 				 model_configuration, "default");
+
+  ros::param::param<std::string>("~tracker_result",
+				 tracker_result, "/tracker_mbt/result");
 
 
   // Camera subscriber.
@@ -109,7 +114,8 @@ int main(int argc, char **argv)
 
   // Subscribe to tracker.
   boost::optional<vpHomogeneousMatrix> cMo;
-  ros::Subscriber subResult = n.subscribe("result", 1000, bindResultCallback(cMo));
+  ros::Subscriber subResult =
+    n.subscribe(tracker_result, 1000, bindResultCallback(cMo));
 
   // Wait for the image to be initialized.
   ros::Rate loop_rate(10);
@@ -120,6 +126,7 @@ int main(int argc, char **argv)
     }
 
   vpDisplayX d(I, I.getWidth(), I.getHeight(), "ViSP MBT tracker (viewer)");
+  vpImagePoint point (10, 10);
   while (ros::ok())
     {
       vpDisplay::display(I);
@@ -127,10 +134,11 @@ int main(int argc, char **argv)
 	{
 	  tracker.setPose(*cMo);
 	  tracker.display(I, *cMo, cam, vpColor::red);
-	  std::cout << "tracking" << std::endl;
+
+	  vpDisplay::displayCharString(I, point, "tracking", vpColor::red);
 	}
       else
-	std::cout << "no tracking" << std::endl;
+	vpDisplay::displayCharString(I, point, "tracking failed", vpColor::red);
       vpDisplay::flush(I);
 
       ros::spinOnce();
