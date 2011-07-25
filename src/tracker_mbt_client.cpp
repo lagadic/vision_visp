@@ -80,6 +80,7 @@ int main(int argc, char **argv)
   //FIXME: replace by real camera parameters of the rectified camera.
   vpCameraParameters cam(389.117, 390.358, 342.182, 272.752);
   tracker.setCameraParameters(cam);
+  tracker.setDisplayMovingEdges(true);
 
   // Wait for the image to be initialized.
   ros::Rate loop_rate(10);
@@ -92,12 +93,33 @@ int main(int argc, char **argv)
   vpDisplayX d(I, I.getWidth(), I.getHeight(),
 	       "ViSP MBT tracker initialization");
 
-  vpDisplay::display(I);
-  vpDisplay::flush(I);
-  tracker.initClick(I, init_path.c_str());
-
+  bool ok = false;
   vpHomogeneousMatrix cMo;
-  tracker.getPose(cMo);
+  while (!ok)
+    {
+      try
+	{
+	  // Initialize.
+	  vpDisplay::display(I);
+	  vpDisplay::flush(I);
+	  tracker.initClick(I, init_path.c_str());
+
+	  // Track once to make sure initialization is correct.
+	  tracker.getPose(cMo);
+
+	  tracker.track(I);
+	  vpDisplay::display(I);
+	  tracker.display(I, cMo, cam, vpColor::red);
+	  vpDisplay::flush(I);
+
+	  tracker.getPose(cMo);
+	  ok = true;
+	}
+      catch(...)
+	{
+	  ROS_ERROR("failed to initialize. Retrying...");
+	}
+    }
 
   ROS_INFO_STREAM("Initialization done, sending initial cMo:\n" << cMo);
 
