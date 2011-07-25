@@ -8,7 +8,6 @@
 #include <visp_tracker/Init.h>
 
 #include <boost/bind.hpp>
-#include <visp/vpDisplayX.h>
 #include <visp/vpImage.h>
 #include <visp/vpImageConvert.h>
 #include <visp/vpCameraParameters.h>
@@ -181,9 +180,6 @@ int main(int argc, char **argv)
       loop_rate.sleep();
     }
 
-  vpDisplayX d(I, I.getWidth(), I.getHeight(),
-	       "ViSP MBT tracker initialization");
-
   // Main loop.
   while (ros::ok())
     {
@@ -213,24 +209,6 @@ int main(int argc, char **argv)
 	  //FIXME: to be done result.cMo.child_frame_id
 	}
       result_pub.publish(result);
-
-      // Publish the resulting output image.
-      //  Copy the image to merge the overlay to the real image.
-      vpImage<vpRGBa> outputImage;
-      vpImage<unsigned char> outputImageGrey;
-
-      vpDisplay::display(I);
-      tracker.display(I, cMo, cam, vpColor::red);
-      vpDisplay::flush(I);
-      vpDisplay::getImage(I, outputImage);
-      vpImageConvert::convert(outputImage, outputImageGrey);
-
-      //  Copy it into the ROS message.
-      sensor_msgs::Image image;
-      //FIXME: header should be set here.
-      vispImageToRos(image, outputImageGrey);
-      output_pub.publish(image);
-
 
       ros::spinOnce();
       loop_rate.sleep();
