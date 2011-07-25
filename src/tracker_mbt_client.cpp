@@ -6,6 +6,7 @@
 #include <ros/param.h>
 #include <visp_tracker/Init.h>
 
+#include <visp/vpMe.h>
 #include <visp/vpMbEdgeTracker.h>
 #include <visp/vpDisplayX.h>
 
@@ -24,12 +25,11 @@ bool fileExists(const std::string& file)
 int main(int argc, char **argv)
 {
   std::string image_topic;
-
   std::string model_path;
   std::string model_name;
   std::string model_configuration;
-
   std::string init_service;
+  vpMe moving_edge;
 
   image_t I;
 
@@ -48,6 +48,15 @@ int main(int argc, char **argv)
 
   ros::param::param<std::string>("~init_service",
 				 init_service, "/tracker_mbt/init_tracker");
+
+  ros::param::param("~vpme_mask_size", moving_edge.mask_size, 7);
+  ros::param::param("~vpme_n_mask", moving_edge.n_mask, 180);
+  ros::param::param("~vpme_range", moving_edge.range, 8);
+  ros::param::param("~vpme_threshold", moving_edge.threshold, 100.);
+  ros::param::param("~vpme_mu1", moving_edge.mu1, 0.5);
+  ros::param::param("~vpme_mu2", moving_edge.mu2, 0.5);
+  ros::param::param("~vpme_sample_step", moving_edge.sample_step, 1.);
+  ros::param::param("~vpme_ntotal_sample", moving_edge.ntotal_sample, 1000);
 
   // Camera subscriber.
   image_transport::CameraSubscriber sub =
@@ -78,6 +87,10 @@ int main(int argc, char **argv)
       ROS_ERROR("Failed to load the model `%s'.", vrml_path.c_str());
       return 1;
     }
+
+  moving_edge.initMask();
+  tracker.setMovingEdge(moving_edge);
+
   ROS_DEBUG("Model has been successfully loaded.");
 
   if (!fileExists(init_path + ".init"))
@@ -92,6 +105,10 @@ int main(int argc, char **argv)
   vpCameraParameters cam(389.117, 390.358, 342.182, 272.752);
   tracker.setCameraParameters(cam);
   tracker.setDisplayMovingEdges(true);
+
+  // Display camera parameters and moving edges settings.
+  ROS_INFO_STREAM(cam);
+  moving_edge.print();
 
   // Wait for the image to be initialized.
   ros::Rate loop_rate(10);
