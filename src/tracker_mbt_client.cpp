@@ -78,7 +78,7 @@ int main(int argc, char **argv)
 
   // Tracker initialization.
   //FIXME: replace by real camera parameters of the rectified camera.
-  vpCameraParameters cam(320, 240, 0.1, 0.1);
+  vpCameraParameters cam(389.117, 390.358, 342.182, 272.752);
   tracker.setCameraParameters(cam);
 
   // Wait for the image to be initialized.
