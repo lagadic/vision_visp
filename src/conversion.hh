@@ -1,9 +1,14 @@
 #ifndef VISP_TRACKER_CONVERSION_HH
 # define VISP_TRACKER_CONVERSION_HH
+# include <boost/optional.hpp>
+
+# include <ros/ros.h>
+
 # include <geometry_msgs/Transform.h>
 # include <sensor_msgs/Image.h>
 
 # include <visp/vpHomogeneousMatrix.h>
+# include <visp/vpCameraParameters.h>
 
 /// \brief Convert a ROS image into a ViSP one.
 ///
@@ -37,5 +42,9 @@ void vpHomogeneousMatrixToTransform(geometry_msgs::Transform& dst,
 
 void transformToVpHomogeneousMatrix(vpHomogeneousMatrix& dst,
 				    const geometry_msgs::Transform& src);
+
+boost::optional<vpCameraParameters>
+loadCameraParameters(ros::NodeHandle& n,
+		     const std::string& camera_parameters_service);
 
 #endif //! VISP_TRACKER_CONVERSION_HH

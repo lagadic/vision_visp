@@ -2,6 +2,9 @@
 #include <LinearMath/btQuaternion.h>
 
 #include <sensor_msgs/Image.h>
+
+#include <visp_tracker/CameraParameters.h>
+
 #include <visp/vpImage.h>
 
 #include "conversion.hh"
@@ -75,5 +78,21 @@ void transformToVpHomogeneousMatrix(vpHomogeneousMatrix& dst,
   // Copy the translation component.
   dst[0][3] = src.translation.x;
   dst[1][3] = src.translation.y;
-  dst[1][3] = src.translation.z;
+  dst[2][3] = src.translation.z;
+}
+
+boost::optional<vpCameraParameters>
+loadCameraParameters(ros::NodeHandle& n,
+		     const std::string& camera_parameters_service)
+{
+  ros::ServiceClient client =
+    n.serviceClient<visp_tracker::CameraParameters>(camera_parameters_service);
+
+  visp_tracker::CameraParameters srv;
+  if (!client.call(srv))
+      return boost::none;
+  return vpCameraParameters(srv.response.px,
+			    srv.response.py,
+			    srv.response.u0,
+			    srv.response.v0);
 }
