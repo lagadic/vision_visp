@@ -10,7 +10,7 @@ getInitFileFromModelName (const std::string& modelName,
 {
   boost::filesystem::path res(defaultPath);
   res /= modelName;
-  res /= modelName;
+  res /= modelName + ".init";
   return res;
 }
 

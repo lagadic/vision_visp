@@ -1,13 +1,19 @@
 #include <cstdlib>
 #include <fstream>
 
+#include <boost/filesystem.hpp>
+
 #include <ros/ros.h>
 #include <image_transport/image_transport.h>
 #include <ros/param.h>
 #include <visp_tracker/Init.h>
 
 #include <visp/vpMe.h>
+
+#define protected public
 #include <visp/vpMbEdgeTracker.h>
+#undef protected
+
 #include <visp/vpDisplayX.h>
 
 #include "conversion.hh"
@@ -15,12 +21,6 @@
 #include "file.hh"
 
 typedef vpImage<unsigned char> image_t;
-
-bool fileExists(const std::string& file)
-{
-  std::ifstream istream (file.c_str());
-  return istream;
-}
 
 int main(int argc, char **argv)
 {
@@ -33,6 +33,10 @@ int main(int argc, char **argv)
 
   image_t I;
 
+  vpMbEdgeTracker tracker;
+  tracker.resetTracker();
+
+  // Initialization.
   ros::init(argc, argv, "tracker_mbt_client");
 
   ros::NodeHandle n;
@@ -62,49 +66,57 @@ int main(int argc, char **argv)
   image_transport::CameraSubscriber sub =
     it.subscribeCamera(image_topic, 100, bindImageCallback(I));
 
-  vpMbEdgeTracker tracker;
-
   // Model loading.
-  std::string vrml_path =
-    getModelFileFromModelName(model_name, model_path).external_file_string();
-  std::string init_path =
-    getInitFileFromModelName(model_name, model_path).external_file_string();
-  std::string xml_path =
-    getConfigurationFileFromModelName
-    (model_name, model_path).external_file_string();
+  boost::filesystem::path vrml_path =
+    getModelFileFromModelName(model_name, model_path);
+  boost::filesystem::path init_path =
+    getInitFileFromModelName(model_name, model_path);
 
-  ROS_DEBUG("VRML file: %s", vrml_path.c_str());
-  ROS_DEBUG("Init file: %s.init", init_path.c_str());
-  ROS_DEBUG("Configuration file: %s", xml_path.c_str());
+  ROS_INFO_STREAM("VRML file: " << vrml_path);
+  ROS_INFO_STREAM("Init file: " << init_path);
 
-  try
+  // Check that required files exist.
+  if (!boost::filesystem::is_regular_file(vrml_path))
     {
-      ROS_DEBUG("Trying to load the model `%s'.", vrml_path.c_str());
-      tracker.loadModel(model_path.c_str());
+      ROS_ERROR_STREAM("VRML model " << vrml_path << " is not a regular file.");
+      return 1;
     }
-  catch(...)
+  if (!boost::filesystem::is_regular_file(init_path))
     {
-      ROS_ERROR("Failed to load the model `%s'.", vrml_path.c_str());
+      ROS_ERROR_STREAM("Init file " << vrml_path << " is not a regular file.");
       return 1;
     }
 
-  moving_edge.initMask();
-  tracker.setMovingEdge(moving_edge);
-
-  ROS_DEBUG("Model has been successfully loaded.");
-
-  if (!fileExists(init_path + ".init"))
+  // Load the 3d model.
+  try
     {
-      ROS_ERROR("Failed to load initialization points `%s.init'.",
-		init_path.c_str());
+      ROS_DEBUG_STREAM("Trying to load the model "
+		<< vrml_path.external_file_string());
+      tracker.loadModel(vrml_path.external_file_string().c_str());
+      ROS_INFO("Model has been successfully loaded.");
+
+      ROS_INFO_STREAM("Nb hidden faces: "
+		      << tracker.faces.getPolygon().nbElements());
+      ROS_INFO_STREAM("Nb line: " << tracker.Lline.nbElements());
+      ROS_INFO_STREAM("nline: " << tracker.nline);
+      ROS_INFO_STREAM("Visible faces: " << tracker.nbvisiblepolygone);
+    }
+  catch(...)
+    {
+      ROS_ERROR_STREAM("Failed to load the model " << vrml_path);
       return 1;
     }
 
   // Tracker initialization.
+
+  // - Camera
   //FIXME: replace by real camera parameters of the rectified camera.
   vpCameraParameters cam(389.117, 390.358, 342.182, 272.752);
   tracker.setCameraParameters(cam);
   tracker.setDisplayMovingEdges(true);
+
+  // - Moving edges.
+  tracker.setMovingEdge(moving_edge);
 
   // Display camera parameters and moving edges settings.
   ROS_INFO_STREAM(cam);
@@ -131,13 +143,18 @@ int main(int argc, char **argv)
 	  // Initialize.
 	  vpDisplay::display(I);
 	  vpDisplay::flush(I);
-	  tracker.initClick(I, init_path.c_str());
+	  std::string init_file
+	    (init_path.replace_extension().external_file_string());
+	  tracker.initClick(I, init_file.c_str());
 	  tracker.getPose(cMo);
+
+	  ROS_INFO_STREAM("initial pose [tx,ty,tz,tux,tuy,tuz]:\n"
+			  << vpPoseVector(cMo));
 
 	  // Track once to make sure initialization is correct.
 	  vpDisplay::display(I);
 	  tracker.track(I);
-	  tracker.display(I, cMo, cam, vpColor::red);
+	  tracker.display(I, cMo, cam, vpColor::red, 2);
 	  vpDisplay::displayCharString
 	    (I, point, "first tracking", vpColor::red);
 	  vpDisplay::flush(I);
@@ -146,9 +163,13 @@ int main(int argc, char **argv)
 	  tracker.getPose(cMo);
 	  ok = true;
 	}
+      catch(const std::string& str)
+	{
+	  ROS_ERROR_STREAM("failed to initialize: " << str << ", retrying...");
+	}
       catch(...)
 	{
-	  ROS_ERROR("failed to initialize. Retrying...");
+	  ROS_ERROR("failed to initialize, retrying...");
 	}
     }
 
