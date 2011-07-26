@@ -4,6 +4,7 @@
 #include <std_msgs/String.h>
 #include <sensor_msgs/Image.h>
 
+#include <visp_tracker/CameraParameters.h>
 #include <visp_tracker/TrackingResult.h>
 #include <visp_tracker/Init.h>
 
@@ -26,6 +27,10 @@ typedef vpImage<unsigned char> image_t;
 typedef boost::function<bool (visp_tracker::Init::Request&,
 			      visp_tracker::Init::Response& res)>
 init_callback_t;
+
+typedef boost::function<bool (visp_tracker::CameraParameters::Request&,
+			      visp_tracker::CameraParameters::Response& res)>
+camera_parameters_callback_t;
 
 enum State
   {
@@ -50,25 +55,44 @@ bool initCallback(State& state,
   ros::param::set("model_name", req.model_name.data);
   ros::param::set("model_configuration", req.model_configuration.data);
 
+  ros::param::set("vpme_mask_size", (int)req.moving_edge.mask_size);
+  ros::param::set("vpme_range", (int)req.moving_edge.range);
+  ros::param::set("vpme_threshold", req.moving_edge.threshold);
+  ros::param::set("vpme_mu1", req.moving_edge.mu1);
+  ros::param::set("vpme_mu2", req.moving_edge.mu2);
+
+
   model_path = req.model_path.data;
   model_name = req.model_name.data;
   model_configuration = req.model_configuration.data;
+
+  // Load moving edges.
+  vpMe moving_edge;
+  moving_edge.mask_size = req.moving_edge.mask_size;
+  moving_edge.range = req.moving_edge.range;
+  moving_edge.threshold = req.moving_edge.threshold;
+  moving_edge.mu1 = req.moving_edge.mu1;
+  moving_edge.mu2 = req.moving_edge.mu2;
 
   // Reset the tracker and the node state.
   tracker.resetTracker();
   state = WAITING_FOR_INITIALIZATION;
 
+  tracker.setMovingEdge(moving_edge);
+
   // Load the model.
   try
     {
-      ROS_DEBUG("Trying to load the model `%s'.", model_path.c_str());
+      ROS_DEBUG_STREAM("Trying to load the model: " << model_path.c_str());
       tracker.loadModel
 	(getModelFileFromModelName
 	 (model_name, model_path).external_file_string().c_str());
     }
   catch(...)
     {
-      ROS_ERROR("Failed to load the model `%s'.", model_path.c_str());
+      //FIXME: revert model_path, etc. here.
+      ROS_ERROR_STREAM("Failed to load the model: " << model_path.c_str());
+      res.initialization_succeed = false;
       return true;
     }
   ROS_DEBUG("Model has been successfully loaded.");
@@ -76,9 +100,6 @@ bool initCallback(State& state,
   // Load the initial cMo.
   vpHomogeneousMatrix cMo;
   transformToVpHomogeneousMatrix(cMo, req.initial_cMo);
-  model_path = req.model_path.data;
-  model_name = req.model_name.data;
-  model_configuration = req.model_configuration.data;
 
   // Try to initialize the tracker.
   ROS_INFO_STREAM("Initializing tracker with cMo:\n" << cMo);
@@ -88,6 +109,8 @@ bool initCallback(State& state,
     {
       tracker.init(image, cMo);
       ROS_INFO("Tracker successfully initialized.");
+
+      moving_edge.print();
     }
   catch(...)
     {
@@ -95,6 +118,18 @@ bool initCallback(State& state,
       res.initialization_succeed = false;
       ROS_ERROR("Tracker initialization has failed.");
     }
+  return true;
+}
+
+bool cameraParametersCallback(const vpCameraParameters& cam,
+			      visp_tracker::CameraParameters::Request& req,
+			      visp_tracker::CameraParameters::Response& res)
+{
+  ROS_INFO("Camera parameters request received.");
+  res.px = cam.get_px();
+  res.py = cam.get_py();
+  res.u0 = cam.get_u0();
+  res.v0 = cam.get_v0();
   return true;
 }
 
@@ -113,6 +148,12 @@ init_callback_t bindInitCallback(State& state,
 		     boost::ref(model_name),
 		     boost::ref(model_configuration),
 		     _1, _2);
+}
+
+camera_parameters_callback_t
+bindCameraParametersCallback(const vpCameraParameters& cam)
+{
+  return boost::bind(cameraParametersCallback, cam, _1, _2);
 }
 
 int main(int argc, char **argv)
@@ -162,17 +203,24 @@ int main(int argc, char **argv)
   vpMbEdgeTracker tracker;
   tracker.setMovingEdge(moving_edge);
 
+  // Tracker initialization.
+  //FIXME: replace by real camera parameters of the rectified camera.
+  vpCameraParameters cam(389.117, 390.358, 342.182, 272.752);
+  tracker.setCameraParameters(cam);
+  tracker.setDisplayMovingEdges(false);
+
+  ROS_INFO_STREAM(cam);
+
   // Service declaration.
   ros::ServiceServer service = n.advertiseService
     ("init_tracker",
      bindInitCallback(state, tracker, I,
 		      model_path, model_name, model_configuration));
 
-  // Tracker initialization.
-  //FIXME: replace by real camera parameters of the rectified camera.
-  vpCameraParameters cam(389.117, 390.358, 342.182, 272.752);
-  tracker.setCameraParameters(cam);
-  tracker.setDisplayMovingEdges(false);
+  ros::ServiceServer serviceCameraParameters = n.advertiseService
+    ("camera_parameters",
+     bindCameraParametersCallback(cam));
+
 
   // Wait for the image to be initialized.
   while (!I.getWidth() || !I.getHeight())

@@ -3,5 +3,7 @@ std_msgs/String model_name
 std_msgs/String model_configuration
 
 geometry_msgs/Transform initial_cMo
+
+MovingEdge moving_edge
 ---
 bool initialization_succeed

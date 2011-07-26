@@ -57,6 +57,8 @@ int main(int argc, char **argv)
   std::string model_name;
   std::string model_configuration;
 
+  std::string camera_parameters_service;
+
   std::string tracker_result;
 
   image_t I;
@@ -73,6 +75,10 @@ int main(int argc, char **argv)
   ros::param::param<std::string>("~model_name", model_name, "");
   ros::param::param<std::string>("~model_configuration",
 				 model_configuration, "default");
+
+  ros::param::param<std::string>
+    ("~camera_parameters_service",
+     camera_parameters_service, "/tracker_mbt/camera_parameters");
 
   ros::param::param<std::string>("~tracker_result",
 				 tracker_result, "/tracker_mbt/result");
@@ -103,10 +109,15 @@ int main(int argc, char **argv)
     }
   ROS_DEBUG("Model has been successfully loaded.");
 
-
-
-  //FIXME: replace by real camera parameters of the rectified camera.
-  vpCameraParameters cam(389.117, 390.358, 342.182, 272.752);
+  // Camera.
+  boost::optional<vpCameraParameters> cameraParametersOpt =
+    loadCameraParameters(n, camera_parameters_service);
+  if (!cameraParametersOpt)
+    {
+      ROS_ERROR_STREAM("failed to call service camera_parameters");
+      return 1;
+    }
+  vpCameraParameters cam(*cameraParametersOpt);
   tracker.setCameraParameters(cam);
   tracker.setDisplayMovingEdges(true);
 

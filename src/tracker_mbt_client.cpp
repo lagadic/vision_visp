@@ -2,10 +2,12 @@
 #include <fstream>
 
 #include <boost/filesystem.hpp>
+#include <boost/optional.hpp>
 
 #include <ros/ros.h>
 #include <image_transport/image_transport.h>
 #include <ros/param.h>
+#include <visp_tracker/CameraParameters.h>
 #include <visp_tracker/Init.h>
 
 #include <visp/vpMe.h>
@@ -22,6 +24,7 @@
 
 typedef vpImage<unsigned char> image_t;
 
+
 int main(int argc, char **argv)
 {
   std::string image_topic;
@@ -29,6 +32,7 @@ int main(int argc, char **argv)
   std::string model_name;
   std::string model_configuration;
   std::string init_service;
+  std::string camera_parameters_service;
   vpMe moving_edge;
 
   image_t I;
@@ -52,6 +56,9 @@ int main(int argc, char **argv)
 
   ros::param::param<std::string>("~init_service",
 				 init_service, "/tracker_mbt/init_tracker");
+  ros::param::param<std::string>
+    ("~camera_parameters_service",
+     camera_parameters_service, "/tracker_mbt/camera_parameters");
 
   ros::param::param("~vpme_mask_size", moving_edge.mask_size, 7);
   ros::param::param("~vpme_n_mask", moving_edge.n_mask, 180);
@@ -110,8 +117,14 @@ int main(int argc, char **argv)
   // Tracker initialization.
 
   // - Camera
-  //FIXME: replace by real camera parameters of the rectified camera.
-  vpCameraParameters cam(389.117, 390.358, 342.182, 272.752);
+  boost::optional<vpCameraParameters> cameraParametersOpt =
+    loadCameraParameters(n, camera_parameters_service);
+  if (!cameraParametersOpt)
+    {
+      ROS_ERROR_STREAM("failed to call service camera_parameters");
+      return 1;
+    }
+  vpCameraParameters cam(*cameraParametersOpt);
   tracker.setCameraParameters(cam);
   tracker.setDisplayMovingEdges(true);
 
@@ -182,6 +195,12 @@ int main(int argc, char **argv)
   srv.request.model_name.data = model_name;
   srv.request.model_configuration.data = model_configuration;
   vpHomogeneousMatrixToTransform(srv.request.initial_cMo, cMo);
+
+  srv.request.moving_edge.mask_size = moving_edge.mask_size;
+  srv.request.moving_edge.range = moving_edge.range;
+  srv.request.moving_edge.threshold = moving_edge.threshold;
+  srv.request.moving_edge.mu1 = moving_edge.mu1;
+  srv.request.moving_edge.mu2 = moving_edge.mu2;
 
   if (client.call(srv))
   {
