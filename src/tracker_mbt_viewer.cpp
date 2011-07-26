@@ -92,22 +92,22 @@ int main(int argc, char **argv)
   vpMbEdgeTracker tracker;
 
   // Model loading.
-  std::string vrml_path =
-    getModelFileFromModelName(model_name, model_path).external_file_string();
+  boost::filesystem::path vrml_path =
+    getModelFileFromModelName(model_name, model_path);
 
-  ROS_DEBUG("VRML file: %s", vrml_path.c_str());
+  ROS_INFO_STREAM("VRML file: " << vrml_path);
 
   try
     {
-      ROS_DEBUG("Trying to load the model `%s'.", vrml_path.c_str());
-      tracker.loadModel(model_path.c_str());
+      ROS_DEBUG_STREAM("Trying to load the model " << vrml_path);
+      tracker.loadModel(vrml_path.external_file_string().c_str());
     }
   catch(...)
     {
-      ROS_ERROR("Failed to load the model `%s'.", vrml_path.c_str());
+      ROS_ERROR_STREAM("Failed to load the model " << vrml_path);
       return 1;
     }
-  ROS_DEBUG("Model has been successfully loaded.");
+  ROS_INFO("Model has been successfully loaded.");
 
   // Camera.
   boost::optional<vpCameraParameters> cameraParametersOpt =
