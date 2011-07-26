@@ -35,6 +35,8 @@ int main(int argc, char **argv)
   std::string camera_parameters_service;
   vpMe moving_edge;
 
+  bool track = true;
+
   image_t I;
 
   vpMbEdgeTracker tracker;
@@ -165,15 +167,21 @@ int main(int argc, char **argv)
 			  << vpPoseVector(cMo));
 
 	  // Track once to make sure initialization is correct.
-	  vpDisplay::display(I);
-	  tracker.track(I);
-	  tracker.display(I, cMo, cam, vpColor::red, 2);
-	  vpDisplay::displayCharString
-	    (I, point, "first tracking", vpColor::red);
-	  vpDisplay::flush(I);
-	  vpDisplay::getClick(I);
+	  do
+	    {
+	      vpDisplay::display(I);
+	      tracker.track(I);
+	      tracker.display(I, cMo, cam, vpColor::red, 2);
+	      vpDisplay::displayCharString
+		(I, point, "first tracking", vpColor::red);
+	      vpDisplay::flush(I);
+	      tracker.getPose(cMo);
 
-	  tracker.getPose(cMo);
+	      ros::spinOnce();
+	      loop_rate.sleep();
+	    }
+	  while (track);
+	  vpDisplay::getClick(I);
 	  ok = true;
 	}
       catch(const std::string& str)

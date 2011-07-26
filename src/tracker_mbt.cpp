@@ -164,6 +164,10 @@ int main(int argc, char **argv)
   std::string model_name;
   std::string model_configuration;
   vpMe moving_edge;
+  double px;
+  double py;
+  double u0;
+  double v0;
 
   image_t I;
 
@@ -179,6 +183,12 @@ int main(int argc, char **argv)
   ros::param::param<std::string>("model_configuration",
 				 model_configuration, "default");
 
+  //FIXME: default parameters are just wrong.
+  // - replace by real camera parameters of the rectified camera.
+  ros::param::param("~px", px, 389.117);
+  ros::param::param("~py", py, 390.358);
+  ros::param::param("~u0", u0, 342.182);
+  ros::param::param("~v0", v0, 272.752);
 
   ros::param::param("vpme_mask_size", moving_edge.mask_size, 7);
   ros::param::param("vpme_range", moving_edge.range, 8);
@@ -204,8 +214,7 @@ int main(int argc, char **argv)
   tracker.setMovingEdge(moving_edge);
 
   // Tracker initialization.
-  //FIXME: replace by real camera parameters of the rectified camera.
-  vpCameraParameters cam(389.117, 390.358, 342.182, 272.752);
+  vpCameraParameters cam(px, py, u0, v0);
   tracker.setCameraParameters(cam);
   tracker.setDisplayMovingEdges(false);
 
