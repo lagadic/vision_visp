@@ -71,6 +71,8 @@ int main(int argc, char **argv)
   ros::param::param("~vpme_sample_step", moving_edge.sample_step, 1.);
   ros::param::param("~vpme_ntotal_sample", moving_edge.ntotal_sample, 1000);
 
+  ros::param::param("~track", track, false);
+
   // Camera subscriber.
   image_transport::CameraSubscriber sub =
     it.subscribeCamera(image_topic, 100, bindImageCallback(I));
