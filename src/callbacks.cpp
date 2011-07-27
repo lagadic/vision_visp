@@ -1,3 +1,4 @@
+#include <stdexcept>
 #include <boost/bind.hpp>
 #include <image_transport/image_transport.h>
 #include <sensor_msgs/Image.h>
@@ -11,15 +12,14 @@ void imageCallback(vpImage<unsigned char>& image,
 		   const sensor_msgs::Image::ConstPtr& msg,
 		   const sensor_msgs::CameraInfoConstPtr& info)
 {
-  // For now, we suppose that mono8 is used.
-  if(msg->encoding != "mono8")
+  try
     {
-      ROS_ERROR("Bad encoding `%s', dropping the frame.",
-		msg->encoding.c_str());
-      return;
+      rosImageToVisp(image, msg);
     }
-
-  rosImageToVisp(image, msg);
+  catch(std::exception& e)
+    {
+      ROS_ERROR_STREAM("dropping frame: " << e.what());
+    }
 }
 
 image_transport::CameraSubscriber::Callback

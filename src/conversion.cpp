@@ -1,7 +1,12 @@
+#include <stdexcept>
+
+#include <boost/format.hpp>
+
 #include <LinearMath/btMatrix3x3.h>
 #include <LinearMath/btQuaternion.h>
 
 #include <sensor_msgs/Image.h>
+#include <sensor_msgs/image_encodings.h>
 
 #include <visp_tracker/CameraParameters.h>
 
@@ -12,8 +17,13 @@
 void rosImageToVisp(vpImage<unsigned char>& dst,
 		    const sensor_msgs::Image::ConstPtr& src)
 {
-  if(src->encoding != "mono8")
-    return;
+  using sensor_msgs::image_encodings::RGB8;
+  using sensor_msgs::image_encodings::RGBA8;
+  using sensor_msgs::image_encodings::BGR8;
+  using sensor_msgs::image_encodings::BGRA8;
+  using sensor_msgs::image_encodings::MONO8;
+  using sensor_msgs::image_encodings::MONO16;
+  using sensor_msgs::image_encodings::numChannels;
 
   // Resize the image if necessary.
   if (src->width != dst.getWidth() || src->height != dst.getHeight())
@@ -25,9 +35,32 @@ void rosImageToVisp(vpImage<unsigned char>& dst,
       dst.resize (src->height, src->width);
     }
 
-  for(unsigned i = 0; i < dst.getWidth (); ++i)
-    for(unsigned j = 0; j < dst.getHeight (); ++j)
-      dst[j][i] = src->data[j * src->step + i];
+  if(src->encoding == MONO8)
+    for(unsigned i = 0; i < dst.getWidth (); ++i)
+      for(unsigned j = 0; j < dst.getHeight (); ++j)
+	dst[j][i] = src->data[j * src->step + i];
+  else if(src->encoding == RGB8 || src->encoding == RGBA8
+	  || src->encoding == BGR8 || src->encoding == BGRA8)
+    {
+      unsigned nc = numChannels(src->encoding);
+      unsigned cEnd =
+	(src->encoding == RGBA8 || src->encoding == BGRA8) ? nc - 1 : nc;
+
+      for(unsigned i = 0; i < dst.getWidth (); ++i)
+	for(unsigned j = 0; j < dst.getHeight (); ++j)
+	  {
+	    int acc = 0;
+	    for(unsigned c = 0; c < cEnd; ++c)
+	      acc += src->data[j * src->step + i * nc + c];
+	    dst[j][i] =  acc / nc;
+	  }
+    }
+  else
+    {
+      boost::format fmt("bad encoding '%1'");
+      fmt % src->encoding;
+      throw std::runtime_error(fmt.str());
+    }
 }
 
 void vispImageToRos(sensor_msgs::Image& dst,
