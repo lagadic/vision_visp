@@ -35,7 +35,7 @@ int main(int argc, char **argv)
   std::string camera_parameters_service;
   vpMe moving_edge;
 
-  bool track = true;
+  bool track = false;
 
   image_t I;
 
