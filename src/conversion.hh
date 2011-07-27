@@ -16,7 +16,7 @@
 /// If the size are not matching, the ViSP image will be
 /// resized.
 ///
-/// \warning Only mono8 encoding is supported for now.
+/// \warning Some encodings only are supported.
 ///
 /// \param dst ViSP destination image
 /// \param src ROS source image
