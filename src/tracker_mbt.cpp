@@ -185,10 +185,10 @@ int main(int argc, char **argv)
 
   //FIXME: default parameters are just wrong.
   // - replace by real camera parameters of the rectified camera.
-  ros::param::param("~px", px, 389.117);
-  ros::param::param("~py", py, 390.358);
-  ros::param::param("~u0", u0, 342.182);
-  ros::param::param("~v0", v0, 272.752);
+  ros::param::param("~px", px, 391.1807703);
+  ros::param::param("~py", py, 390.9830219);
+  ros::param::param("~u0", u0, 248.987914);
+  ros::param::param("~v0", v0, 245.2349518);
 
   ros::param::param("vpme_mask_size", moving_edge.mask_size, 7);
   ros::param::param("vpme_range", moving_edge.range, 8);
