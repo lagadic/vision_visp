@@ -68,7 +68,7 @@ void vispImageToRos(sensor_msgs::Image& dst,
 {
   dst.width = src.getWidth();
   dst.height = src.getHeight();
-  dst.encoding = "mono8";
+  dst.encoding = sensor_msgs::image_encodings::MONO8;
   dst.step = src.getWidth();
   dst.data.resize(dst.height * dst.step);
   for(unsigned i = 0; i < src.getWidth (); ++i)
