@@ -1,3 +1,4 @@
+#include <cstring>
 #include <stdexcept>
 
 #include <boost/format.hpp>
@@ -40,9 +41,9 @@ void rosImageToVisp(vpImage<unsigned char>& dst,
     }
 
   if(src->encoding == MONO8)
-    for(unsigned i = 0; i < dst.getWidth (); ++i)
-      for(unsigned j = 0; j < dst.getHeight (); ++j)
-	dst[j][i] = src->data[j * src->step + i];
+    memcpy(dst.bitmap,
+	   &src->data[0],
+	   dst.getHeight () * src->step * sizeof(unsigned char));
   else if(src->encoding == RGB8 || src->encoding == RGBA8
 	  || src->encoding == BGR8 || src->encoding == BGRA8)
     {
