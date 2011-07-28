@@ -6,8 +6,9 @@
 #include <sensor_msgs/Image.h>
 
 #include <visp_tracker/CameraParameters.h>
-#include <visp_tracker/TrackingResult.h>
 #include <visp_tracker/Init.h>
+#include <visp_tracker/MovingEdgeSites.h>
+#include <visp_tracker/TrackingResult.h>
 
 #include <boost/bind.hpp>
 #include <visp/vpImage.h>
@@ -158,6 +159,34 @@ bindCameraParametersCallback(const vpCameraParameters& cam)
   return boost::bind(cameraParametersCallback, cam, _1, _2);
 }
 
+void
+updateMovingEdgeSites(visp_tracker::MovingEdgeSites& sites,
+		      vpMbEdgeTracker& tracker)
+{
+  sites.moving_edge_sites.clear();
+
+  tracker.getLline()->front();
+  while (!tracker.getLline()->outside())
+    {
+      vpMbtDistanceLine* l = tracker.getLline()->value();
+      if (l && l->isVisible() && l->meline)
+	{
+	  l->meline->list.front();
+	  while (!l->meline->list.outside())
+	    {
+	      vpMeSite pix = l->meline->list.value();
+	      visp_tracker::MovingEdgeSite movingEdgeSite;
+	      movingEdgeSite.x = pix.ifloat;
+	      movingEdgeSite.y = pix.jfloat;
+	      movingEdgeSite.suppress = pix.suppress;
+	      sites.moving_edge_sites.push_back(movingEdgeSite);
+	      l->meline->list.next();
+	    }
+	}
+      tracker.getLline()->next();
+    }
+}
+
 int main(int argc, char **argv)
 {
   State state = WAITING_FOR_INITIALIZATION;
@@ -214,6 +243,10 @@ int main(int argc, char **argv)
   // Result publisher.
   ros::Publisher result_pub =
     n.advertise<visp_tracker::TrackingResult>("result", 1000);
+
+  // Moving edge sites publisher.
+  ros::Publisher moving_edge_sites_pub =
+    n.advertise<visp_tracker::MovingEdgeSites>("moving_edge_sites", 1000);
 
   // Camera subscriber.
   std_msgs::Header header;
@@ -291,6 +324,11 @@ int main(int argc, char **argv)
 	  vpHomogeneousMatrixToTransform(result.cMo.transform, cMo);
 	}
       result_pub.publish(result);
+
+
+      visp_tracker::MovingEdgeSites moving_edge_sites;
+      updateMovingEdgeSites(moving_edge_sites, tracker);
+      moving_edge_sites_pub.publish(moving_edge_sites);
 
       ros::spinOnce();
       loop_rate.sleep();
