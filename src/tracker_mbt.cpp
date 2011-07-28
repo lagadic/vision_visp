@@ -47,6 +47,7 @@ bool initCallback(State& state,
 		  std::string& model_path,
 		  std::string& model_name,
 		  std::string& model_configuration,
+		  unsigned long& lastTrackedImage,
 		  visp_tracker::Init::Request& req,
 		  visp_tracker::Init::Response& res)
 {
@@ -80,6 +81,7 @@ bool initCallback(State& state,
   // Reset the tracker and the node state.
   tracker.resetTracker();
   state = WAITING_FOR_INITIALIZATION;
+  lastTrackedImage = 0;
 
   tracker.setMovingEdge(moving_edge);
 
@@ -141,7 +143,8 @@ init_callback_t bindInitCallback(State& state,
 				 image_t& image,
 				 std::string& model_path,
 				 std::string& model_name,
-				 std::string& model_configuration)
+				 std::string& model_configuration,
+				 unsigned long& lastTrackedImage)
 {
   return boost::bind(initCallback,
 		     boost::ref(state),
@@ -150,6 +153,7 @@ init_callback_t bindInitCallback(State& state,
 		     boost::ref(model_path),
 		     boost::ref(model_name),
 		     boost::ref(model_configuration),
+		     boost::ref(lastTrackedImage),
 		     _1, _2);
 }
 
@@ -276,10 +280,13 @@ int main(int argc, char **argv)
   ROS_INFO_STREAM(cam);
 
   // Service declaration.
+  unsigned long lastTrackedImage = 0;
+
   ros::ServiceServer service = n.advertiseService
     ("init_tracker",
      bindInitCallback(state, tracker, I,
-		      model_path, model_name, model_configuration));
+		      model_path, model_name, model_configuration,
+		      lastTrackedImage));
 
   ros::ServiceServer serviceCameraParameters = n.advertiseService
     ("camera_parameters",
@@ -298,14 +305,20 @@ int main(int argc, char **argv)
   vpHomogeneousMatrix cMo;
   visp_tracker::TrackingResult result;
   visp_tracker::MovingEdgeSites moving_edge_sites;
-
-  unsigned long lastTrackedImage = 0;
+  unsigned long lastHeaderSeq = 0;
 
   while (ros::ok())
     {
+      // When a camera sequence is played several times,
+      // the seq id will decrease, in this case we want to
+      // continue the tracking.
+      if (header.seq < lastHeaderSeq)
+	lastTrackedImage = 0;
+      lastHeaderSeq = header.seq;
+
       if (lastTrackedImage < header.seq)
 	{
-	    lastTrackedImage = header.seq;
+	  lastTrackedImage = header.seq;
 	    cMo.eye();
 	    if (state == TRACKING)
 	      try
