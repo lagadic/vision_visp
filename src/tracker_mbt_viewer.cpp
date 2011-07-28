@@ -63,6 +63,33 @@ void callback(image_t& image,
 }
 
 void
+checkInputsSynchronized(unsigned& allReceived,
+			unsigned& imageReceived,
+			unsigned& resultReceived,
+			unsigned& movingEdgeSitesReceived)
+{
+  const unsigned threshold = 3 * allReceived;
+
+  if (imageReceived > threshold
+      || resultReceived > threshold
+      || movingEdgeSitesReceived > threshold)
+    {
+      ROS_WARN
+	("[visp_tracker] Low number of synchronized triplets"
+	 "image/result/moving edge received.\n"
+	 "Images received: %d\n"
+	 "Results received: %d\n"
+	 "Moving edges received: %d\n"
+	 "Synchronized triplets: %d\n"
+	 "Possible issues:\n"
+	 "\t* The network is too slow. One or more images are dropped from each"
+	 "triplet.",
+	 imageReceived, resultReceived, movingEdgeSitesReceived, allReceived);
+    }
+}
+
+
+void
 displayMovingEdgeSites(image_t& I,
 		       visp_tracker::MovingEdgeSites::ConstPtr& sites)
 {
@@ -112,8 +139,6 @@ int main(int argc, char **argv)
 
   image_t I;
 
-  bool displayMovingEdges;
-
   ros::init(argc, argv, "tracker_mbt_viewer");
 
   ros::NodeHandle n;
@@ -136,8 +161,6 @@ int main(int argc, char **argv)
   ros::param::param<std::string>
     ("~moving_edge_sites",
      moving_edge_sites, "/tracker_mbt/moving_edge_sites");
-
-  ros::param::param<bool>("~display_moving_edges", displayMovingEdges, true);
 
   // Tracker initialization.
   vpMbEdgeTracker tracker;
@@ -190,7 +213,21 @@ int main(int argc, char **argv)
     (boost::bind(callback,
 		 boost::ref(I), boost::ref(cMo), boost::ref(sites),
 		 _1, _2, _3));
-    
+
+  // Trigger a warning if no synchronized triplets are received during 30s.
+  unsigned allReceived = 0;
+  unsigned imageReceived = 0;
+  unsigned resultReceived = 0;
+  unsigned movingEdgeSitesReceived = 0;
+  ros::WallTimer checkSyncedTimer =
+    n.createWallTimer
+    (ros::WallDuration(30.0),
+     boost::bind(checkInputsSynchronized,
+		 allReceived,
+		 imageReceived,
+		 resultReceived,
+		 movingEdgeSitesReceived));
+
 
   // Wait for the image to be initialized.
   ros::Rate loop_rate(10);
@@ -205,8 +242,7 @@ int main(int argc, char **argv)
   while (ros::ok())
     {
       vpDisplay::display(I);
-      if (displayMovingEdges)
-	displayMovingEdgeSites(I, sites);
+      displayMovingEdgeSites(I, sites);
       if (cMo)
 	{
 	  tracker.setPose(*cMo);
