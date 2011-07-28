@@ -13,6 +13,7 @@
 #include <visp/vpMbEdgeTracker.h>
 #include <visp/vpDisplayX.h>
 
+#include <visp_tracker/MovingEdgeSites.h>
 #include <visp_tracker/TrackingResult.h>
 
 #include "conversion.hh"
@@ -20,6 +21,9 @@
 #include "file.hh"
 
 typedef vpImage<unsigned char> image_t;
+
+typedef boost::function<void (const visp_tracker::MovingEdgeSites::ConstPtr&)>
+moving_edge_sites_callback_t;
 
 typedef boost::function<void (const visp_tracker::TrackingResult::ConstPtr&)>
 result_callback_t;
@@ -38,15 +42,56 @@ void resultCallback(boost::optional<vpHomogeneousMatrix>& cMo,
   transformToVpHomogeneousMatrix(*cMo, msg->cMo.transform);
 }
 
+void movingEdgesSitesCallback(visp_tracker::MovingEdgeSites::ConstPtr& sites,
+			      const visp_tracker::MovingEdgeSites::ConstPtr& msg)
+{
+  sites = msg;
+}
+
 result_callback_t bindResultCallback (boost::optional<vpHomogeneousMatrix>& cMo)
 {
   return boost::bind(resultCallback, boost::ref(cMo), _1);
 }
 
-bool fileExists(const std::string& file)
+moving_edge_sites_callback_t
+bindMovingEdgeSitesCallback (visp_tracker::MovingEdgeSites::ConstPtr& sites)
 {
-  std::ifstream istream (file.c_str());
-  return istream;
+  return boost::bind(movingEdgesSitesCallback, boost::ref(sites), _1);
+}
+
+void
+displayMovingEdgeSites(image_t& I,
+		       visp_tracker::MovingEdgeSites::ConstPtr& sites)
+{
+  if (!sites)
+    return;
+  for (unsigned i = 0; i < sites->moving_edge_sites.size(); ++i)
+    {
+      double x = sites->moving_edge_sites[i].x;
+      double y = sites->moving_edge_sites[i].y;
+      int suppress = sites->moving_edge_sites[i].suppress;
+      vpColor color = vpColor::black;
+
+      switch(suppress)
+	{
+	case 0:
+	  color = vpColor::green;
+	  break;
+	case 1:
+	  color = vpColor::blue;
+	  break;
+	case 2:
+	  color = vpColor::purple;
+	  break;
+	case 4:
+	  color = vpColor::red;
+	  break;
+	default:
+	  ROS_ERROR_THROTTLE(10, "bad suppress value");
+	}
+
+      vpDisplay::displayCross(I, vpImagePoint(x, y), 3, color, 1);
+    }
 }
 
 int main(int argc, char **argv)
@@ -60,8 +105,11 @@ int main(int argc, char **argv)
   std::string camera_parameters_service;
 
   std::string tracker_result;
+  std::string moving_edge_sites;
 
   image_t I;
+
+  bool displayMovingEdges;
 
   ros::init(argc, argv, "tracker_mbt_viewer");
 
@@ -82,6 +130,11 @@ int main(int argc, char **argv)
 
   ros::param::param<std::string>("~tracker_result",
 				 tracker_result, "/tracker_mbt/result");
+  ros::param::param<std::string>
+    ("~moving_edge_sites",
+     moving_edge_sites, "/tracker_mbt/moving_edge_sites");
+
+  ros::param::param<bool>("~display_moving_edges", displayMovingEdges, true);
 
 
   // Camera subscriber.
@@ -121,10 +174,16 @@ int main(int argc, char **argv)
   tracker.setCameraParameters(cam);
   tracker.setDisplayMovingEdges(true);
 
-  // Subscribe to tracker.
+  // Subscribe to tracker and moving edge sites.
   boost::optional<vpHomogeneousMatrix> cMo;
+  visp_tracker::MovingEdgeSites::ConstPtr sites;
   ros::Subscriber subResult =
     n.subscribe(tracker_result, 1000, bindResultCallback(cMo));
+
+  ros::Subscriber subMovingEdgeSites;
+      if (displayMovingEdges)
+	subMovingEdgeSites = n.subscribe(moving_edge_sites, 1000,
+					 bindMovingEdgeSitesCallback(sites));
 
   // Wait for the image to be initialized.
   ros::Rate loop_rate(10);
@@ -139,6 +198,8 @@ int main(int argc, char **argv)
   while (ros::ok())
     {
       vpDisplay::display(I);
+      if (displayMovingEdges)
+	displayMovingEdgeSites(I, sites);
       if (cMo)
 	{
 	  tracker.setPose(*cMo);
