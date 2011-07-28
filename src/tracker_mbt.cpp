@@ -1,6 +1,7 @@
 #include <ros/ros.h>
 #include <image_transport/image_transport.h>
 #include <ros/param.h>
+#include <dynamic_reconfigure/server.h>
 #include <std_msgs/String.h>
 #include <sensor_msgs/Image.h>
 
@@ -56,11 +57,13 @@ bool initCallback(State& state,
   ros::param::set("model_configuration", req.model_configuration.data);
 
   ros::param::set("vpme_mask_size", (int)req.moving_edge.mask_size);
+  ros::param::set("vpme_n_mask", (int)req.moving_edge.n_mask);
   ros::param::set("vpme_range", (int)req.moving_edge.range);
   ros::param::set("vpme_threshold", req.moving_edge.threshold);
   ros::param::set("vpme_mu1", req.moving_edge.mu1);
   ros::param::set("vpme_mu2", req.moving_edge.mu2);
-
+  ros::param::set("vpme_sample_step", (int)req.moving_edge.sample_step);
+  ros::param::set("vpme_ntotal_sample", (int)req.moving_edge.ntotal_sample);
 
   model_path = req.model_path.data;
   model_name = req.model_name.data;
@@ -68,11 +71,10 @@ bool initCallback(State& state,
 
   // Load moving edges.
   vpMe moving_edge;
-  moving_edge.mask_size = req.moving_edge.mask_size;
-  moving_edge.range = req.moving_edge.range;
-  moving_edge.threshold = req.moving_edge.threshold;
-  moving_edge.mu1 = req.moving_edge.mu1;
-  moving_edge.mu2 = req.moving_edge.mu2;
+  convertInitRequestToVpMe(req, tracker, moving_edge);
+
+  //FIXME: not sure if this is needed.
+  moving_edge.initMask();
 
   // Reset the tracker and the node state.
   tracker.resetTracker();
@@ -190,18 +192,28 @@ int main(int argc, char **argv)
   ros::param::param("~u0", u0, 248.987914);
   ros::param::param("~v0", v0, 245.2349518);
 
-  ros::param::param("vpme_mask_size", moving_edge.mask_size, 7);
-  ros::param::param("vpme_range", moving_edge.range, 8);
-  ros::param::param("vpme_threshold", moving_edge.threshold, 100.);
-  ros::param::param("vpme_mu1", moving_edge.mu1, 0.5);
-  ros::param::param("vpme_mu2", moving_edge.mu2, 0.5);
+  visp_tracker::MovingEdgeConfig defaultMovingEdge =
+    visp_tracker::MovingEdgeConfig::__getDefault__();
+  ros::param::param("vpme_mask_size", moving_edge.mask_size,
+		    defaultMovingEdge.mask_size);
+  ros::param::param("vpme_n_mask", moving_edge.n_mask,
+		    defaultMovingEdge.n_mask);
+  ros::param::param("vpme_range", moving_edge.range,
+		    defaultMovingEdge.range);
+  ros::param::param("vpme_threshold", moving_edge.threshold,
+		    defaultMovingEdge.threshold);
+  ros::param::param("vpme_mu1", moving_edge.mu1,
+		    defaultMovingEdge.mu1);
+  ros::param::param("vpme_mu2", moving_edge.mu2,
+		    defaultMovingEdge.mu2);
+  ros::param::param("vpme_sample_step", moving_edge.sample_step,
+		    defaultMovingEdge.sample_step);
+  ros::param::param("vpme_ntotal_sample", moving_edge.ntotal_sample,
+		    defaultMovingEdge.ntotal_sample);
 
   // Result publisher.
   ros::Publisher result_pub =
     n.advertise<visp_tracker::TrackingResult>("result", 1000);
-
-  // Output publisher.
-  image_transport::Publisher output_pub = it.advertise("output", 1);
 
   // Camera subscriber.
   image_transport::CameraSubscriber sub =
@@ -212,6 +224,13 @@ int main(int argc, char **argv)
 
   vpMbEdgeTracker tracker;
   tracker.setMovingEdge(moving_edge);
+
+  // Dynamic reconfigure.
+  dynamic_reconfigure::Server<visp_tracker::MovingEdgeConfig> reconfigureSrv;
+  dynamic_reconfigure::Server<visp_tracker::MovingEdgeConfig>::CallbackType f;
+  f = boost::bind(&reconfigureCallback, boost::ref(tracker),
+		  boost::ref(moving_edge), _1, _2);
+  reconfigureSrv.setCallback(f);
 
   // Tracker initialization.
   vpCameraParameters cam(px, py, u0, v0);

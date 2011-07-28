@@ -9,6 +9,11 @@
 
 # include <visp/vpHomogeneousMatrix.h>
 # include <visp/vpCameraParameters.h>
+# include <visp/vpMbEdgeTracker.h>
+# include <visp/vpMe.h>
+
+# include <visp_tracker/Init.h>
+# include <visp_tracker/MovingEdgeConfig.h>
 
 /// \brief Convert a ROS image into a ViSP one.
 ///
@@ -46,5 +51,16 @@ void transformToVpHomogeneousMatrix(vpHomogeneousMatrix& dst,
 boost::optional<vpCameraParameters>
 loadCameraParameters(ros::NodeHandle& n,
 		     const std::string& camera_parameters_service);
+
+void convertMovingEdgeConfigToVpMe(const visp_tracker::MovingEdgeConfig& config,
+				   vpMe& moving_edge,
+				   vpMbEdgeTracker& tracker);
+void convertVpMeToInitRequest(const vpMe& moving_edge,
+			      const vpMbEdgeTracker& tracker,
+			      visp_tracker::Init& srv);
+
+void convertInitRequestToVpMe(const visp_tracker::Init::Request& req,
+			      vpMbEdgeTracker& tracker,
+			      vpMe& moving_edge);
 
 #endif //! VISP_TRACKER_CONVERSION_HH

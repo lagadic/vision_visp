@@ -5,10 +5,12 @@
 #include <boost/optional.hpp>
 
 #include <ros/ros.h>
-#include <image_transport/image_transport.h>
 #include <ros/param.h>
+#include <dynamic_reconfigure/server.h>
+#include <image_transport/image_transport.h>
 #include <visp_tracker/CameraParameters.h>
 #include <visp_tracker/Init.h>
+#include <visp_tracker/MovingEdgeConfig.h>
 
 #include <visp/vpMe.h>
 
@@ -23,7 +25,6 @@
 #include "file.hh"
 
 typedef vpImage<unsigned char> image_t;
-
 
 int main(int argc, char **argv)
 {
@@ -62,16 +63,33 @@ int main(int argc, char **argv)
     ("~camera_parameters_service",
      camera_parameters_service, "/tracker_mbt/camera_parameters");
 
-  ros::param::param("~vpme_mask_size", moving_edge.mask_size, 7);
-  ros::param::param("~vpme_n_mask", moving_edge.n_mask, 180);
-  ros::param::param("~vpme_range", moving_edge.range, 8);
-  ros::param::param("~vpme_threshold", moving_edge.threshold, 100.);
-  ros::param::param("~vpme_mu1", moving_edge.mu1, 0.5);
-  ros::param::param("~vpme_mu2", moving_edge.mu2, 0.5);
-  ros::param::param("~vpme_sample_step", moving_edge.sample_step, 1.);
-  ros::param::param("~vpme_ntotal_sample", moving_edge.ntotal_sample, 1000);
+  visp_tracker::MovingEdgeConfig defaultMovingEdge = 
+    visp_tracker::MovingEdgeConfig::__getDefault__();
+  ros::param::param("~vpme_mask_size", moving_edge.mask_size,
+		    defaultMovingEdge.mask_size);
+  ros::param::param("~vpme_n_mask", moving_edge.n_mask,
+		    defaultMovingEdge.n_mask);
+  ros::param::param("~vpme_range", moving_edge.range,
+		    defaultMovingEdge.range);
+  ros::param::param("~vpme_threshold", moving_edge.threshold,
+		    defaultMovingEdge.threshold);
+  ros::param::param("~vpme_mu1", moving_edge.mu1,
+		    defaultMovingEdge.mu1);
+  ros::param::param("~vpme_mu2", moving_edge.mu2,
+		    defaultMovingEdge.mu2);
+  ros::param::param("~vpme_sample_step", moving_edge.sample_step,
+		    defaultMovingEdge.sample_step);
+  ros::param::param("~vpme_ntotal_sample", moving_edge.ntotal_sample,
+		    defaultMovingEdge.ntotal_sample);
 
   ros::param::param("~track", track, false);
+
+  // Dynamic reconfigure.
+  dynamic_reconfigure::Server<visp_tracker::MovingEdgeConfig> reconfigureSrv;
+  dynamic_reconfigure::Server<visp_tracker::MovingEdgeConfig>::CallbackType f;
+  f = boost::bind(&reconfigureCallback, boost::ref(tracker),
+		  boost::ref(moving_edge), _1, _2);
+  reconfigureSrv.setCallback(f);
 
   // Camera subscriber.
   image_transport::CameraSubscriber sub =
@@ -206,11 +224,7 @@ int main(int argc, char **argv)
   srv.request.model_configuration.data = model_configuration;
   vpHomogeneousMatrixToTransform(srv.request.initial_cMo, cMo);
 
-  srv.request.moving_edge.mask_size = moving_edge.mask_size;
-  srv.request.moving_edge.range = moving_edge.range;
-  srv.request.moving_edge.threshold = moving_edge.threshold;
-  srv.request.moving_edge.mu1 = moving_edge.mu1;
-  srv.request.moving_edge.mu2 = moving_edge.mu2;
+  convertVpMeToInitRequest(moving_edge, tracker, srv);
 
   if (client.call(srv))
   {

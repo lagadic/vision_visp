@@ -27,3 +27,19 @@ bindImageCallback(vpImage<unsigned char>& image)
 {
   return boost::bind(imageCallback, boost::ref(image), _1, _2);
 }
+
+void reconfigureCallback(vpMbEdgeTracker& tracker,
+			 vpMe& moving_edge,
+			 visp_tracker::MovingEdgeConfig& config,
+			 uint32_t level)
+{
+  ROS_INFO("Reconfigure request received.");
+  convertMovingEdgeConfigToVpMe(config, moving_edge, tracker);
+
+  //FIXME: not sure if this is needed.
+  moving_edge.initMask();
+
+  tracker.setMovingEdge(moving_edge);
+
+  moving_edge.print();
+}
