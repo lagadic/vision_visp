@@ -294,7 +294,7 @@ int main(int argc, char **argv)
     }
 
   // Main loop.
-  ros::Rate loop_rate_tracking(500);
+  ros::Rate loop_rate_tracking(200);
   vpHomogeneousMatrix cMo;
   visp_tracker::TrackingResult result;
   visp_tracker::MovingEdgeSites moving_edge_sites;
