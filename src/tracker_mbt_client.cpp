@@ -151,6 +151,7 @@ int main(int argc, char **argv)
   tracker.setDisplayMovingEdges(true);
 
   // - Moving edges.
+  moving_edge.initMask();
   tracker.setMovingEdge(moving_edge);
 
   // Display camera parameters and moving edges settings.

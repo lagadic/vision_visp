@@ -223,6 +223,7 @@ int main(int argc, char **argv)
   ros::Rate loop_rate(10);
 
   vpMbEdgeTracker tracker;
+  moving_edge.initMask();
   tracker.setMovingEdge(moving_edge);
 
   // Dynamic reconfigure.
