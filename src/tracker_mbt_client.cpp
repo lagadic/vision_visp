@@ -171,6 +171,7 @@ int main(int argc, char **argv)
   vpDisplayX d(I, I.getWidth(), I.getHeight(),
 	       "ViSP MBT tracker initialization");
 
+  ros::Rate loop_rate_tracking(200);
   bool ok = false;
   vpHomogeneousMatrix cMo;
   vpImagePoint point (10, 10);
@@ -201,7 +202,7 @@ int main(int argc, char **argv)
 	      tracker.getPose(cMo);
 
 	      ros::spinOnce();
-	      loop_rate.sleep();
+	      loop_rate_tracking.sleep();
 	    }
 	  while (track);
 	  vpDisplay::getClick(I);

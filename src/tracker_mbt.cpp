@@ -312,7 +312,6 @@ int main(int argc, char **argv)
 		{
 
 	    tracker.track(I);
-	    ROS_DEBUG("Tracking ok.");
 	    tracker.getPose(cMo);
 		}
 	      catch(...)
