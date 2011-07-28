@@ -22,10 +22,31 @@ void imageCallback(vpImage<unsigned char>& image,
     }
 }
 
+void imageCallback(vpImage<unsigned char>& image,
+		   std_msgs::Header& header,
+		   sensor_msgs::CameraInfoConstPtr& info,
+		   const sensor_msgs::Image::ConstPtr& msg,
+		   const sensor_msgs::CameraInfoConstPtr& infoConst)
+{
+  imageCallback(image, msg, info);
+  header = msg->header;
+  info = infoConst;
+}
+
 image_transport::CameraSubscriber::Callback
 bindImageCallback(vpImage<unsigned char>& image)
 {
   return boost::bind(imageCallback, boost::ref(image), _1, _2);
+}
+
+image_transport::CameraSubscriber::Callback
+bindImageCallback(vpImage<unsigned char>& image,
+		  std_msgs::Header& header,
+		  sensor_msgs::CameraInfoConstPtr& info)
+{
+  return boost::bind
+    (imageCallback,
+     boost::ref(image), boost::ref(header), boost::ref(info), _1, _2);
 }
 
 void reconfigureCallback(vpMbEdgeTracker& tracker,

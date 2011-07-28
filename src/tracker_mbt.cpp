@@ -216,8 +216,10 @@ int main(int argc, char **argv)
     n.advertise<visp_tracker::TrackingResult>("result", 1000);
 
   // Camera subscriber.
+  std_msgs::Header header;
+  sensor_msgs::CameraInfoConstPtr info;
   image_transport::CameraSubscriber sub =
-    it.subscribeCamera(image_topic, 100, bindImageCallback(I));
+    it.subscribeCamera(image_topic, 100, bindImageCallback(I, header, info));
 
   // Initialization.
   ros::Rate loop_rate(10);
@@ -280,11 +282,13 @@ int main(int argc, char **argv)
       // Publish the tracking result.
       visp_tracker::TrackingResult result;
       result.is_tracking = state == TRACKING;
+      result.cMo.header = header;
+
+      //FIXME: improve this.
+      result.cMo.child_frame_id = info->header.frame_id;
       if (state == TRACKING)
 	{
 	  vpHomogeneousMatrixToTransform(result.cMo.transform, cMo);
-	  //FIXME: to be done result.cMo.header
-	  //FIXME: to be done result.cMo.child_frame_id
 	}
       result_pub.publish(result);
 
