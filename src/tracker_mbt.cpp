@@ -328,7 +328,10 @@ int main(int argc, char **argv)
 	}
       result_pub.publish(result);
 
-      updateMovingEdgeSites(moving_edge_sites, tracker);
+      if (state == TRACKING)
+	updateMovingEdgeSites(moving_edge_sites, tracker);
+      else
+	moving_edge_sites.moving_edge_sites.clear();
       moving_edge_sites_pub.publish(moving_edge_sites);
 
       ros::spinOnce();
