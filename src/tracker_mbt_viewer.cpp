@@ -7,8 +7,12 @@
 #include <boost/optional.hpp>
 
 #include <ros/ros.h>
-#include <image_transport/image_transport.h>
 #include <ros/param.h>
+#include <image_transport/image_transport.h>
+#include <image_transport/subscriber_filter.h>
+#include <message_filters/synchronizer.h>
+#include <message_filters/sync_policies/approximate_time.h>
+#include <message_filters/subscriber.h>
 
 #include <visp/vpMbEdgeTracker.h>
 #include <visp/vpDisplayX.h>
@@ -22,41 +26,40 @@
 
 typedef vpImage<unsigned char> image_t;
 
-typedef boost::function<void (const visp_tracker::MovingEdgeSites::ConstPtr&)>
-moving_edge_sites_callback_t;
-
-typedef boost::function<void (const visp_tracker::TrackingResult::ConstPtr&)>
-result_callback_t;
+typedef message_filters::sync_policies::ApproximateTime<
+  sensor_msgs::Image, visp_tracker::TrackingResult, visp_tracker::MovingEdgeSites
+  > syncPolicy_t;
 
 
-void resultCallback(boost::optional<vpHomogeneousMatrix>& cMo,
-		    const visp_tracker::TrackingResult::ConstPtr& msg)
+void callback(image_t& image,
+	      boost::optional<vpHomogeneousMatrix>& cMo,
+	      visp_tracker::MovingEdgeSites::ConstPtr& sites,
+
+	      const sensor_msgs::ImageConstPtr& imageConst,
+	      const visp_tracker::TrackingResult::ConstPtr& trackingResult,
+	      const visp_tracker::MovingEdgeSites::ConstPtr& sitesConst)
 {
-  if (!msg->is_tracking)
+  // Copy image.
+  try
     {
-      cMo = boost::none;
-      return;
+      rosImageToVisp(image, imageConst);
+    }
+  catch(std::exception& e)
+    {
+      ROS_ERROR_STREAM("dropping frame: " << e.what());
     }
 
-  cMo = vpHomogeneousMatrix();
-  transformToVpHomogeneousMatrix(*cMo, msg->cMo.transform);
-}
+  // Copy moving edges sites.
+  sites = sitesConst;
 
-void movingEdgesSitesCallback(visp_tracker::MovingEdgeSites::ConstPtr& sites,
-			      const visp_tracker::MovingEdgeSites::ConstPtr& msg)
-{
-  sites = msg;
-}
-
-result_callback_t bindResultCallback (boost::optional<vpHomogeneousMatrix>& cMo)
-{
-  return boost::bind(resultCallback, boost::ref(cMo), _1);
-}
-
-moving_edge_sites_callback_t
-bindMovingEdgeSitesCallback (visp_tracker::MovingEdgeSites::ConstPtr& sites)
-{
-  return boost::bind(movingEdgesSitesCallback, boost::ref(sites), _1);
+  // Copy cMo.
+  if (trackingResult->is_tracking)
+    {
+      cMo = vpHomogeneousMatrix();
+      transformToVpHomogeneousMatrix(*cMo, trackingResult->cMo);
+    }
+  else
+    cMo = boost::none;
 }
 
 void
@@ -136,11 +139,6 @@ int main(int argc, char **argv)
 
   ros::param::param<bool>("~display_moving_edges", displayMovingEdges, true);
 
-
-  // Camera subscriber.
-  image_transport::CameraSubscriber sub =
-    it.subscribeCamera(image_topic, 100, bindImageCallback(I));
-
   // Tracker initialization.
   vpMbEdgeTracker tracker;
 
@@ -174,16 +172,25 @@ int main(int argc, char **argv)
   tracker.setCameraParameters(cam);
   tracker.setDisplayMovingEdges(true);
 
-  // Subscribe to tracker and moving edge sites.
+  // Subscribe to camera and tracker synchronously.
   boost::optional<vpHomogeneousMatrix> cMo;
   visp_tracker::MovingEdgeSites::ConstPtr sites;
-  ros::Subscriber subResult =
-    n.subscribe(tracker_result, 1000, bindResultCallback(cMo));
 
-  ros::Subscriber subMovingEdgeSites;
-      if (displayMovingEdges)
-	subMovingEdgeSites = n.subscribe(moving_edge_sites, 1000,
-					 bindMovingEdgeSitesCallback(sites));
+  image_transport::SubscriberFilter imageSub
+    (it, image_topic, 100);
+  message_filters::Subscriber<visp_tracker::TrackingResult> trackingResultSub
+    (n, tracker_result, 100);
+  message_filters::Subscriber<visp_tracker::MovingEdgeSites>
+    movingEdgeSitesSub(n, moving_edge_sites, 100);
+
+  message_filters::Synchronizer<syncPolicy_t> sync
+    (syncPolicy_t(100), imageSub, trackingResultSub, movingEdgeSitesSub);
+
+  sync.registerCallback
+    (boost::bind(callback,
+		 boost::ref(I), boost::ref(cMo), boost::ref(sites),
+		 _1, _2, _3));
+    
 
   // Wait for the image to be initialized.
   ros::Rate loop_rate(10);

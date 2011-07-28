@@ -334,19 +334,18 @@ int main(int argc, char **argv)
 		}
 
 	    // Publish the tracking result.
+	    result.header = header;
 	    result.is_tracking = state == TRACKING;
-	    result.cMo.header = header;
 
-	    //FIXME: improve this.
-	    result.cMo.child_frame_id = info->header.frame_id;
 	    if (state == TRACKING)
-	      vpHomogeneousMatrixToTransform(result.cMo.transform, cMo);
+	      vpHomogeneousMatrixToTransform(result.cMo, cMo);
 	    result_pub.publish(result);
 
 	    if (state == TRACKING)
 	      updateMovingEdgeSites(moving_edge_sites, tracker);
 	    else
 	      moving_edge_sites.moving_edge_sites.clear();
+	    moving_edge_sites.header = header;
 	    moving_edge_sites_pub.publish(moving_edge_sites);
 	}
 

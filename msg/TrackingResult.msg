@@ -1,2 +1,3 @@
+Header header
 bool is_tracking
-geometry_msgs/TransformStamped cMo
+geometry_msgs/Transform cMo
