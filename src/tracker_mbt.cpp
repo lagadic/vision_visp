@@ -294,6 +294,7 @@ int main(int argc, char **argv)
     }
 
   // Main loop.
+  ros::Rate loop_rate_tracking(500);
   vpHomogeneousMatrix cMo;
   visp_tracker::TrackingResult result;
   visp_tracker::MovingEdgeSites moving_edge_sites;
@@ -338,7 +339,7 @@ int main(int argc, char **argv)
 	}
 
       ros::spinOnce();
-      loop_rate.sleep();
+      loop_rate_tracking.sleep();
     }
 
   return 0;
