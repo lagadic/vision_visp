@@ -294,9 +294,12 @@ int main(int argc, char **argv)
     }
 
   // Main loop.
+  vpHomogeneousMatrix cMo;
+  visp_tracker::TrackingResult result;
+  visp_tracker::MovingEdgeSites moving_edge_sites;
+
   while (ros::ok())
     {
-      vpHomogeneousMatrix cMo;
       cMo.eye();
 
       if (state == TRACKING)
@@ -313,7 +316,7 @@ int main(int argc, char **argv)
 	  }
 
       // Publish the tracking result.
-      visp_tracker::TrackingResult result;
+
       result.is_tracking = state == TRACKING;
       result.cMo.header = header;
 
@@ -325,8 +328,6 @@ int main(int argc, char **argv)
 	}
       result_pub.publish(result);
 
-
-      visp_tracker::MovingEdgeSites moving_edge_sites;
       updateMovingEdgeSites(moving_edge_sites, tracker);
       moving_edge_sites_pub.publish(moving_edge_sites);
 

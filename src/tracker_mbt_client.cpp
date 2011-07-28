@@ -24,6 +24,8 @@
 #include "callbacks.hh"
 #include "file.hh"
 
+//TODO: synchronize messages for display!
+
 typedef vpImage<unsigned char> image_t;
 
 int main(int argc, char **argv)
