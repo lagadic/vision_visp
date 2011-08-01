@@ -8,7 +8,6 @@
 #include <ros/param.h>
 #include <dynamic_reconfigure/server.h>
 #include <image_transport/image_transport.h>
-#include <visp_tracker/CameraParameters.h>
 #include <visp_tracker/Init.h>
 #include <visp_tracker/MovingEdgeConfig.h>
 
@@ -23,6 +22,7 @@
 #include "conversion.hh"
 #include "callbacks.hh"
 #include "file.hh"
+#include "names.hh"
 
 //TODO: synchronize messages for display!
 
@@ -30,12 +30,10 @@ typedef vpImage<unsigned char> image_t;
 
 int main(int argc, char **argv)
 {
-  std::string image_topic;
+  std::string camera_prefix;
+  std::string tracker_prefix;
   std::string model_path;
   std::string model_name;
-  std::string model_configuration;
-  std::string init_service;
-  std::string camera_parameters_service;
   vpMe moving_edge;
 
   bool track = false;
@@ -52,18 +50,24 @@ int main(int argc, char **argv)
   image_transport::ImageTransport it(n);
 
   // Parameters.
-  ros::param::param<std::string>("~image", image_topic, "/camera/image_raw");
+  ros::param::param<std::string>("~camera_prefix", camera_prefix, "");
+  ros::param::param<std::string>("~tracker_prefix",
+				 tracker_prefix,
+				 visp_tracker::default_tracker_prefix);
 
-  ros::param::param<std::string>("~model_path", model_path, "");
+  ros::param::param<std::string>("~model_path", model_path,
+				 visp_tracker::default_model_path);
   ros::param::param<std::string>("~model_name", model_name, "");
-  ros::param::param<std::string>("~model_configuration",
-				 model_configuration, "default");
 
-  ros::param::param<std::string>("~init_service",
-				 init_service, "/tracker_mbt/init_tracker");
-  ros::param::param<std::string>
-    ("~camera_parameters_service",
-     camera_parameters_service, "/tracker_mbt/camera_parameters");
+  // Compute topic and services names.
+  const std::string rectified_image_topic =
+    ros::names::clean(camera_prefix + "/image_rect");
+  const std::string camera_info_topic =
+    ros::names::clean(camera_prefix + "/camera_info");
+
+  const std::string init_service =
+    ros::names::clean(tracker_prefix + "/" + visp_tracker::init_service);
+
 
   visp_tracker::MovingEdgeConfig defaultMovingEdge = 
     visp_tracker::MovingEdgeConfig::__getDefault__();
@@ -94,8 +98,11 @@ int main(int argc, char **argv)
   reconfigureSrv.setCallback(f);
 
   // Camera subscriber.
+  std_msgs::Header header;
+  sensor_msgs::CameraInfoConstPtr info;
   image_transport::CameraSubscriber sub =
-    it.subscribeCamera(image_topic, 100, bindImageCallback(I));
+    it.subscribeCamera(rectified_image_topic, 100,
+		       bindImageCallback(I, header, info));
 
   // Model loading.
   boost::filesystem::path vrml_path =
@@ -138,17 +145,27 @@ int main(int argc, char **argv)
       return 1;
     }
 
+  // Wait for the image to be initialized.
+  ros::Rate loop_rate(10);
+  while (!I.getWidth() || !I.getHeight())
+    {
+      ros::spinOnce();
+      loop_rate.sleep();
+    }
+
   // Tracker initialization.
 
   // - Camera
-  boost::optional<vpCameraParameters> cameraParametersOpt =
-    loadCameraParameters(n, camera_parameters_service);
-  if (!cameraParametersOpt)
+  vpCameraParameters cam;
+  try
     {
-      ROS_ERROR_STREAM("failed to call service camera_parameters");
+      initializeVpCameraFromCameraInfo(cam, info);
+    }
+  catch(std::exception& e)
+    {
+      ROS_ERROR_STREAM("failed to initialize camera: " << e.what());
       return 1;
     }
-  vpCameraParameters cam(*cameraParametersOpt);
   tracker.setCameraParameters(cam);
   tracker.setDisplayMovingEdges(true);
 
@@ -159,14 +176,6 @@ int main(int argc, char **argv)
   // Display camera parameters and moving edges settings.
   ROS_INFO_STREAM(cam);
   moving_edge.print();
-
-  // Wait for the image to be initialized.
-  ros::Rate loop_rate(10);
-  while (!I.getWidth() || !I.getHeight())
-    {
-      ros::spinOnce();
-      loop_rate.sleep();
-    }
 
   vpDisplayX d(I, I.getWidth(), I.getHeight(),
 	       "ViSP MBT tracker initialization");
@@ -225,7 +234,6 @@ int main(int argc, char **argv)
 
   srv.request.model_path.data = model_path;
   srv.request.model_name.data = model_name;
-  srv.request.model_configuration.data = model_configuration;
   vpHomogeneousMatrixToTransform(srv.request.initial_cMo, cMo);
 
   convertVpMeToInitRequest(moving_edge, tracker, srv);

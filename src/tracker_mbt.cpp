@@ -1,3 +1,5 @@
+#include <stdexcept>
+
 #include <ros/ros.h>
 #include <image_transport/image_transport.h>
 #include <ros/param.h>
@@ -5,10 +7,10 @@
 #include <std_msgs/String.h>
 #include <sensor_msgs/Image.h>
 
-#include <visp_tracker/CameraParameters.h>
 #include <visp_tracker/Init.h>
 #include <visp_tracker/MovingEdgeSites.h>
 #include <visp_tracker/TrackingResult.h>
+#include <visp_tracker/TrackingMetaData.h>
 
 #include <boost/bind.hpp>
 #include <visp/vpImage.h>
@@ -19,6 +21,7 @@
 #include "conversion.hh"
 #include "callbacks.hh"
 #include "file.hh"
+#include "names.hh"
 
 // TODO:
 // - add a topic allowing to suggest an estimation of the cMo
@@ -30,9 +33,9 @@ typedef boost::function<bool (visp_tracker::Init::Request&,
 			      visp_tracker::Init::Response& res)>
 init_callback_t;
 
-typedef boost::function<bool (visp_tracker::CameraParameters::Request&,
-			      visp_tracker::CameraParameters::Response& res)>
-camera_parameters_callback_t;
+typedef boost::function<bool (visp_tracker::TrackingMetaData::Request&,
+			      visp_tracker::TrackingMetaData::Response& res)>
+trackingMetaData_callback_t;
 
 enum State
   {
@@ -46,7 +49,6 @@ bool initCallback(State& state,
 		  image_t& image,
 		  std::string& model_path,
 		  std::string& model_name,
-		  std::string& model_configuration,
 		  unsigned long& lastTrackedImage,
 		  visp_tracker::Init::Request& req,
 		  visp_tracker::Init::Response& res)
@@ -56,7 +58,6 @@ bool initCallback(State& state,
   // Update the parameters.
   ros::param::set("model_path", req.model_path.data);
   ros::param::set("model_name", req.model_name.data);
-  ros::param::set("model_configuration", req.model_configuration.data);
 
   ros::param::set("vpme_mask_size", (int)req.moving_edge.mask_size);
   ros::param::set("vpme_n_mask", (int)req.moving_edge.n_mask);
@@ -69,7 +70,6 @@ bool initCallback(State& state,
 
   model_path = req.model_path.data;
   model_name = req.model_name.data;
-  model_configuration = req.model_configuration.data;
 
   // Load moving edges.
   vpMe moving_edge;
@@ -126,24 +126,24 @@ bool initCallback(State& state,
   return true;
 }
 
-bool cameraParametersCallback(const vpCameraParameters& cam,
-			      visp_tracker::CameraParameters::Request& req,
-			      visp_tracker::CameraParameters::Response& res)
+bool trackingMetaDataCallback(const std::string& camera_prefix,
+			      const std::string& model_path,
+			      const std::string& model_name,
+			      visp_tracker::TrackingMetaData::Request&,
+			      visp_tracker::TrackingMetaData::Response& res)
 {
-  ROS_INFO("Camera parameters request received.");
-  res.px = cam.get_px();
-  res.py = cam.get_py();
-  res.u0 = cam.get_u0();
-  res.v0 = cam.get_v0();
+  res.camera_prefix.data = camera_prefix;
+  res.model_path.data = model_path;
+  res.model_name.data = model_name;
   return true;
 }
+
 
 init_callback_t bindInitCallback(State& state,
 				 vpMbEdgeTracker& tracker,
 				 image_t& image,
 				 std::string& model_path,
 				 std::string& model_name,
-				 std::string& model_configuration,
 				 unsigned long& lastTrackedImage)
 {
   return boost::bind(initCallback,
@@ -152,16 +152,22 @@ init_callback_t bindInitCallback(State& state,
 		     boost::ref(image),
 		     boost::ref(model_path),
 		     boost::ref(model_name),
-		     boost::ref(model_configuration),
 		     boost::ref(lastTrackedImage),
 		     _1, _2);
 }
 
-camera_parameters_callback_t
-bindCameraParametersCallback(const vpCameraParameters& cam)
+trackingMetaData_callback_t
+bindTrackingMetaDataCallback(const std::string& camera_prefix,
+			     const std::string& model_path,
+			     const std::string& model_name)
 {
-  return boost::bind(cameraParametersCallback, cam, _1, _2);
+  return boost::bind(trackingMetaDataCallback,
+		     boost::ref(camera_prefix),
+		     boost::ref(model_path),
+		     boost::ref(model_name),
+		     _1, _2);
 }
+
 
 void
 updateMovingEdgeSites(visp_tracker::MovingEdgeSites& sites,
@@ -191,18 +197,14 @@ updateMovingEdgeSites(visp_tracker::MovingEdgeSites& sites,
     }
 }
 
+
 int main(int argc, char **argv)
 {
   State state = WAITING_FOR_INITIALIZATION;
-  std::string image_topic;
-  std::string model_path;
-  std::string model_name;
-  std::string model_configuration;
+  std::string camera_prefix;
+  std::string model_path("");
+  std::string model_name("");
   vpMe moving_edge;
-  double px;
-  double py;
-  double u0;
-  double v0;
 
   image_t I;
 
@@ -212,18 +214,11 @@ int main(int argc, char **argv)
   image_transport::ImageTransport it(n);
 
   // Parameters.
-  ros::param::param<std::string>("~image", image_topic, "/camera/image_raw");
-  ros::param::param<std::string>("model_path", model_path, "");
-  ros::param::param<std::string>("model_name", model_name, "");
-  ros::param::param<std::string>("model_configuration",
-				 model_configuration, "default");
+  ros::param::param<std::string>("~camera_prefix", camera_prefix, "");
 
-  //FIXME: default parameters are just wrong.
-  // - replace by real camera parameters of the rectified camera.
-  ros::param::param("~px", px, 391.1807703);
-  ros::param::param("~py", py, 390.9830219);
-  ros::param::param("~u0", u0, 248.987914);
-  ros::param::param("~v0", v0, 245.2349518);
+  // Compute topic and services names.
+  const std::string rectified_image_topic =
+    ros::names::clean(camera_prefix + "/image_rect");
 
   visp_tracker::MovingEdgeConfig defaultMovingEdge =
     visp_tracker::MovingEdgeConfig::__getDefault__();
@@ -246,17 +241,20 @@ int main(int argc, char **argv)
 
   // Result publisher.
   ros::Publisher result_pub =
-    n.advertise<visp_tracker::TrackingResult>("result", 1000);
+    n.advertise<visp_tracker::TrackingResult>
+    (visp_tracker::result_topic, 1000);
 
   // Moving edge sites publisher.
   ros::Publisher moving_edge_sites_pub =
-    n.advertise<visp_tracker::MovingEdgeSites>("moving_edge_sites", 1000);
+    n.advertise<visp_tracker::MovingEdgeSites>
+    (visp_tracker::moving_edge_sites_topic, 1000);
 
   // Camera subscriber.
   std_msgs::Header header;
   sensor_msgs::CameraInfoConstPtr info;
   image_transport::CameraSubscriber sub =
-    it.subscribeCamera(image_topic, 100, bindImageCallback(I, header, info));
+    it.subscribeCamera(rectified_image_topic, 100,
+		       bindImageCallback(I, header, info));
 
   // Initialization.
   ros::Rate loop_rate(10);
@@ -272,8 +270,24 @@ int main(int argc, char **argv)
 		  boost::ref(moving_edge), _1, _2);
   reconfigureSrv.setCallback(f);
 
+  // Wait for the image to be initialized.
+  while (!I.getWidth() || !I.getHeight())
+    {
+      ros::spinOnce();
+      loop_rate.sleep();
+    }
+
   // Tracker initialization.
-  vpCameraParameters cam(px, py, u0, v0);
+  vpCameraParameters cam;
+  try
+    {
+      initializeVpCameraFromCameraInfo(cam, info);
+    }
+  catch(const std::exception& e)
+    {
+      ROS_ERROR_STREAM("failed to initialize camera: " << e.what());
+      return 1;
+    }
   tracker.setCameraParameters(cam);
   tracker.setDisplayMovingEdges(false);
 
@@ -282,23 +296,18 @@ int main(int argc, char **argv)
   // Service declaration.
   unsigned long lastTrackedImage = 0;
 
-  ros::ServiceServer service = n.advertiseService
-    ("init_tracker",
+  ros::ServiceServer initService = n.advertiseService
+    (visp_tracker::init_service,
      bindInitCallback(state, tracker, I,
-		      model_path, model_name, model_configuration,
+		      model_path, model_name,
 		      lastTrackedImage));
 
-  ros::ServiceServer serviceCameraParameters = n.advertiseService
-    ("camera_parameters",
-     bindCameraParametersCallback(cam));
+  ros::ServiceServer trackingMetaDataService = n.advertiseService
+    (visp_tracker::tracking_meta_data_service,
+     bindTrackingMetaDataCallback(boost::ref(camera_prefix),
+				  boost::ref(model_path),
+				  boost::ref(model_name)));
 
-
-  // Wait for the image to be initialized.
-  while (!I.getWidth() || !I.getHeight())
-    {
-      ros::spinOnce();
-      loop_rate.sleep();
-    }
 
   // Main loop.
   ros::Rate loop_rate_tracking(200);

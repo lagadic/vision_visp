@@ -24,11 +24,19 @@ rosbuild_find_ros_package(dynamic_reconfigure)
 include(${dynamic_reconfigure_PACKAGE_PATH}/cmake/cfgbuild.cmake)
 gencfg()
 
+# Generate names.cpp.
+configure_file(
+  "${CMAKE_SOURCE_DIR}/src/names.cpp.in"
+  "${CMAKE_BINARY_DIR}/src/names.cpp"
+  @ONLY)
+include_directories("${CMAKE_SOURCE_DIR}/src")
+
 # Library gathering tools used by both server and client.
 rosbuild_add_library(tools
   src/conversion.cpp
   src/callbacks.cpp
-  src/file.cpp)
+  src/file.cpp
+  "${CMAKE_BINARY_DIR}/src/names.cpp")
 target_link_libraries(tools visp-2)
 
 # Node

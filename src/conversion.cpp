@@ -9,7 +9,6 @@
 #include <sensor_msgs/Image.h>
 #include <sensor_msgs/image_encodings.h>
 
-#include <visp_tracker/CameraParameters.h>
 
 #include <visp/vpImage.h>
 
@@ -119,22 +118,6 @@ void transformToVpHomogeneousMatrix(vpHomogeneousMatrix& dst,
   dst[2][3] = src.translation.z;
 }
 
-boost::optional<vpCameraParameters>
-loadCameraParameters(ros::NodeHandle& n,
-		     const std::string& camera_parameters_service)
-{
-  ros::ServiceClient client =
-    n.serviceClient<visp_tracker::CameraParameters>(camera_parameters_service);
-
-  visp_tracker::CameraParameters srv;
-  if (!client.call(srv))
-      return boost::none;
-  return vpCameraParameters(srv.response.px,
-			    srv.response.py,
-			    srv.response.u0,
-			    srv.response.v0);
-}
-
 void convertMovingEdgeConfigToVpMe(const visp_tracker::MovingEdgeConfig& config,
 				   vpMe& moving_edge,
 				   vpMbEdgeTracker& tracker)
@@ -199,4 +182,18 @@ void convertInitRequestToVpMe(const visp_tracker::Init::Request& req,
 
   tracker.setLambda(req.moving_edge.lambda);
   tracker.setFirstThreshold(req.moving_edge.first_threshold);
+}
+
+void initializeVpCameraFromCameraInfo(vpCameraParameters& cam,
+				      sensor_msgs::CameraInfoConstPtr info)
+{
+  if (!info || info->P.size() != 3 * 4)
+    throw std::runtime_error
+      ("camera calibration P matrix has an incorrect size");
+
+  const double& px = info->P[0 * 4 + 0];
+  const double& py = info->P[1 * 4 + 1];
+  const double& u0 = info->P[0 * 4 + 2];
+  const double& v0 = info->P[1 * 4 + 2];
+  cam.initPersProjWithoutDistortion(px, py, u0, v0);
 }

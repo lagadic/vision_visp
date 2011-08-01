@@ -1,0 +1,4 @@
+---
+std_msgs/String camera_prefix
+std_msgs/String model_path
+std_msgs/String model_name

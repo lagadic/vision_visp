@@ -6,6 +6,7 @@
 
 # include <geometry_msgs/Transform.h>
 # include <sensor_msgs/Image.h>
+# include <sensor_msgs/CameraInfo.h>
 
 # include <visp/vpHomogeneousMatrix.h>
 # include <visp/vpCameraParameters.h>
@@ -48,10 +49,6 @@ void vpHomogeneousMatrixToTransform(geometry_msgs::Transform& dst,
 void transformToVpHomogeneousMatrix(vpHomogeneousMatrix& dst,
 				    const geometry_msgs::Transform& src);
 
-boost::optional<vpCameraParameters>
-loadCameraParameters(ros::NodeHandle& n,
-		     const std::string& camera_parameters_service);
-
 void convertMovingEdgeConfigToVpMe(const visp_tracker::MovingEdgeConfig& config,
 				   vpMe& moving_edge,
 				   vpMbEdgeTracker& tracker);
@@ -62,5 +59,8 @@ void convertVpMeToInitRequest(const vpMe& moving_edge,
 void convertInitRequestToVpMe(const visp_tracker::Init::Request& req,
 			      vpMbEdgeTracker& tracker,
 			      vpMe& moving_edge);
+
+void initializeVpCameraFromCameraInfo(vpCameraParameters& cam,
+				      sensor_msgs::CameraInfoConstPtr info);
 
 #endif //! VISP_TRACKER_CONVERSION_HH

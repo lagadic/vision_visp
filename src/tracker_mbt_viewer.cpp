@@ -19,23 +19,28 @@
 
 #include <visp_tracker/MovingEdgeSites.h>
 #include <visp_tracker/TrackingResult.h>
+#include <visp_tracker/TrackingMetaData.h>
 
 #include "conversion.hh"
 #include "callbacks.hh"
 #include "file.hh"
+#include "names.hh"
 
 typedef vpImage<unsigned char> image_t;
 
 typedef message_filters::sync_policies::ApproximateTime<
-  sensor_msgs::Image, visp_tracker::TrackingResult, visp_tracker::MovingEdgeSites
+  sensor_msgs::Image, sensor_msgs::CameraInfo,
+  visp_tracker::TrackingResult, visp_tracker::MovingEdgeSites
   > syncPolicy_t;
 
 
 void callback(image_t& image,
+	      sensor_msgs::CameraInfoConstPtr& info,
 	      boost::optional<vpHomogeneousMatrix>& cMo,
 	      visp_tracker::MovingEdgeSites::ConstPtr& sites,
 
 	      const sensor_msgs::ImageConstPtr& imageConst,
+	      const sensor_msgs::CameraInfoConstPtr& infoConst,
 	      const visp_tracker::TrackingResult::ConstPtr& trackingResult,
 	      const visp_tracker::MovingEdgeSites::ConstPtr& sitesConst)
 {
@@ -49,7 +54,8 @@ void callback(image_t& image,
       ROS_ERROR_STREAM("dropping frame: " << e.what());
     }
 
-  // Copy moving edges sites.
+  // Copy moving camera infos and edges sites.
+  info = infoConst;
   sites = sitesConst;
 
   // Copy cMo.
@@ -75,8 +81,8 @@ checkInputsSynchronized(unsigned& allReceived,
       || movingEdgeSitesReceived > threshold)
     {
       ROS_WARN
-	("[visp_tracker] Low number of synchronized triplets"
-	 "image/result/moving edge received.\n"
+	("[visp_tracker] Low number of synchronized tuples"
+	 "image/camera info/result/moving edge received.\n"
 	 "Images received: %d\n"
 	 "Results received: %d\n"
 	 "Moving edges received: %d\n"
@@ -126,16 +132,7 @@ displayMovingEdgeSites(image_t& I,
 
 int main(int argc, char **argv)
 {
-  std::string image_topic;
-
-  std::string model_path;
-  std::string model_name;
-  std::string model_configuration;
-
-  std::string camera_parameters_service;
-
-  std::string tracker_result;
-  std::string moving_edge_sites;
+  std::string tracker_prefix;
 
   image_t I;
 
@@ -145,29 +142,44 @@ int main(int argc, char **argv)
   image_transport::ImageTransport it(n);
 
   // Parameters.
-  ros::param::param<std::string>("~image", image_topic, "/camera/image_raw");
+  ros::param::param<std::string>("~tracker_prefix",
+				 tracker_prefix,
+				 visp_tracker::default_tracker_prefix);
 
-  ros::param::param<std::string>("~model_path", model_path, "");
-  ros::param::param<std::string>("~model_name", model_name, "");
-  ros::param::param<std::string>("~model_configuration",
-				 model_configuration, "default");
+  // Get meta-data.
+  //FIXME: we suppose here that these info cannot change at runtime.
+  const std::string tracking_meta_data_service =
+    ros::names::clean
+    (tracker_prefix + "/" + visp_tracker::tracking_meta_data_service);
 
-  ros::param::param<std::string>
-    ("~camera_parameters_service",
-     camera_parameters_service, "/tracker_mbt/camera_parameters");
+  ros::ServiceClient client = n.serviceClient<visp_tracker::TrackingMetaData>
+    (tracking_meta_data_service);
+  visp_tracker::TrackingMetaData srv;
+  if (!client.call(srv))
+    {
+      ROS_ERROR_STREAM("failed to retrieve tracking meta-data.");
+      return 1;
+    }
 
-  ros::param::param<std::string>("~tracker_result",
-				 tracker_result, "/tracker_mbt/result");
-  ros::param::param<std::string>
-    ("~moving_edge_sites",
-     moving_edge_sites, "/tracker_mbt/moving_edge_sites");
+  // Compute topic and services names.
+  const std::string rectified_image_topic =
+    ros::names::clean(srv.response.camera_prefix.data + "/image_rect");
+  const std::string camera_info_topic =
+    ros::names::clean(srv.response.camera_prefix.data + "/camera_info");
+
+  const std::string result_topic =
+    ros::names::clean(tracker_prefix + "/" + visp_tracker::result_topic);
+  const std::string moving_edge_sites_topic =
+    ros::names::clean
+    (tracker_prefix + "/" + visp_tracker::moving_edge_sites_topic);
 
   // Tracker initialization.
   vpMbEdgeTracker tracker;
 
   // Model loading.
   boost::filesystem::path vrml_path =
-    getModelFileFromModelName(model_name, model_path);
+    getModelFileFromModelName(srv.response.model_name.data,
+			      srv.response.model_path.data);
 
   ROS_INFO_STREAM("VRML file: " << vrml_path);
 
@@ -183,36 +195,30 @@ int main(int argc, char **argv)
     }
   ROS_INFO("Model has been successfully loaded.");
 
-  // Camera.
-  boost::optional<vpCameraParameters> cameraParametersOpt =
-    loadCameraParameters(n, camera_parameters_service);
-  if (!cameraParametersOpt)
-    {
-      ROS_ERROR_STREAM("failed to call service camera_parameters");
-      return 1;
-    }
-  vpCameraParameters cam(*cameraParametersOpt);
-  tracker.setCameraParameters(cam);
-  tracker.setDisplayMovingEdges(true);
-
   // Subscribe to camera and tracker synchronously.
+  sensor_msgs::CameraInfoConstPtr info;
   boost::optional<vpHomogeneousMatrix> cMo;
   visp_tracker::MovingEdgeSites::ConstPtr sites;
 
   image_transport::SubscriberFilter imageSub
-    (it, image_topic, 100);
+    (it, rectified_image_topic, 100);
+  message_filters::Subscriber<sensor_msgs::CameraInfo> cameraInfoSub
+    (n, camera_info_topic, 100);
   message_filters::Subscriber<visp_tracker::TrackingResult> trackingResultSub
-    (n, tracker_result, 100);
+    (n, result_topic, 100);
   message_filters::Subscriber<visp_tracker::MovingEdgeSites>
-    movingEdgeSitesSub(n, moving_edge_sites, 100);
+    movingEdgeSitesSub(n, moving_edge_sites_topic, 100);
 
   message_filters::Synchronizer<syncPolicy_t> sync
-    (syncPolicy_t(100), imageSub, trackingResultSub, movingEdgeSitesSub);
+    (syncPolicy_t(100),
+     imageSub, cameraInfoSub,
+     trackingResultSub, movingEdgeSitesSub);
 
   sync.registerCallback
     (boost::bind(callback,
-		 boost::ref(I), boost::ref(cMo), boost::ref(sites),
-		 _1, _2, _3));
+		 boost::ref(I), boost::ref(info),
+		 boost::ref(cMo), boost::ref(sites),
+		 _1, _2, _3, _4));
 
   // Trigger a warning if no synchronized triplets are received during 30s.
   unsigned allReceived = 0;
@@ -228,7 +234,6 @@ int main(int argc, char **argv)
 		 resultReceived,
 		 movingEdgeSitesReceived));
 
-
   // Wait for the image to be initialized.
   ros::Rate loop_rate(10);
   while (!I.getWidth() || !I.getHeight())
@@ -236,6 +241,21 @@ int main(int argc, char **argv)
       ros::spinOnce();
       loop_rate.sleep();
     }
+
+
+  // Camera.
+  vpCameraParameters cam;
+  try
+    {
+      initializeVpCameraFromCameraInfo(cam, info);
+    }
+  catch(std::exception& e)
+    {
+      ROS_ERROR_STREAM("failed to initialize camera: " << e.what());
+      return 1;
+    }
+  tracker.setCameraParameters(cam);
+  tracker.setDisplayMovingEdges(true);
 
   vpDisplayX d(I, I.getWidth(), I.getHeight(), "ViSP MBT tracker (viewer)");
   vpImagePoint point (10, 10);

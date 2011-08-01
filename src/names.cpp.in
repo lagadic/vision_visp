@@ -1,0 +1,12 @@
+#include "names.hh"
+
+namespace visp_tracker
+{
+  std::string default_tracker_prefix("/tracker_mbt");
+  std::string result_topic("result");
+  std::string moving_edge_sites_topic("moving_edge_sites");
+  std::string init_service("init_tracker");
+  std::string tracking_meta_data_service("tracking_meta_data");
+
+  std::string default_model_path("@PROJECT_SOURCE_DIR@/models");
+} // end of namespace visp_tracker;
