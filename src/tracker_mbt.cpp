@@ -1,5 +1,7 @@
 #include <stdexcept>
 
+#include <boost/scope_exit.hpp>
+
 #include <ros/ros.h>
 #include <image_transport/image_transport.h>
 #include <ros/param.h>
@@ -55,6 +57,22 @@ bool initCallback(State& state,
 {
   ROS_INFO("Initialization request received.");
 
+  res.initialization_succeed = false;
+
+  // If something goes wrong, rollback all changes.
+  BOOST_SCOPE_EXIT((&res)(&tracker)(&state)
+		   (&lastTrackedImage)(&model_path)(&model_name))
+    {
+      if(!res.initialization_succeed)
+	{
+	  tracker.resetTracker();
+	  state = WAITING_FOR_INITIALIZATION;
+	  lastTrackedImage = 0;
+	  model_path = "";
+	  model_name = "";
+	}
+    } BOOST_SCOPE_EXIT_END
+
   // Update the parameters.
   ros::param::set("model_path", req.model_path.data);
   ros::param::set("model_name", req.model_name.data);
@@ -95,9 +113,7 @@ bool initCallback(State& state,
     }
   catch(...)
     {
-      //FIXME: revert model_path, etc. here.
       ROS_ERROR_STREAM("Failed to load the model: " << model_path.c_str());
-      res.initialization_succeed = false;
       return true;
     }
   ROS_DEBUG("Model has been successfully loaded.");
@@ -108,8 +124,6 @@ bool initCallback(State& state,
 
   // Try to initialize the tracker.
   ROS_INFO_STREAM("Initializing tracker with cMo:\n" << cMo);
-  res.initialization_succeed = true;
-  state = TRACKING;
   try
     {
       tracker.init(image, cMo);
@@ -117,12 +131,14 @@ bool initCallback(State& state,
 
       moving_edge.print();
     }
-  catch(...)
+  catch(const std::string& str)
     {
-      state = WAITING_FOR_INITIALIZATION;
-      res.initialization_succeed = false;
-      ROS_ERROR("Tracker initialization has failed.");
+      ROS_ERROR_STREAM("Tracker initialization has failed: " << str);
     }
+
+  // Initialization is valid.
+  res.initialization_succeed = true;
+  state = TRACKING;
   return true;
 }
 
