@@ -1,9 +1,0 @@
-<launch>
-  <machine name="hrp2v"
-	   address="localhost"
-	   default="true" />
-
-  <machine name="hrp2c"
-	   address="localhost"
-	   default="false" />
-</launch>

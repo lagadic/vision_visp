@@ -1,0 +1,13 @@
+<launch>
+  <node pkg="rosbag" type="rosbag" name="rosbag"
+        args="play $(find visp_tracker)/bag/tutorial-static-box.bag -l"/>
+
+  <node pkg="visp_tracker" type="tracker_mbt" name="tracker">
+    <param name="camera_prefix" value="/wide_left/camera" />
+  </node>
+
+  <node pkg="visp_tracker" type="tracker_mbt_client" name="tracker_client">
+    <param name="camera_prefix" value="/wide_left/camera" />
+    <param name="model_name" value="laas-box" />
+  </node>
+</launch>

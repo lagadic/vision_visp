@@ -15,7 +15,7 @@
   <depend package="sensor_msgs"/>
   <depend package="image_transport"/>
   <depend package="geometry_msgs"/>
-
+  <depend package="rosbag"/>
   <depend package="dynamic_reconfigure"/>
 
   <depend package="opencv2"/>

@@ -1,13 +1,2 @@
 <launch>
-  <machine name="hrp2v"
-	   address="hrp2014v.laas.fr"
-	   ros-root="/opt/ros/diamondback/ros"
-	   ros-package-path="/home/tmoulard/ros/stacks/hrp2/hrp2_common:/home/tmoulard/ros/stacks:/opt/ros/diamondback/stacks"
-	   user="tmoulard"
-	   default="true" />
-
-  <machine name="hrp2c"
-	   address="hrp2014c.laas.fr"
-	   user="tmoulard"
-	   default="false" />
 </launch>
