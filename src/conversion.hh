@@ -63,4 +63,21 @@ void convertInitRequestToVpMe(const visp_tracker::Init::Request& req,
 void initializeVpCameraFromCameraInfo(vpCameraParameters& cam,
 				      sensor_msgs::CameraInfoConstPtr info);
 
+
+class Image : public vpImage<unsigned char>
+{
+public:
+  Image()
+    : vpImage<unsigned char>(),
+      ptr_()
+  {}
+
+  virtual ~Image()
+  {}
+
+  void setData(sensor_msgs::Image::ConstPtr ptr);
+private:
+    sensor_msgs::Image::ConstPtr ptr_;
+};
+
 #endif //! VISP_TRACKER_CONVERSION_HH

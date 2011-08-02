@@ -26,7 +26,7 @@
 #include "file.hh"
 #include "names.hh"
 
-typedef vpImage<unsigned char> image_t;
+typedef Image image_t;
 
 typedef message_filters::sync_policies::ApproximateTime<
   sensor_msgs::Image, sensor_msgs::CameraInfo,

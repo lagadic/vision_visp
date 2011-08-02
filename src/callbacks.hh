@@ -9,24 +9,26 @@
 
 # include <visp_tracker/MovingEdgeConfig.h>
 
+# include "conversion.hh"
+
 
 void
-imageCallback(vpImage<unsigned char>& image,
+imageCallback(Image& image,
 	      const sensor_msgs::Image::ConstPtr& msg,
 	      const sensor_msgs::CameraInfoConstPtr& info);
 
 void
-imageCallback(vpImage<unsigned char>& image,
+imageCallback(Image& image,
 	      std_msgs::Header& header,
 	      sensor_msgs::CameraInfoConstPtr& info,
 	      const sensor_msgs::Image::ConstPtr& msg,
 	      const sensor_msgs::CameraInfoConstPtr& infoConst);
 
 image_transport::CameraSubscriber::Callback
-bindImageCallback(vpImage<unsigned char>& image);
+bindImageCallback(Image& image);
 
 image_transport::CameraSubscriber::Callback
-bindImageCallback(vpImage<unsigned char>& image,
+bindImageCallback(Image& image,
 		  std_msgs::Header& header,
 		  sensor_msgs::CameraInfoConstPtr& info);
 
