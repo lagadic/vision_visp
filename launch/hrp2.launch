@@ -1,3 +1,10 @@
+<!--
+   WARNING: this launch file is specific to the LAAS HRP-2 robot.
+   It will not work on any other robot.
+
+   You may, although, fork the hrp2014 directory and this file to
+   create an alternate launch file for your robot.
+  -->
 <launch>
   <include file="$(find visp_tracker)/launch/$(env ROBOT)/config.launch"/>
   <include file="$(find visp_tracker)/launch/$(env ROBOT)/camera-nodelet.launch"/>
