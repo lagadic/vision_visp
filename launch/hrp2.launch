@@ -1,4 +1,4 @@
 <launch>
   <include file="$(find visp_tracker)/launch/$(env ROBOT)/config.launch"/>
-  <include file="$(find visp_tracker)/launch/$(env ROBOT)/camera.launch"/>
+  <include file="$(find visp_tracker)/launch/$(env ROBOT)/camera-nodelet.launch"/>
 </launch>
