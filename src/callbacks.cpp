@@ -8,13 +8,13 @@
 
 #include "callbacks.hh"
 
-void imageCallback(Image& image,
+void imageCallback(vpImage<unsigned char>& image,
 		   const sensor_msgs::Image::ConstPtr& msg,
 		   const sensor_msgs::CameraInfoConstPtr& info)
 {
   try
     {
-      image.setData(msg);
+      rosImageToVisp(image, msg);
     }
   catch(std::exception& e)
     {
@@ -22,7 +22,7 @@ void imageCallback(Image& image,
     }
 }
 
-void imageCallback(Image& image,
+void imageCallback(vpImage<unsigned char>& image,
 		   std_msgs::Header& header,
 		   sensor_msgs::CameraInfoConstPtr& info,
 		   const sensor_msgs::Image::ConstPtr& msg,
@@ -34,13 +34,13 @@ void imageCallback(Image& image,
 }
 
 image_transport::CameraSubscriber::Callback
-bindImageCallback(Image& image)
+bindImageCallback(vpImage<unsigned char>& image)
 {
   return boost::bind(imageCallback, boost::ref(image), _1, _2);
 }
 
 image_transport::CameraSubscriber::Callback
-bindImageCallback(Image& image,
+bindImageCallback(vpImage<unsigned char>& image,
 		  std_msgs::Header& header,
 		  sensor_msgs::CameraInfoConstPtr& info)
 {

@@ -29,7 +29,7 @@
 // - add a topic allowing to suggest an estimation of the cMo
 // - handle automatic reset when tracking is lost.
 
-typedef Image image_t;
+typedef vpImage<unsigned char> image_t;
 
 typedef boost::function<bool (visp_tracker::Init::Request&,
 			      visp_tracker::Init::Response& res)>

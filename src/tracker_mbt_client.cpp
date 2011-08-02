@@ -28,7 +28,7 @@
 #include "file.hh"
 #include "names.hh"
 
-typedef Image image_t;
+typedef vpImage<unsigned char> image_t;
 
 vpHomogeneousMatrix loadInitialPose(const std::string& model_path,
 				    const std::string& model_name)

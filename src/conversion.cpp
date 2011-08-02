@@ -197,18 +197,3 @@ void initializeVpCameraFromCameraInfo(vpCameraParameters& cam,
   const double& v0 = info->P[1 * 4 + 2];
   cam.initPersProjWithoutDistortion(px, py, u0, v0);
 }
-
-
-void Image::setData(sensor_msgs::Image::ConstPtr ptr)
-{
-  using sensor_msgs::image_encodings::MONO8;
-
-  if (!ptr)
-    return;
-
-  ptr_ = ptr;
-  if (ptr->encoding == MONO8)
-    bitmap = const_cast<unsigned char*>(&ptr->data[0]);
-  else
-    rosImageToVisp(*this, ptr);
-}
