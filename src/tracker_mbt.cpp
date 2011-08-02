@@ -348,9 +348,8 @@ int main(int argc, char **argv)
 	    if (state == TRACKING)
 	      try
 		{
-
-	    tracker.track(I);
-	    tracker.getPose(cMo);
+		  tracker.track(I);
+		  tracker.getPose(cMo);
 		}
 	      catch(...)
 		{

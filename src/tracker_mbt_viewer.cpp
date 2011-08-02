@@ -260,6 +260,8 @@ int main(int argc, char **argv)
     {
       ros::spinOnce();
       loop_rate.sleep();
+      if (!ros::ok())
+	exit(1);
     }
 
 
@@ -301,5 +303,7 @@ int main(int argc, char **argv)
 
       ros::spinOnce();
       loop_rate.sleep();
+      if (!ros::ok())
+	exit(1);
     }
 }

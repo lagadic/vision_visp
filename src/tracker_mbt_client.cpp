@@ -139,6 +139,8 @@ void initPoint(unsigned& i,
       vpDisplay::flush(I);
       ros::spinOnce();
       rate.sleep();
+      if (!ros::ok())
+	exit(1);
     }
   while(!vpDisplay::getClick(I, ip, button, false));
 
@@ -176,6 +178,8 @@ void initClick(vpMbEdgeTracker& tracker,
       vpDisplay::flush(I);
       ros::spinOnce();
       loop_rate.sleep();
+      if (!ros::ok())
+	exit(1);
     }
   while(!vpDisplay::getClick(I, ip, button, false));
 
@@ -223,6 +227,8 @@ void initClick(vpMbEdgeTracker& tracker,
 	  vpDisplay::flush(I);
 	  ros::spinOnce();
 	  loop_rate.sleep();
+	  if (!ros::ok())
+	    exit(1);
 	}
       while(!vpDisplay::getClick(I, ip, button, false));
 
@@ -361,6 +367,8 @@ int main(int argc, char **argv)
     {
       ros::spinOnce();
       loop_rate.sleep();
+      if (!ros::ok())
+	exit(1);
     }
 
   // Tracker initialization.
@@ -424,6 +432,8 @@ int main(int argc, char **argv)
 
 	      ros::spinOnce();
 	      loop_rate_tracking.sleep();
+	      if (!ros::ok())
+		exit(1);
 	    }
 	  while(!vpDisplay::getClick(I, ip, button, false));
 	  ok = true;
