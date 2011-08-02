@@ -2,6 +2,8 @@
 #include <fstream>
 
 #include <boost/filesystem.hpp>
+#include <boost/filesystem/fstream.hpp>
+#include <boost/format.hpp>
 #include <boost/optional.hpp>
 
 #include <ros/ros.h>
@@ -12,6 +14,8 @@
 #include <visp_tracker/MovingEdgeConfig.h>
 
 #include <visp/vpMe.h>
+#include <visp/vpPixelMeterConversion.h>
+#include <visp/vpPose.h>
 
 #define protected public
 #include <visp/vpMbEdgeTracker.h>
@@ -24,9 +28,215 @@
 #include "file.hh"
 #include "names.hh"
 
-//TODO: synchronize messages for display!
-
 typedef vpImage<unsigned char> image_t;
+
+vpHomogeneousMatrix loadInitialPose(const std::string& model_path,
+				    const std::string& model_name)
+{
+  vpHomogeneousMatrix cMo;
+  cMo.eye();
+
+  boost::filesystem::path initial_pose =
+    getInitialPoseFileFromModelName(model_name, model_path);
+  boost::filesystem::ifstream file(initial_pose);
+  if (!file.good())
+    {
+      ROS_WARN_STREAM("failed to load initial pose: " << initial_pose << "\n"
+		      << "using identity as initial pose");
+      return cMo;
+    }
+
+  vpPoseVector pose;
+  for (unsigned i = 0; i < 6; ++i)
+    if (file.good())
+      file >> pose[i];
+    else
+      {
+	std::cout << i << std::endl;
+	ROS_WARN("failed to parse initial pose file");
+	cMo.eye();
+	return cMo;
+      }
+  cMo.buildFrom(pose);
+  return cMo;
+}
+
+void saveInitialPose(const vpHomogeneousMatrix& cMo,
+		     const std::string& model_path,
+		     const std::string& model_name)
+{
+  boost::filesystem::path initial_pose =
+    getInitialPoseFileFromModelName(model_name, model_path);
+  boost::filesystem::ofstream file(initial_pose);
+  if (!file.good())
+    {
+      ROS_WARN_STREAM("failed to save initial pose: " << initial_pose);
+      return;
+    }
+  
+  vpPoseVector pose;
+  pose.buildFrom(cMo);
+  file << pose;
+}
+
+std::vector<vpPoint> loadInitializationPoints(const std::string& model_path,
+					      const std::string& model_name)
+{
+  std::vector<vpPoint> points;
+
+  boost::filesystem::path init =
+    getInitFileFromModelName(model_name, model_path);
+  boost::filesystem::ifstream file(init);
+  if (!file.good())
+    {
+      boost::format fmt("failed to load initialization points: %1");
+      fmt % init;
+      throw std::runtime_error(fmt.str());
+    }
+ 
+  unsigned npoints = 0;
+  file >> npoints;
+  if (!file.good())
+    throw std::runtime_error("failed to read initialization file");
+
+  double X = 0., Y = 0., Z = 0.;
+  vpPoint point;
+  for (unsigned i = 0; i < npoints; ++i)
+    {
+      if (!file.good())
+	throw std::runtime_error("failed to read initialization file");
+      file >> X >> Y >> Z;
+      point.setWorldCoordinates(X,Y,Z);
+      points.push_back(point);
+    }
+  return points;
+}
+
+void initPoint(unsigned& i,
+	       std::vector<vpPoint>& points,
+	       std::vector<vpImagePoint>& imagePoints,
+	       ros::Rate& rate, image_t& I,
+	       vpPose& pose, vpCameraParameters& cam)
+{
+  vpImagePoint ip;
+  double x = 0., y = 0.;
+  boost::format fmt("click on point %u/%u");
+  fmt % (i + 1) % points.size(); // list points from 1 to n.
+
+  // Click on the point.
+  vpMouseButton::vpMouseButtonType button = vpMouseButton::button1;
+  do
+    {
+      vpDisplay::display(I);
+      vpDisplay::displayCharString
+	(I, 15, 10,
+	 fmt.str().c_str(),
+	 vpColor::red);
+
+      for (unsigned j = 0; j < imagePoints.size(); ++j)
+	vpDisplay::displayCross(I, imagePoints[j], 5, vpColor::green);
+
+      vpDisplay::flush(I);
+      ros::spinOnce();
+      rate.sleep();
+    }
+  while(!vpDisplay::getClick(I, ip, button, false));
+
+  imagePoints.push_back(ip);
+  vpPixelMeterConversion::convertPoint(cam, ip, x, y);
+  points[i].set_x(x);
+  points[i].set_y(y);
+  pose.addPoint(points[i]);
+}
+
+void initClick(vpMbEdgeTracker& tracker,
+	       image_t& I,
+	       vpCameraParameters& cam,
+	       const std::string& model_path,
+	       const std::string& model_name)
+{
+  ros::Rate loop_rate(200);
+  vpHomogeneousMatrix cMo;
+  vpImagePoint point (10, 10);
+
+  cMo = loadInitialPose(model_path, model_name);
+
+  // Show last cMo.
+  vpImagePoint ip;
+  vpMouseButton::vpMouseButtonType button = vpMouseButton::button1;
+  do
+    {
+      vpDisplay::display(I);
+      tracker.display(I, cMo, cam, vpColor::green);
+      vpDisplay::displayFrame(I, cMo, cam, 0.05, vpColor::green);
+      vpDisplay::displayCharString
+	(I, 15, 10,
+	 "left click to validate, right click to modify initial pose",
+	 vpColor::red);
+      vpDisplay::flush(I);
+      ros::spinOnce();
+      loop_rate.sleep();
+    }
+  while(!vpDisplay::getClick(I, ip, button, false));
+
+  if(button == vpMouseButton::button1)
+    {
+      tracker.init(I, cMo);
+      return;
+    }
+
+  std::vector<vpPoint> points =
+    loadInitializationPoints(model_path, model_name);
+  std::vector<vpImagePoint> imagePoints;
+
+  vpPose pose;
+  pose.clearPoint();
+  bool done = false;
+  while (!done)
+    {
+      // Initialize points.
+      for(unsigned i = 0; i < points.size(); ++i)
+	initPoint(i, points, imagePoints, loop_rate, I, pose, cam);
+
+      // Compute initial pose.
+      vpHomogeneousMatrix cMo1, cMo2;
+      pose.computePose(vpPose::LAGRANGE, cMo1);
+      double d1 = pose.computeResidual(cMo1);
+      pose.computePose(vpPose::DEMENTHON, cMo2);
+      double d2 = pose.computeResidual(cMo2);
+
+      if(d1 < d2)
+	cMo = cMo1;
+      else
+	cMo = cMo2;
+      pose.computePose(vpPose::VIRTUAL_VS, cMo);
+
+      // Confirm result.
+      do
+	{
+	  vpDisplay::display(I);
+	  tracker.display(I, cMo, cam, vpColor::green);
+	  vpDisplay::displayCharString
+	    (I, 15, 10,
+	     "left click to validate, right click to re initialize object",
+	     vpColor::red);
+	  vpDisplay::flush(I);
+	  ros::spinOnce();
+	  loop_rate.sleep();
+	}
+      while(!vpDisplay::getClick(I, ip, button, false));
+
+      if(button != vpMouseButton::button1)
+	{
+	  pose.clearPoint();
+	  imagePoints.clear();
+	}
+      else
+	done = true;
+    }
+  tracker.init(I, cMo);
+  saveInitialPose(cMo, model_path, model_name);
+}
 
 int main(int argc, char **argv)
 {
@@ -69,7 +279,7 @@ int main(int argc, char **argv)
     ros::names::clean(tracker_prefix + "/" + visp_tracker::init_service);
 
 
-  visp_tracker::MovingEdgeConfig defaultMovingEdge = 
+  visp_tracker::MovingEdgeConfig defaultMovingEdge =
     visp_tracker::MovingEdgeConfig::__getDefault__();
   ros::param::param("~vpme_mask_size", moving_edge.mask_size,
 		    defaultMovingEdge.mask_size);
@@ -193,28 +403,29 @@ int main(int argc, char **argv)
 	  vpDisplay::flush(I);
 	  std::string init_file
 	    (init_path.replace_extension().external_file_string());
-	  tracker.initClick(I, init_file.c_str());
+	  initClick(tracker, I, cam, model_path, model_name);
 	  tracker.getPose(cMo);
 
 	  ROS_INFO_STREAM("initial pose [tx,ty,tz,tux,tuy,tuz]:\n"
 			  << vpPoseVector(cMo));
 
 	  // Track once to make sure initialization is correct.
+	  vpImagePoint ip;
+	  vpMouseButton::vpMouseButtonType button = vpMouseButton::button1;
 	  do
 	    {
 	      vpDisplay::display(I);
 	      tracker.track(I);
 	      tracker.display(I, cMo, cam, vpColor::red, 2);
 	      vpDisplay::displayCharString
-		(I, point, "first tracking", vpColor::red);
+		(I, point, "tracking, click to initialize tracker", vpColor::red);
 	      vpDisplay::flush(I);
 	      tracker.getPose(cMo);
 
 	      ros::spinOnce();
 	      loop_rate_tracking.sleep();
 	    }
-	  while (track);
-	  vpDisplay::getClick(I);
+	  while(!vpDisplay::getClick(I, ip, button, false));
 	  ok = true;
 	}
       catch(const std::string& str)

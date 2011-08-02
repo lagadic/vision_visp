@@ -33,3 +33,13 @@ getConfigurationFileFromModelName (const std::string& modelName,
   res /= modelName + ".xml";
   return res;
 }
+
+boost::filesystem::path
+getInitialPoseFileFromModelName (const std::string& modelName,
+				 const std::string& defaultPath)
+{
+  boost::filesystem::path res(defaultPath);
+  res /= modelName;
+  res /= modelName + ".0.pos";
+  return res;
+}

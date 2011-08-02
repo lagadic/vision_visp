@@ -20,4 +20,8 @@ boost::filesystem::path
 getConfigurationFileFromModelName(const std::string& modelName,
 				  const std::string& defaultPath);
 
+boost::filesystem::path
+getInitialPoseFileFromModelName (const std::string& modelName,
+				 const std::string& defaultPath);
+
 #endif //! VISP_TRACKER_FILE_HH

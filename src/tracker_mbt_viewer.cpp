@@ -33,6 +33,13 @@ typedef message_filters::sync_policies::ApproximateTime<
   visp_tracker::TrackingResult, visp_tracker::MovingEdgeSites
   > syncPolicy_t;
 
+namespace
+{
+  void increment(unsigned int* value)
+  {
+    ++(*value);
+  }
+} // end of anonymous namespace.
 
 void callback(image_t& image,
 	      sensor_msgs::CameraInfoConstPtr& info,
@@ -71,12 +78,14 @@ void callback(image_t& image,
 void
 checkInputsSynchronized(unsigned& allReceived,
 			unsigned& imageReceived,
+			unsigned& cameraInfoReceived,
 			unsigned& resultReceived,
 			unsigned& movingEdgeSitesReceived)
 {
   const unsigned threshold = 3 * allReceived;
 
   if (imageReceived > threshold
+      || cameraInfoReceived > threshold
       || resultReceived > threshold
       || movingEdgeSitesReceived > threshold)
     {
@@ -84,13 +93,15 @@ checkInputsSynchronized(unsigned& allReceived,
 	("[visp_tracker] Low number of synchronized tuples"
 	 "image/camera info/result/moving edge received.\n"
 	 "Images received: %d\n"
+	 "Camera info received: %d\n"
 	 "Results received: %d\n"
 	 "Moving edges received: %d\n"
 	 "Synchronized triplets: %d\n"
 	 "Possible issues:\n"
 	 "\t* The network is too slow. One or more images are dropped from each"
 	 "triplet.",
-	 imageReceived, resultReceived, movingEdgeSitesReceived, allReceived);
+	 imageReceived, cameraInfoReceived, resultReceived,
+	 movingEdgeSitesReceived, allReceived);
     }
 }
 
@@ -223,14 +234,23 @@ int main(int argc, char **argv)
   // Trigger a warning if no synchronized triplets are received during 30s.
   unsigned allReceived = 0;
   unsigned imageReceived = 0;
+  unsigned cameraInfoReceived = 0;
   unsigned resultReceived = 0;
   unsigned movingEdgeSitesReceived = 0;
+
+  imageSub.registerCallback(boost::bind(increment, &imageReceived));
+  cameraInfoSub.registerCallback(boost::bind(increment, &cameraInfoReceived));
+  trackingResultSub.registerCallback(boost::bind(increment, &resultReceived));
+  movingEdgeSitesSub.registerCallback
+    (boost::bind(increment, &movingEdgeSitesReceived));
+
   ros::WallTimer checkSyncedTimer =
     n.createWallTimer
     (ros::WallDuration(30.0),
      boost::bind(checkInputsSynchronized,
 		 allReceived,
 		 imageReceived,
+		 cameraInfoReceived,
 		 resultReceived,
 		 movingEdgeSitesReceived));
 
