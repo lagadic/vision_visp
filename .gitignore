@@ -7,6 +7,7 @@ src/lisp/
 src/visp_tracker/
 srv/lisp/
 srv_gen/
+models/*/*.0.pos
 
 # Retrieved from internet.
 bag/tutorial-static-box.*
