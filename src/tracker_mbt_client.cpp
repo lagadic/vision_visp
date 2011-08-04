@@ -402,7 +402,8 @@ int main(int argc, char **argv)
 	      tracker.track(I);
 	      tracker.display(I, cMo, cam, vpColor::red, 2);
 	      vpDisplay::displayCharString
-		(I, point, "tracking, click to initialize tracker", vpColor::red);
+		(I, point, "tracking, click to initialize tracker",
+		 vpColor::red);
 	      vpDisplay::flush(I);
 	      tracker.getPose(cMo);
 
