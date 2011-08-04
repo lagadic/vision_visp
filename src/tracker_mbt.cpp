@@ -291,6 +291,8 @@ int main(int argc, char **argv)
     {
       ros::spinOnce();
       loop_rate.sleep();
+      if (!ros::ok())
+	exit(1);
     }
 
   // Tracker initialization.
