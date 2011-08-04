@@ -22,11 +22,13 @@
 
 namespace visp_tracker
 {
-  void increment(unsigned int* value)
+  namespace
   {
-    ++(*value);
-  }
-
+    static void increment(unsigned int* value)
+    {
+      ++(*value);
+    }
+  } // end of anonymous namespace.
 
   TrackerViewer::TrackerViewer(unsigned queueSize)
     : queueSize_(queueSize),
