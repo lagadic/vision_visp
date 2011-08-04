@@ -77,15 +77,6 @@ bool initCallback(State& state,
   ros::param::set("model_path", req.model_path.data);
   ros::param::set("model_name", req.model_name.data);
 
-  ros::param::set("vpme_mask_size", (int)req.moving_edge.mask_size);
-  ros::param::set("vpme_n_mask", (int)req.moving_edge.n_mask);
-  ros::param::set("vpme_range", (int)req.moving_edge.range);
-  ros::param::set("vpme_threshold", req.moving_edge.threshold);
-  ros::param::set("vpme_mu1", req.moving_edge.mu1);
-  ros::param::set("vpme_mu2", req.moving_edge.mu2);
-  ros::param::set("vpme_sample_step", (int)req.moving_edge.sample_step);
-  ros::param::set("vpme_ntotal_sample", (int)req.moving_edge.ntotal_sample);
-
   model_path = req.model_path.data;
   model_name = req.model_name.data;
 
@@ -235,25 +226,6 @@ int main(int argc, char **argv)
   // Compute topic and services names.
   const std::string rectified_image_topic =
     ros::names::clean(camera_prefix + "/image_rect");
-
-  visp_tracker::MovingEdgeConfig defaultMovingEdge =
-    visp_tracker::MovingEdgeConfig::__getDefault__();
-  ros::param::param("vpme_mask_size", moving_edge.mask_size,
-		    defaultMovingEdge.mask_size);
-  ros::param::param("vpme_n_mask", moving_edge.n_mask,
-		    defaultMovingEdge.n_mask);
-  ros::param::param("vpme_range", moving_edge.range,
-		    defaultMovingEdge.range);
-  ros::param::param("vpme_threshold", moving_edge.threshold,
-		    defaultMovingEdge.threshold);
-  ros::param::param("vpme_mu1", moving_edge.mu1,
-		    defaultMovingEdge.mu1);
-  ros::param::param("vpme_mu2", moving_edge.mu2,
-		    defaultMovingEdge.mu2);
-  ros::param::param("vpme_sample_step", moving_edge.sample_step,
-		    defaultMovingEdge.sample_step);
-  ros::param::param("vpme_ntotal_sample", moving_edge.ntotal_sample,
-		    defaultMovingEdge.ntotal_sample);
 
   // Result publisher.
   ros::Publisher result_pub =

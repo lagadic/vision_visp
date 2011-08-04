@@ -252,8 +252,6 @@ int main(int argc, char **argv)
   std::string model_name;
   vpMe moving_edge;
 
-  bool track = false;
-
   image_t I;
 
   vpMbEdgeTracker tracker;
@@ -283,28 +281,6 @@ int main(int argc, char **argv)
 
   const std::string init_service =
     ros::names::clean(tracker_prefix + "/" + visp_tracker::init_service);
-
-
-  visp_tracker::MovingEdgeConfig defaultMovingEdge =
-    visp_tracker::MovingEdgeConfig::__getDefault__();
-  ros::param::param("~vpme_mask_size", moving_edge.mask_size,
-		    defaultMovingEdge.mask_size);
-  ros::param::param("~vpme_n_mask", moving_edge.n_mask,
-		    defaultMovingEdge.n_mask);
-  ros::param::param("~vpme_range", moving_edge.range,
-		    defaultMovingEdge.range);
-  ros::param::param("~vpme_threshold", moving_edge.threshold,
-		    defaultMovingEdge.threshold);
-  ros::param::param("~vpme_mu1", moving_edge.mu1,
-		    defaultMovingEdge.mu1);
-  ros::param::param("~vpme_mu2", moving_edge.mu2,
-		    defaultMovingEdge.mu2);
-  ros::param::param("~vpme_sample_step", moving_edge.sample_step,
-		    defaultMovingEdge.sample_step);
-  ros::param::param("~vpme_ntotal_sample", moving_edge.ntotal_sample,
-		    defaultMovingEdge.ntotal_sample);
-
-  ros::param::param("~track", track, false);
 
   // Dynamic reconfigure.
   dynamic_reconfigure::Server<visp_tracker::MovingEdgeConfig> reconfigureSrv;
