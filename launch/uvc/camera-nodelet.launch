@@ -1,0 +1,29 @@
+<launch>
+  <group ns="uvc/camera" >
+    <!-- nodelet manager process -->
+    <node pkg="nodelet" type="nodelet" name="camera_nodelet_manager"
+          args="manager" />
+
+    <!-- camera driver nodelet -->
+    <node pkg="nodelet" type="nodelet" name="uvc_camera_nodelet"
+          args="load uvc_camera/CameraNodelet camera_nodelet_manager">
+      <param
+	 name="camera_info_url"
+	 value="file://$(find visp_tracker)/launch/$(env ROBOT)/calibration/uvc.yaml" />
+
+      <rosparam
+	 file="$(find visp_tracker)/launch/$(env ROBOT)/uvc.yaml" />
+    </node>
+
+    <!-- Bayer color decoding -->
+    <node pkg="nodelet" type="nodelet" name="image_proc_debayer"
+          args="load image_proc/debayer camera_nodelet_manager">
+    </node>
+    
+    <!-- mono rectification -->
+    <node pkg="nodelet" type="nodelet" name="image_proc_rect"
+          args="load image_proc/rectify camera_nodelet_manager">
+    </node>
+
+  </group>
+</launch>
