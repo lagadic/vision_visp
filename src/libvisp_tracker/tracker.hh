@@ -1,0 +1,108 @@
+#ifndef VISP_TRACKER_TRACKER_HH
+# define VISP_TRACKER_TRACKER_HH
+# include <boost/filesystem/path.hpp>
+
+# include <dynamic_reconfigure/server.h>
+
+# include <image_proc/advertisement_checker.h>
+
+# include <image_transport/image_transport.h>
+
+# include <sensor_msgs/Image.h>
+# include <sensor_msgs/CameraInfo.h>
+
+# include <visp_tracker/Init.h>
+# include <visp_tracker/MovingEdgeConfig.h>
+# include <visp_tracker/MovingEdgeSites.h>
+# include <visp_tracker/TrackingResult.h>
+# include <visp_tracker/TrackingMetaData.h>
+
+# include <visp/vpCameraParameters.h>
+# include <visp/vpHomogeneousMatrix.h>
+# include <visp/vpImage.h>
+# include <visp/vpMbEdgeTracker.h>
+
+namespace visp_tracker
+{
+  class Tracker
+  {
+  public:
+    typedef vpImage<unsigned char> image_t;
+
+    typedef dynamic_reconfigure::Server<visp_tracker::MovingEdgeConfig>
+    reconfigureSrv_t;
+
+    typedef boost::function<bool (visp_tracker::Init::Request&,
+				  visp_tracker::Init::Response& res)>
+    initCallback_t;
+
+  typedef boost::function<bool (visp_tracker::TrackingMetaData::Request&,
+				visp_tracker::TrackingMetaData::Response& res)>
+  trackingMetaDataCallback_t;
+
+    enum State
+      {
+	WAITING_FOR_INITIALIZATION,
+	TRACKING,
+	LOST
+      };
+
+
+    Tracker(unsigned queueSize = 5u);
+    void spin();
+  protected:
+    bool initCallback(visp_tracker::Init::Request& req,
+		      visp_tracker::Init::Response& res);
+    bool
+    trackingMetaDataCallback(visp_tracker::TrackingMetaData::Request&,
+			     visp_tracker::TrackingMetaData::Response& res);
+
+    void updateMovingEdgeSites();
+
+    void checkInputs();
+    void waitForImage();
+  private:
+    unsigned queueSize_;
+
+    ros::NodeHandle nodeHandle_;
+    image_transport::ImageTransport imageTransport_;
+
+    State state_;
+
+    image_t image_;
+
+    std::string modelPath_;
+    std::string modelName_;
+
+    std::string cameraPrefix_;
+    std::string rectifiedImageTopic_;
+    std::string cameraInfoTopic_;
+
+    boost::filesystem::path vrmlPath_;
+
+    image_transport::CameraSubscriber cameraSubscriber_;
+
+    reconfigureSrv_t reconfigureSrv_;
+    ros::Publisher resultPublisher_;
+    ros::Publisher movingEdgeSitesPublisher_;
+
+    ros::ServiceServer initService_;
+    ros::ServiceServer trackingMetaDataService_;
+
+    std_msgs::Header header_;
+    sensor_msgs::CameraInfoConstPtr info_;
+
+    vpMe movingEdge_;
+    vpCameraParameters cameraParameters_;
+    vpMbEdgeTracker tracker_;
+
+    visp_tracker::MovingEdgeSites sites_;
+
+    unsigned lastTrackedImage_;
+
+    /// \brief Helper used to check that subscribed topics exist.
+    image_proc::AdvertisementChecker checkInputs_;
+  };
+} // end of namespace visp_tracker.
+
+#endif //! VISP_TRACKER_TRACKER_HH

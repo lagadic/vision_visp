@@ -24,33 +24,50 @@ rosbuild_find_ros_package(dynamic_reconfigure)
 include(${dynamic_reconfigure_PACKAGE_PATH}/cmake/cfgbuild.cmake)
 gencfg()
 
+
+#############
+# Libraries #
+#############
+
 # Generate names.cpp.
 configure_file(
-  "${CMAKE_SOURCE_DIR}/src/names.cpp.in"
-  "${CMAKE_BINARY_DIR}/src/names.cpp"
+  "${CMAKE_SOURCE_DIR}/src/libvisp_tracker/names.cpp.in"
+  "${CMAKE_BINARY_DIR}/src/libvisp_tracker/names.cpp"
   @ONLY)
 include_directories("${CMAKE_SOURCE_DIR}/src")
+include_directories("${CMAKE_SOURCE_DIR}/src/libvisp_tracker")
 
-# Library gathering tools used by both server and client.
-rosbuild_add_library(tools
-  src/conversion.cpp
-  src/callbacks.cpp
-  src/file.cpp
-  "${CMAKE_BINARY_DIR}/src/names.cpp")
-target_link_libraries(tools visp-2)
+# Library gathering libvisp_tracker used by all nodes.
+rosbuild_add_library(libvisp_tracker
+  src/libvisp_tracker/conversion.cpp
+  src/libvisp_tracker/callbacks.cpp
+  src/libvisp_tracker/file.cpp
+  src/libvisp_tracker/tracker.cpp
+  src/libvisp_tracker/tracker-client.cpp
+  src/libvisp_tracker/tracker-viewer.cpp
+  "${CMAKE_BINARY_DIR}/src/libvisp_tracker/names.cpp")
+target_link_libraries(libvisp_tracker visp-2)
 
-# Node
-rosbuild_add_executable(tracker_mbt src/tracker_mbt.cpp)
-target_link_libraries(tracker_mbt tools visp-2)
+########
+# Node #
+########
+
+# Tracker
+rosbuild_add_executable(tracker src/nodes/tracker.cpp)
+target_link_libraries(tracker libvisp_tracker visp-2)
 
 # Client
-rosbuild_add_executable(tracker_mbt_client src/tracker_mbt_client.cpp)
-target_link_libraries(tracker_mbt_client tools visp-2)
-
+rosbuild_add_executable(client src/nodes/client.cpp)
+target_link_libraries(client libvisp_tracker visp-2)
 
 # Viewer
-rosbuild_add_executable(tracker_mbt_viewer src/tracker_mbt_viewer.cpp)
-target_link_libraries(tracker_mbt_viewer tools visp-2)
+rosbuild_add_executable(viewer src/nodes/viewer.cpp)
+target_link_libraries(viewer libvisp_tracker visp-2)
+
+
+#############
+# Bag files #
+#############
 
 # Tutorial
 rosbuild_download_data(

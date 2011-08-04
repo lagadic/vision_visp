@@ -1,0 +1,158 @@
+#ifndef VISP_TRACKER_TRACKER_VIEWER_HH
+# define VISP_TRACKER_TRACKER_VIEWER_HH
+# include <boost/filesystem/path.hpp>
+# include <boost/optional.hpp>
+
+# include <image_proc/advertisement_checker.h>
+
+# include <image_transport/image_transport.h>
+# include <image_transport/subscriber_filter.h>
+
+# include <message_filters/subscriber.h>
+# include <message_filters/sync_policies/approximate_time.h>
+# include <message_filters/synchronizer.h>
+
+# include <sensor_msgs/Image.h>
+# include <sensor_msgs/CameraInfo.h>
+
+# include <visp_tracker/MovingEdgeSites.h>
+# include <visp_tracker/TrackingResult.h>
+# include <visp_tracker/TrackingMetaData.h>
+
+# include <visp/vpCameraParameters.h>
+# include <visp/vpImage.h>
+# include <visp/vpMbEdgeTracker.h>
+
+namespace visp_tracker
+{
+  /// \brief Monitors the tracking result provided by the tracking node.
+  class TrackerViewer
+  {
+  public:
+    /// \brief ViSP image type
+    typedef vpImage<unsigned char> image_t;
+
+    /// \brief Synchronization policy
+    ///
+    /// This is used to make sure that the image, the object position
+    /// and the moving edge sites are synchronized. This may not be the
+    /// case as these informations are published on different topics.
+    /// The approximate time allows light differences in timestamps
+    /// which are not critical as this is only a viewer.
+    typedef message_filters::sync_policies::ApproximateTime<
+      sensor_msgs::Image, sensor_msgs::CameraInfo,
+      visp_tracker::TrackingResult, visp_tracker::MovingEdgeSites
+      > syncPolicy_t;
+
+    /// \brief Constructor.
+    TrackerViewer(unsigned queueSize = 5u);
+
+    /// \brief Display camera image, tracked object position and moving
+    /// edge sites.
+    void spin();
+  protected:
+    /// \brief Initialize the tracker.
+    void initializeTracker();
+
+    /// \brief Make sure the topics we subscribe already exist.
+    void checkInputs();
+
+    /// \brief Retrieve from the tracking node the camera prefix and
+    /// model metadata.
+    void retrieveMetaData();
+
+    /// \brief Hang until the first image is received.
+    void waitForImage();
+
+    /// \brief Callback used to received synchronized data.
+    void callback(const sensor_msgs::ImageConstPtr& imageConst,
+		  const sensor_msgs::CameraInfoConstPtr& infoConst,
+		  const visp_tracker::TrackingResult::ConstPtr& trackingResult,
+		  const visp_tracker::MovingEdgeSites::ConstPtr& sitesConst);
+
+    void timerCallback();
+
+    /// \brief Display moving edge sites.
+    void displayMovingEdgeSites();
+
+  private:
+    /// \brief Queue size for all subscribers.
+    unsigned queueSize_;
+
+    /// \brief Main node handle.
+    ros::NodeHandle nodeHandle_;
+    /// \brief Image transport used to receive images.
+    image_transport::ImageTransport imageTransport_;
+
+
+    /// \name Topics and services strings.
+    /// \{
+
+    /// \brief Topic name prefix used by tracker.
+    std::string trackerPrefix_;
+    /// \brief Full topic name for meta-data
+    std::string trackingMetaDataService_;
+
+    /// \brief Full topic name for rectified image.
+    std::string rectifiedImageTopic_;
+    /// \brief Full topic name for camera information.
+    std::string cameraInfoTopic_;
+
+    /// \brief Full topic name for result topic.
+    std::string resultTopic_;
+    /// \brief Full topic name for moving edge sites topic.
+    std::string movingEdgeSitesTopic_;
+
+    /// \}
+
+
+    /// \brief VRML model path.
+    boost::filesystem::path vrmlPath_;
+
+    /// \brief Helper used to check that subscribed topics exist.
+    image_proc::AdvertisementChecker checkInputs_;
+
+    /// \brief ViSP edge tracker.
+    vpMbEdgeTracker tracker_;
+    /// \brief ViSP camera parameters.
+    vpCameraParameters cameraParameters_;
+    /// \brief ViSP image.
+    image_t image_;
+
+    /// \brief Shared pointer to latest received camera information.
+    sensor_msgs::CameraInfoConstPtr info_;
+    /// \brief Last tracked object position, set to none if tracking failed.
+    boost::optional<vpHomogeneousMatrix> cMo_;
+    /// \brief Shared pointer to latest received moving edge sites.
+    visp_tracker::MovingEdgeSites::ConstPtr sites_;
+
+    /// \name Subscribers and synchronizer.
+    /// \{
+    /// \brief Subscriber to image topic.
+    image_transport::SubscriberFilter imageSubscriber_;
+    /// \brief Subscriber to camera information topic.
+    message_filters::Subscriber<sensor_msgs::CameraInfo> cameraInfoSubscriber_;
+    /// \brief Subscriber to tracking result topic.
+    message_filters::Subscriber<visp_tracker::TrackingResult>
+    trackingResultSubscriber_;
+    /// \brief Subscriber to moving edge sites topics..
+    message_filters::Subscriber<visp_tracker::MovingEdgeSites>
+    movingEdgeSitesSubscriber_;
+
+    /// \brief Synchronizer with approximate time policy.
+    message_filters::Synchronizer<syncPolicy_t> synchronizer_;
+    ///}
+
+    /// \name Synchronization check
+    /// \{
+    ros::WallTimer timer_;
+    unsigned countAll_;
+    unsigned countImages_;
+    unsigned countCameraInfo_;
+    unsigned countTrackingResult_;
+    unsigned countMovingEdgeSites_;
+    ///}
+  };
+} // end of namespace visp_tracker
+
+#endif //! VISP_TRACKER_TRACKER_VIEWER_HH
