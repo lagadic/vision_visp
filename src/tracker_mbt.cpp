@@ -31,6 +31,9 @@
 
 typedef vpImage<unsigned char> image_t;
 
+typedef dynamic_reconfigure::Server<visp_tracker::MovingEdgeConfig>
+reconfigureSrv_t;
+
 typedef boost::function<bool (visp_tracker::Init::Request&,
 			      visp_tracker::Init::Response& res)>
 init_callback_t;
@@ -52,6 +55,7 @@ bool initCallback(State& state,
 		  std::string& model_path,
 		  std::string& model_name,
 		  unsigned long& lastTrackedImage,
+		  reconfigureSrv_t& reconfigureSrv,
 		  visp_tracker::Init::Request& req,
 		  visp_tracker::Init::Response& res)
 {
@@ -83,6 +87,12 @@ bool initCallback(State& state,
   // Load moving edges.
   vpMe moving_edge;
   convertInitRequestToVpMe(req, tracker, moving_edge);
+
+  // Update parameters.
+  visp_tracker::MovingEdgeConfig config;
+  convertVpMeToMovingEdgeConfig(moving_edge, tracker, config);
+  reconfigureSrv.updateConfig(config);
+
 
   //FIXME: not sure if this is needed.
   moving_edge.initMask();
@@ -146,12 +156,14 @@ bool trackingMetaDataCallback(const std::string& camera_prefix,
 }
 
 
-init_callback_t bindInitCallback(State& state,
-				 vpMbEdgeTracker& tracker,
-				 image_t& image,
-				 std::string& model_path,
-				 std::string& model_name,
-				 unsigned long& lastTrackedImage)
+init_callback_t
+bindInitCallback(State& state,
+		 vpMbEdgeTracker& tracker,
+		 image_t& image,
+		 std::string& model_path,
+		 std::string& model_name,
+		 unsigned long& lastTrackedImage,
+		 reconfigureSrv_t& reconfigureSrv)
 {
   return boost::bind(initCallback,
 		     boost::ref(state),
@@ -160,6 +172,7 @@ init_callback_t bindInitCallback(State& state,
 		     boost::ref(model_path),
 		     boost::ref(model_name),
 		     boost::ref(lastTrackedImage),
+		     boost::ref(reconfigureSrv),
 		     _1, _2);
 }
 
@@ -252,10 +265,10 @@ int main(int argc, char **argv)
   tracker.setMovingEdge(moving_edge);
 
   // Dynamic reconfigure.
-  dynamic_reconfigure::Server<visp_tracker::MovingEdgeConfig> reconfigureSrv;
-  dynamic_reconfigure::Server<visp_tracker::MovingEdgeConfig>::CallbackType f;
+  reconfigureSrv_t reconfigureSrv;
+  reconfigureSrv_t::CallbackType f;
   f = boost::bind(&reconfigureCallback, boost::ref(tracker),
-		  boost::ref(moving_edge), _1, _2);
+		  boost::ref(I), boost::ref(moving_edge), _1, _2);
   reconfigureSrv.setCallback(f);
 
   // Wait for the image to be initialized.
@@ -290,7 +303,8 @@ int main(int argc, char **argv)
     (visp_tracker::init_service,
      bindInitCallback(state, tracker, I,
 		      model_path, model_name,
-		      lastTrackedImage));
+		      lastTrackedImage,
+		      reconfigureSrv));
 
   ros::ServiceServer trackingMetaDataService = n.advertiseService
     (visp_tracker::tracking_meta_data_service,

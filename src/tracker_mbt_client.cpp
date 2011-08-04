@@ -286,7 +286,7 @@ int main(int argc, char **argv)
   dynamic_reconfigure::Server<visp_tracker::MovingEdgeConfig> reconfigureSrv;
   dynamic_reconfigure::Server<visp_tracker::MovingEdgeConfig>::CallbackType f;
   f = boost::bind(&reconfigureCallback, boost::ref(tracker),
-		  boost::ref(moving_edge), _1, _2);
+		  boost::ref(I), boost::ref(moving_edge), _1, _2);
   reconfigureSrv.setCallback(f);
 
   // Camera subscriber.

@@ -32,6 +32,7 @@ bindImageCallback(vpImage<unsigned char>& image,
 
 
 void reconfigureCallback(vpMbEdgeTracker& tracker,
+			 vpImage<unsigned char>& I,
 			 vpMe& moving_edge,
 			 visp_tracker::MovingEdgeConfig& config,
 			 uint32_t level);

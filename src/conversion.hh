@@ -52,6 +52,11 @@ void transformToVpHomogeneousMatrix(vpHomogeneousMatrix& dst,
 void convertMovingEdgeConfigToVpMe(const visp_tracker::MovingEdgeConfig& config,
 				   vpMe& moving_edge,
 				   vpMbEdgeTracker& tracker);
+
+void convertVpMeToMovingEdgeConfig(const vpMe& moving_edge,
+				   const vpMbEdgeTracker& tracker,
+				   visp_tracker::MovingEdgeConfig& config);
+
 void convertVpMeToInitRequest(const vpMe& moving_edge,
 			      const vpMbEdgeTracker& tracker,
 			      visp_tracker::Init& srv);

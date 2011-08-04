@@ -50,6 +50,7 @@ bindImageCallback(vpImage<unsigned char>& image,
 }
 
 void reconfigureCallback(vpMbEdgeTracker& tracker,
+			 vpImage<unsigned char>& I,
 			 vpMe& moving_edge,
 			 visp_tracker::MovingEdgeConfig& config,
 			 uint32_t level)
@@ -60,7 +61,11 @@ void reconfigureCallback(vpMbEdgeTracker& tracker,
   //FIXME: not sure if this is needed.
   moving_edge.initMask();
 
+  vpHomogeneousMatrix cMo;
+  tracker.getPose(cMo);
+
   tracker.setMovingEdge(moving_edge);
+  tracker.init(I, cMo);
 
   moving_edge.print();
 }

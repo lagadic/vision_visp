@@ -140,6 +140,28 @@ void convertMovingEdgeConfigToVpMe(const visp_tracker::MovingEdgeConfig& config,
   tracker.setFirstThreshold(config.first_threshold);
 }
 
+void convertVpMeToMovingEdgeConfig(const vpMe& moving_edge,
+				   const vpMbEdgeTracker& tracker,
+				   visp_tracker::MovingEdgeConfig& config)
+{
+  config.mask_size = moving_edge.mask_size;
+  config.n_mask = moving_edge.n_mask;
+  config.range = moving_edge.range;
+  config.threshold = moving_edge.threshold;
+  config.mu1 = moving_edge.mu1;
+  config.mu2 = moving_edge.mu2;
+  config.sample_step = moving_edge.sample_step;
+  config.ntotal_sample = moving_edge.ntotal_sample;
+
+  config.strip = moving_edge.strip;
+  config.min_samplestep = moving_edge.min_samplestep;
+  config.aberration = moving_edge.aberration;
+  config.init_aberration = moving_edge.init_aberration;
+
+  config.lambda = tracker.lambda;
+  config.first_threshold = tracker.percentageGdPt;
+}
+
 void convertVpMeToInitRequest(const vpMe& moving_edge,
 			      const vpMbEdgeTracker& tracker,
 			      visp_tracker::Init& srv)
