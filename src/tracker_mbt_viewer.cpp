@@ -33,6 +33,8 @@ typedef message_filters::sync_policies::ApproximateTime<
   visp_tracker::TrackingResult, visp_tracker::MovingEdgeSites
   > syncPolicy_t;
 
+static const unsigned queue_size = 5;
+
 namespace
 {
   void increment(unsigned int* value)
@@ -211,17 +213,24 @@ int main(int argc, char **argv)
   boost::optional<vpHomogeneousMatrix> cMo;
   visp_tracker::MovingEdgeSites::ConstPtr sites;
 
+  image_transport::TransportHints transportHints
+    ("raw",
+     ros::TransportHints().unreliable().tcpNoDelay());
+
   image_transport::SubscriberFilter imageSub
-    (it, rectified_image_topic, 100);
+    (it, rectified_image_topic, queue_size, transportHints);
   message_filters::Subscriber<sensor_msgs::CameraInfo> cameraInfoSub
-    (n, camera_info_topic, 100);
+    (n, camera_info_topic, queue_size,
+     ros::TransportHints().unreliable().tcpNoDelay());
   message_filters::Subscriber<visp_tracker::TrackingResult> trackingResultSub
-    (n, result_topic, 100);
+    (n, result_topic, queue_size,
+     ros::TransportHints().unreliable().tcpNoDelay());
   message_filters::Subscriber<visp_tracker::MovingEdgeSites>
-    movingEdgeSitesSub(n, moving_edge_sites_topic, 100);
+    movingEdgeSitesSub(n, moving_edge_sites_topic, queue_size,
+		       ros::TransportHints().unreliable().tcpNoDelay());
 
   message_filters::Synchronizer<syncPolicy_t> sync
-    (syncPolicy_t(100),
+    (syncPolicy_t(queue_size),
      imageSub, cameraInfoSub,
      trackingResultSub, movingEdgeSitesSub);
 

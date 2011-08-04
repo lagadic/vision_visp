@@ -30,6 +30,8 @@
 
 typedef vpImage<unsigned char> image_t;
 
+static const unsigned queue_size = 5;
+
 vpHomogeneousMatrix loadInitialPose(const std::string& model_path,
 				    const std::string& model_name)
 {
@@ -290,11 +292,16 @@ int main(int argc, char **argv)
   reconfigureSrv.setCallback(f);
 
   // Camera subscriber.
+  image_transport::TransportHints transportHints
+    ("raw",
+     ros::TransportHints().unreliable().tcpNoDelay());
   std_msgs::Header header;
   sensor_msgs::CameraInfoConstPtr info;
   image_transport::CameraSubscriber sub =
-    it.subscribeCamera(rectified_image_topic, 100,
-		       bindImageCallback(I, header, info));
+    it.subscribeCamera(rectified_image_topic, queue_size,
+		       bindImageCallback(I, header, info),
+		       ros::VoidPtr(),
+		       transportHints);
 
   // Model loading.
   boost::filesystem::path vrml_path =

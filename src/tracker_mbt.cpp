@@ -3,6 +3,7 @@
 #include <boost/scope_exit.hpp>
 
 #include <ros/ros.h>
+#include <ros/transport_hints.h>
 #include <image_transport/image_transport.h>
 #include <ros/param.h>
 #include <dynamic_reconfigure/server.h>
@@ -48,6 +49,8 @@ enum State
     TRACKING,
     LOST
   };
+
+static const unsigned queue_size = 5;
 
 bool initCallback(State& state,
 		  vpMbEdgeTracker& tracker,
@@ -248,14 +251,19 @@ int main(int argc, char **argv)
   // Moving edge sites publisher.
   ros::Publisher moving_edge_sites_pub =
     n.advertise<visp_tracker::MovingEdgeSites>
-    (visp_tracker::moving_edge_sites_topic, 1000);
+    (visp_tracker::moving_edge_sites_topic, queue_size);
 
   // Camera subscriber.
+  image_transport::TransportHints transportHints
+    ("raw",
+     ros::TransportHints().unreliable().tcpNoDelay());
   std_msgs::Header header;
   sensor_msgs::CameraInfoConstPtr info;
   image_transport::CameraSubscriber sub =
-    it.subscribeCamera(rectified_image_topic, 100,
-		       bindImageCallback(I, header, info));
+    it.subscribeCamera(rectified_image_topic, queue_size,
+		       bindImageCallback(I, header, info),
+		       ros::VoidPtr(),
+		       transportHints);
 
   // Initialization.
   ros::Rate loop_rate(10);
