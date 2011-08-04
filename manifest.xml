@@ -13,6 +13,7 @@
   <depend package="roscpp"/>
   <depend package="rospy"/>
   <depend package="sensor_msgs"/>
+  <depend package="image_proc"/>
   <depend package="image_transport"/>
   <depend package="geometry_msgs"/>
   <depend package="rosbag"/>

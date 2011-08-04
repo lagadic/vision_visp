@@ -8,6 +8,7 @@
 
 #include <ros/ros.h>
 #include <ros/param.h>
+#include <image_proc/advertisement_checker.h>
 #include <image_transport/image_transport.h>
 #include <image_transport/subscriber_filter.h>
 #include <message_filters/synchronizer.h>
@@ -185,6 +186,17 @@ int main(int argc, char **argv)
   const std::string moving_edge_sites_topic =
     ros::names::clean
     (tracker_prefix + "/" + visp_tracker::moving_edge_sites_topic);
+
+  // Check for subscribed topics.
+  ros::V_string topics;
+  topics.push_back(rectified_image_topic);
+  topics.push_back(camera_info_topic);
+  topics.push_back(result_topic);
+  topics.push_back(moving_edge_sites_topic);
+  image_proc::AdvertisementChecker
+    check_inputs(ros::NodeHandle(), ros::this_node::getName());
+  check_inputs.start(topics, 60.0);
+
 
   // Tracker initialization.
   vpMbEdgeTracker tracker;

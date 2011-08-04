@@ -9,6 +9,7 @@
 #include <ros/ros.h>
 #include <ros/param.h>
 #include <dynamic_reconfigure/server.h>
+#include <image_proc/advertisement_checker.h>
 #include <image_transport/image_transport.h>
 #include <visp_tracker/Init.h>
 #include <visp_tracker/MovingEdgeConfig.h>
@@ -283,6 +284,14 @@ int main(int argc, char **argv)
 
   const std::string init_service =
     ros::names::clean(tracker_prefix + "/" + visp_tracker::init_service);
+
+  // Check for subscribed topics.
+  ros::V_string topics;
+  topics.push_back(rectified_image_topic);
+  topics.push_back(camera_info_topic);
+  image_proc::AdvertisementChecker
+    check_inputs(ros::NodeHandle(), ros::this_node::getName());
+  check_inputs.start(topics, 60.0);
 
   // Dynamic reconfigure.
   dynamic_reconfigure::Server<visp_tracker::MovingEdgeConfig> reconfigureSrv;

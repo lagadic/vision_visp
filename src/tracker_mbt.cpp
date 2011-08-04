@@ -4,6 +4,7 @@
 
 #include <ros/ros.h>
 #include <ros/transport_hints.h>
+#include <image_proc/advertisement_checker.h>
 #include <image_transport/image_transport.h>
 #include <ros/param.h>
 #include <dynamic_reconfigure/server.h>
@@ -242,6 +243,13 @@ int main(int argc, char **argv)
   // Compute topic and services names.
   const std::string rectified_image_topic =
     ros::names::clean(camera_prefix + "/image_rect");
+
+  // Check for subscribed topics.
+  ros::V_string topics;
+  topics.push_back(rectified_image_topic);
+  image_proc::AdvertisementChecker
+    check_inputs(ros::NodeHandle(), ros::this_node::getName());
+  check_inputs.start(topics, 60.0);
 
   // Result publisher.
   ros::Publisher result_pub =
