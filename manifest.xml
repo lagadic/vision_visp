@@ -9,6 +9,11 @@
   <license>BSD</license>
   <review status="unreviewed" notes=""/>
   <url>http://ros.org/wiki/visp_tracker</url>
+
+  <export>
+    <rosdoc config="rosdoc.yaml" />
+  </export>
+
   <depend package="std_msgs"/>
   <depend package="roscpp"/>
   <depend package="rospy"/>
