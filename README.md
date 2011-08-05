@@ -1,8 +1,8 @@
 visp_tracker
 ============
 
-The package is composed of one node tracker_mbt and two additional
-binaries tracker_mbt_client and tracker_mbt_viewer.
+The package is composed of one node 'tracker' and two additional
+binaries 'client' and 'viewer'.
 
 The node tries to track the object as fast as possible but needs to be
 initialized using the client. The viewer can be used to monitor the
