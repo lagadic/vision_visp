@@ -89,15 +89,9 @@ namespace visp_tracker
     reconfigureSrv_.setCallback(f);
 
     // Camera subscriber.
-    image_transport::TransportHints transportHints
-      ("raw",
-       ros::TransportHints().unreliable().tcpNoDelay());
-
     cameraSubscriber_ = imageTransport_.subscribeCamera
       (rectifiedImageTopic_, queueSize_,
-       bindImageCallback(image_, header_, info_),
-       ros::VoidPtr(),
-       transportHints);
+       bindImageCallback(image_, header_, info_));
 
     // Model loading.
     vrmlPath_ = getModelFileFromModelName(modelName_, modelPath_);

@@ -209,15 +209,10 @@ namespace visp_tracker
       (visp_tracker::moving_edge_sites_topic, queueSize_);
 
     // Camera subscriber.
-    image_transport::TransportHints transportHints
-      ("raw",
-       ros::TransportHints().unreliable().tcpNoDelay());
     cameraSubscriber_ =
       imageTransport_.subscribeCamera
       (rectifiedImageTopic_, queueSize_,
-       bindImageCallback(image_, header_, info_),
-       ros::VoidPtr(),
-       transportHints);
+       bindImageCallback(image_, header_, info_));
 
     // Initialization.
     movingEdge_.initMask();
@@ -274,7 +269,6 @@ namespace visp_tracker
 	if (lastTrackedImage_ < header_.seq)
 	  {
 	    lastTrackedImage_ = header_.seq;
-	    cMo.eye();
 	    if (state_ == TRACKING)
 	      try
 		{
@@ -285,6 +279,7 @@ namespace visp_tracker
 		{
 		  ROS_WARN("tracking lost");
 		  state_ = LOST;
+		  cMo.eye();
 		}
 
 	    // Publish the tracking result.

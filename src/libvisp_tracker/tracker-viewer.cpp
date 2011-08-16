@@ -80,21 +80,14 @@ namespace visp_tracker
     checkInputs();
 
     // Subscribe to camera and tracker synchronously.
-    image_transport::TransportHints transportHints
-      ("raw",
-       ros::TransportHints().unreliable().tcpNoDelay());
-
     imageSubscriber_.subscribe
-      (imageTransport_, rectifiedImageTopic_, queueSize_, transportHints);
+      (imageTransport_, rectifiedImageTopic_, queueSize_);
     cameraInfoSubscriber_.subscribe
-      (nodeHandle_, cameraInfoTopic_, queueSize_,
-       ros::TransportHints().unreliable().tcpNoDelay());
+      (nodeHandle_, cameraInfoTopic_, queueSize_);
     trackingResultSubscriber_.subscribe
-      (nodeHandle_, resultTopic_, queueSize_,
-       ros::TransportHints().unreliable().tcpNoDelay());
+      (nodeHandle_, resultTopic_, queueSize_);
     movingEdgeSitesSubscriber_.subscribe
-      (nodeHandle_, movingEdgeSitesTopic_, queueSize_,
-       ros::TransportHints().unreliable().tcpNoDelay());
+      (nodeHandle_, movingEdgeSitesTopic_, queueSize_);
 
     synchronizer_.connectInput
       (imageSubscriber_, cameraInfoSubscriber_,
