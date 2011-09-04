@@ -7,9 +7,12 @@ geometry_msgs::TransformStamped transformStamped;
 
 void callback(const visp_tracker::TrackingResult::ConstPtr& msg)
 {
-  transformStamped.header = msg->header;
-  transformStamped.transform = msg->cMo;
-  pub.publish(transformStamped);
+  if (msg->is_tracking)
+    {
+      transformStamped.header = msg->header;
+      transformStamped.transform = msg->cMo;
+      pub.publish(transformStamped);
+    }
 }
 
 int main(int argc, char **argv)
