@@ -1,8 +1,19 @@
+# Initialize the tracking.
+#
+# During the initialization the tracked object
+# is chosen and its initial pose is required
+# to start the tracking.
+
+# Model database location on the filesystem.
 std_msgs/String model_path
+# Model name
 std_msgs/String model_name
 
+# Object initial pose.
 geometry_msgs/Transform initial_cMo
 
+# Tracking parameters
 MovingEdge moving_edge
 ---
+# Did the initialization succeed?
 bool initialization_succeed

@@ -1,4 +1,6 @@
 ---
-std_msgs/String camera_prefix
-std_msgs/String model_path
-std_msgs/String model_name
+std_msgs/String camera_prefix # Namespace in which image_rect and camera_info
+                              # topics are published.
+
+std_msgs/String model_path    # Model location on the filesystem.
+std_msgs/String model_name    # Model name.
