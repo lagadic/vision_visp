@@ -137,7 +137,7 @@ namespace visp_tracker
 	displayMovingEdgeSites();
 	if (cMo_)
 	  {
-	    tracker_.setPose(*cMo_);
+	    tracker_.init(image_, *cMo_);
 	    tracker_.display(image_, *cMo_, cameraParameters_, vpColor::red);
 
 	    ROS_DEBUG_STREAM_THROTTLE(10, "cMo:\n" << *cMo_);
