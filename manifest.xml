@@ -1,18 +1,20 @@
 <package>
-  <description brief="visp_tracker">
+  <description brief="Online object tracker relying on visual servoing.">
 
-    visp_tracker wraps the ViSP moving edge tracker provided by the ViSP
-    visual servoing library into a ROS package.
+    visp_tracker wraps the ViSP moving edge tracker provided by the
+    ViSP visual servoing library into a ROS package.
 
     This computer vision algorithm computes the pose (i.e. position and
     orientation) of an object in an image. It is fast enough to allow
     object online tracking using a camera.
 
   </description>
-  <author>Thomas Moulard</author>
+  <author>Thomas Moulard/thomas.moulard@gmail.com</author>
   <license>BSD</license>
-  <review status="unreviewed" notes=""/>
+  <review status="experimental" notes=""/>
   <url>http://ros.org/wiki/visp_tracker</url>
+
+  <versioncontrol type="git" url="git://github.com/laas/visp_tracker.git"/>
 
   <export>
     <rosdoc config="rosdoc.yaml" />
@@ -32,5 +34,6 @@
 
   <depend package="bullet"/>
 
+  <rosdep name="boost"/>
   <rosdep name="libvisp-dev"/>
 </package>
