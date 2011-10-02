@@ -1,0 +1,3 @@
+[submodule "visp_tracker"]
+	path = visp_tracker
+	url = git://github.com/laas/visp_tracker.git
