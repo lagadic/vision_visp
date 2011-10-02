@@ -1,8 +1,8 @@
 ViSP stack for ROS
 ==================
 
-This repository provides a ViSP stack for ROS. ViSP is the Visual
-Servoing Platform [visp] and ROS a robotics middleware [ros].
+This repository provides a ViSP stack for ROS. [ViSP] [visp] is the
+Visual Servoing Platform and [ROS] [ros] a robotics middleware.
 
 
 [visp]: http://www.irisa.fr/lagadic/visp/visp.html
