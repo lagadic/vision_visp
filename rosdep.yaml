@@ -1,0 +1,16 @@
+libgsl:
+  ubuntu: libgsl0-dev
+libcoin60:
+  ubuntu: libcoin60-dev
+libsoqt4:
+  ubuntu: libsoqt4-dev
+libjpeg:
+  ubuntu: libjpeg62-dev
+libpng:
+  ubuntu: libpng12-dev
+
+libdc1394-dev:
+  ubuntu: libdc1394-22-dev
+  arch: libdc1394
+  fedora: libdc1394-devel
+  macports: libdc1394

@@ -1,0 +1,38 @@
+<package>
+  <description brief="ViSP, the Visual Servoing Platform">
+    ViSP, standing for Visual Servoing Platform, is unique. This software
+    is a complete cross-platform solution that allows prototyping and
+    developing applications in visual tracking and visual servoing.
+
+    ViSP can be useful in robotics, computer vision, augmented reality and
+    computer animation.
+  </description>
+  <author>INRIA Rennes - Bretagne Atlantique</author>
+  <license>QPL</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://www.irisa.fr/lagadic/visp</url>
+
+  <depend package="opencv2"/>
+
+  <export>
+    <cpp
+       cflags="-I${prefix}/install/include"
+       lflags="-Wl,-rpath,${prefix}/install/lib  -L${prefix}/install/lib -lvisp-2"
+       />
+  </export>
+
+  <versioncontrol type="svn" url="svn://scm.gforge.inria.fr/svn/visp"/>
+
+  <depend package="opencv2"/>
+
+  <rosdep name="libdc1394-dev"/>
+  <rosdep name="libxml2"/>
+  <rosdep name="libjpeg"/>
+  <rosdep name="ffmpeg"/>
+
+  <rosdep name="libpng"/>
+
+  <rosdep name="libgsl"/>
+  <rosdep name="libcoin60"/>
+  <rosdep name="libsoqt4"/>
+</package>
