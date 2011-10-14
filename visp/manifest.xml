@@ -12,8 +12,6 @@
   <review status="unreviewed" notes=""/>
   <url>http://www.irisa.fr/lagadic/visp</url>
 
-  <depend package="opencv2"/>
-
   <export>
     <cpp
        cflags="-I${prefix}/install/include"
@@ -35,4 +33,6 @@
   <rosdep name="libgsl"/>
   <rosdep name="libcoin60"/>
   <rosdep name="libsoqt4"/>
+
+  <platform os="ubuntu" version="10.04"/>
 </package>
