@@ -1,9 +1,24 @@
 <stack>
-  <description brief="visp">visp</description>
+  <description brief="Virtual visual servoing stack">
+
+    This stack wraps ViSP, the virtual visual servoing platform into
+    ROS.
+
+    In particular, visp_tracker allows online object tracking.
+
+  </description>
   <author>Maintained by Thomas Moulard</author>
   <license></license>  
-  <review status="unreviewed" notes=""/>
+  <review status="experimental" notes=""/>
   <url>http://ros.org/wiki/visp</url>
   <depend stack="ros" />
 
+  <depend stack="image_common"/> <!-- image_transport --> 
+  <depend stack="ros"/> <!--  --> 
+  <depend stack="vision_opencv"/> <!-- opencv2 --> 
+  <depend stack="geometry"/> <!-- bullet --> 
+  <depend stack="ros_comm"/> <!-- rospy, rosbag, std_msgs, roscpp --> 
+  <depend stack="image_pipeline"/> <!-- image_proc --> 
+  <depend stack="driver_common"/> <!-- dynamic_reconfigure --> 
+  <depend stack="common_msgs"/> <!-- geometry_msgs, sensor_msgs -->
 </stack>
