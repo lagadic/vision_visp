@@ -20,6 +20,8 @@
     <rosdoc config="rosdoc.yaml" />
   </export>
 
+  <rosdep name="boost"/>
+
   <depend package="std_msgs"/>
   <depend package="roscpp"/>
   <depend package="rospy"/>
@@ -27,13 +29,12 @@
   <depend package="image_proc"/>
   <depend package="image_transport"/>
   <depend package="geometry_msgs"/>
-  <depend package="rosbag"/>
   <depend package="dynamic_reconfigure"/>
-
   <depend package="opencv2"/>
-
   <depend package="bullet"/>
+  <depend package="visp"/>
 
-  <rosdep name="boost"/>
-  <rosdep name="libvisp-dev"/>
+  <depend package="rosbag"/> <!-- For tutorial/testing -->
+
+  <platform os="ubuntu" version="10.04"/>
 </package>
