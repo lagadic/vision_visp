@@ -24,6 +24,10 @@ rosbuild_find_ros_package(dynamic_reconfigure)
 include(${dynamic_reconfigure_PACKAGE_PATH}/cmake/cfgbuild.cmake)
 gencfg()
 
+rosbuild_add_boost_directories()
+
+# Make sure Boost.Filesystem v2 is used.
+add_definitions(-DBOOST_FILESYSTEM_VERSION=2)
 
 #############
 # Libraries #
@@ -47,6 +51,7 @@ rosbuild_add_library(libvisp_tracker
   src/libvisp_tracker/tracker-viewer.cpp
   "${CMAKE_BINARY_DIR}/src/libvisp_tracker/names.cpp")
 target_link_libraries(libvisp_tracker visp-2)
+rosbuild_link_boost(libvisp_tracker filesystem system)
 
 ########
 # Node #

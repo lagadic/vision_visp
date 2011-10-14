@@ -82,11 +82,7 @@ namespace visp_tracker
     try
       {
 	ROS_DEBUG_STREAM("Trying to load the model: " << modelPath_.c_str());
-#if BOOST_VERSION >= 104400
-	tracker_.loadModel(getModelFileFromModelName(modelName_, modelPath_).native().c_str());
-#else
 	tracker_.loadModel(getModelFileFromModelName(modelName_, modelPath_).external_file_string().c_str());
-#endif
       }
     catch(...)
       {

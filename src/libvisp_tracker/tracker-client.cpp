@@ -239,13 +239,9 @@ namespace visp_tracker
   {
     try
       {
-#if BOOST_VERSION >= 104400
-	ROS_DEBUG_STREAM("Trying to load the model " << vrmlPath_.native());
-	tracker_.loadModel(vrmlPath_.native().c_str());
-#else
-	ROS_DEBUG_STREAM("Trying to load the model " << vrmlPath_.external_file_string());
+	ROS_DEBUG_STREAM("Trying to load the model "
+			 << vrmlPath_.external_file_string());
 	tracker_.loadModel(vrmlPath_.external_file_string().c_str());
-#endif
 	ROS_INFO("VRML model has been successfully loaded.");
 
 	ROS_DEBUG_STREAM("Nb hidden faces: "
