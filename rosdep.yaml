@@ -31,3 +31,6 @@ ffmpeg:
   macports: ffmpeg
   arch: ffmpeg
   gentoo: ffmpeg
+
+  # Warning: requires rpmfusion repositories.
+  fedora: ffmpeg-devel ffmpeg-libs
