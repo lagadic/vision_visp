@@ -33,6 +33,7 @@
   <rosdep name="libgsl"/>
   <rosdep name="libcoin60"/>
   <rosdep name="libsoqt4"/>
+  <rosdep name="gtk2"/>
 
   <platform os="ubuntu" version="10.04"/>
 </package>

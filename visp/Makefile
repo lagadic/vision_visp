@@ -7,8 +7,11 @@ SOURCE_DIR  = build/ViSP-2.6.0
 TARBALL_PATCH =
 MD5SUM_FILE = ViSP-2.6.0.tar.gz.md5sum
 
+# Gdk include path is required for Fedora 15.
+CMAKE_CXX_FLAGS="-DNDEBUG -march=native -O3 -g -I/usr/include/gdk-pixbuf-2.0"
+
 CMAKE_FLAGS = -DCMAKE_INSTALL_PREFIX=`rospack find visp`/$(INSTALL_DIR)/ \
-	      -DCMAKE_CXX_FLAGS="-DNDEBUG -march=native -O3 -g"         \
+	      -DCMAKE_CXX_FLAGS="$(CMAKE_CXX_FLAGS)"                    \
 	      -DBUILD_DEMOS=ON -DBUILD_TESTING=ON -DBUILD_EXAMPLES=ON   \
 	      -DBUILD_SHARED_LIBS=ON -DBUILD_DEPRECATED=ON              \
 	      -DUSE_DC1394_1=OFF -DUSE_FFMPEG=ON                        \
