@@ -24,3 +24,10 @@ libdc1394-dev:
   arch: libdc1394
   fedora: libdc1394-devel
   macports: libdc1394
+
+ffmpeg:
+  ubuntu: libavcodec-dev libavformat-dev libavutil-dev libswscale-dev
+  debian: libavcodec-dev libavformat-dev libavutil-dev libswscale-dev
+  macports: ffmpeg
+  arch: ffmpeg
+  gentoo: ffmpeg
