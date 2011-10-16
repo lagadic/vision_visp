@@ -10,7 +10,7 @@
   <author>Maintained by Thomas Moulard</author>
   <license>BSD / QPL (ViSP)</license>  
   <review status="experimental" notes=""/>
-  <url>http://ros.org/wiki/visp</url>
+  <url>http://ros.org/wiki/vision_visp</url>
   <depend stack="ros" />
 
   <depend stack="image_common"/> <!-- image_transport --> 
