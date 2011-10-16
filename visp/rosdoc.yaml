@@ -1,0 +1,4 @@
+ - builder: external
+   external_url: http://www.irisa.fr/lagadic/visp/documentation/visp-2.6.0/
+   output_dir: cpp
+   name: C++ API
