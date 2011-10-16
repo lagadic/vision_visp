@@ -8,17 +8,16 @@
 
   </description>
   <author>Maintained by Thomas Moulard</author>
-  <license>BSD / QPL (ViSP)</license>  
+  <license>BSD,QPL</license>
   <review status="experimental" notes=""/>
   <url>http://ros.org/wiki/vision_visp</url>
-  <depend stack="ros" />
 
-  <depend stack="image_common"/> <!-- image_transport --> 
-  <depend stack="ros"/> <!--  --> 
-  <depend stack="vision_opencv"/> <!-- opencv2 --> 
-  <depend stack="geometry"/> <!-- bullet --> 
-  <depend stack="ros_comm"/> <!-- rospy, rosbag, std_msgs, roscpp --> 
-  <depend stack="image_pipeline"/> <!-- image_proc --> 
-  <depend stack="driver_common"/> <!-- dynamic_reconfigure --> 
-  <depend stack="common_msgs"/> <!-- geometry_msgs, sensor_msgs -->
+  <depend stack="common_msgs" /> <!-- geometry_msgs, sensor_msgs -->
+  <depend stack="driver_common" /> <!-- dynamic_reconfigure -->
+  <depend stack="geometry" /> <!-- bullet -->
+  <depend stack="image_common" /> <!-- image_transport -->
+  <depend stack="image_pipeline" /> <!-- image_proc -->
+  <depend stack="ros" />
+  <depend stack="ros_comm" /> <!-- rospy, rosbag, std_msgs, roscpp -->
+  <depend stack="vision_opencv" /> <!-- opencv2 -->
 </stack>
