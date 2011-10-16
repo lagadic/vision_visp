@@ -8,7 +8,7 @@
 
   </description>
   <author>Maintained by Thomas Moulard</author>
-  <license></license>  
+  <license>BSD / QPL (ViSP)</license>  
   <review status="experimental" notes=""/>
   <url>http://ros.org/wiki/visp</url>
   <depend stack="ros" />
