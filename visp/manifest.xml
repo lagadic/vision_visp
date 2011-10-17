@@ -21,7 +21,6 @@
        lflags="-Wl,-rpath,${prefix}/install/lib  -L${prefix}/install/lib -lvisp-2"
        />
 
-    <doxymaker external="http://www.irisa.fr/lagadic/visp/visp.html" />
     <rosdoc config="rosdoc.yaml" />
   </export>
 
