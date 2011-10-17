@@ -6,6 +6,9 @@
 
     ViSP can be useful in robotics, computer vision, augmented reality and
     computer animation.
+
+    This package is based on the original visp package from Steven
+    Bellens.
   </description>
   <author>INRIA Rennes - Bretagne Atlantique</author>
   <license>QPL</license>
