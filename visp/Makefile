@@ -10,7 +10,7 @@ MD5SUM_FILE = ViSP-2.6.0.tar.gz.md5sum
 INSTALL_DIR = install
 
 # Gdk include path is required for Fedora 15.
-CMAKE_CXX_FLAGS=-DNDEBUG -march=native -O3 -g -I/usr/include/gdk-pixbuf-2.0
+CMAKE_CXX_FLAGS=-DNDEBUG -march=native -O3 -g `pkg-config --cflags gtk+-2.0`
 
 CMAKE_FLAGS = -DCMAKE_INSTALL_PREFIX=`rospack find visp`/$(INSTALL_DIR)/ \
 	      -DCMAKE_CXX_FLAGS="$(CMAKE_CXX_FLAGS)"                    \

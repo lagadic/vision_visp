@@ -20,4 +20,5 @@
   <depend stack="ros" />
   <depend stack="ros_comm" /> <!-- rospy, rosbag, std_msgs, roscpp -->
   <depend stack="vision_opencv" /> <!-- opencv2 -->
+
 </stack>

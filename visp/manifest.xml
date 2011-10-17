@@ -18,7 +18,7 @@
   <export>
     <cpp
        cflags="-I${prefix}/install/include"
-       lflags="-Wl,-rpath,${prefix}/install/lib  -L${prefix}/install/lib -lvisp-2"
+       lflags="-Wl,-rpath,${prefix}/install/lib -L${prefix}/install/lib -lvisp-2"
        />
 
     <rosdoc config="rosdoc.yaml" />
@@ -28,6 +28,7 @@
 
   <depend package="opencv2"/>
 
+  <rosdep name="pkg-config"/>
   <rosdep name="libdc1394-dev"/>
   <rosdep name="libxml2"/>
   <rosdep name="libjpeg"/>
