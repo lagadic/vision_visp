@@ -73,5 +73,4 @@ rosbuild_add_executable(republish src/nodes/republish.cpp)
 # Tutorial
 rosbuild_download_data(
   https://github.com/downloads/thomas-moulard/ros-visp_tracker/tutorial-static-box.bag
-  bag/tutorial-static-box.bag
-  3f3111eb8fa89e0ef0e3d32cd93e2eb6)
+  bag/tutorial-static-box.bag)
