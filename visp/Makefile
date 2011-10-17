@@ -13,7 +13,7 @@ INSTALL_DIR = install
 CMAKE_CXX_FLAGS=-DNDEBUG -march=native -O3 -g `pkg-config --cflags gtk+-2.0`
 
 CMAKE_FLAGS = -DCMAKE_INSTALL_PREFIX=`rospack find visp`/$(INSTALL_DIR)/ \
-	      -DCMAKE_CXX_FLAGS="$(CMAKE_CXX_FLAGS)"                    \
+	      -DCMAKE_CXX_FLAGS:STRING="$(CMAKE_CXX_FLAGS)"              \
 	      -DBUILD_DEMOS=ON -DBUILD_TESTING=ON -DBUILD_EXAMPLES=ON   \
 	      -DBUILD_SHARED_LIBS=ON -DBUILD_DEPRECATED=ON              \
 	      -DUSE_DC1394_1=OFF -DUSE_FFMPEG=OFF                       \
