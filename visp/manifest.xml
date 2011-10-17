@@ -29,8 +29,6 @@
   <rosdep name="libdc1394-dev"/>
   <rosdep name="libxml2"/>
   <rosdep name="libjpeg"/>
-  <rosdep name="ffmpeg"/>
-
   <rosdep name="libpng"/>
 
   <rosdep name="libgsl"/>
