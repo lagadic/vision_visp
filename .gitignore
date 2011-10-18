@@ -1,5 +1,7 @@
 bin/
 build/
+cfg/cpp/
+docs/
 lib/
 msg/lisp/
 msg_gen/
@@ -8,6 +10,8 @@ src/visp_tracker/
 srv/lisp/
 srv_gen/
 models/*/*.0.pos
+
+*.cfgc
 
 # Retrieved from internet.
 bag/tutorial-static-box.*
