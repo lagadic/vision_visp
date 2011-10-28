@@ -245,8 +245,11 @@ namespace visp_tracker
 	ROS_INFO("VRML model has been successfully loaded.");
 
 	ROS_DEBUG_STREAM("Nb hidden faces: "
-			<< tracker_.faces.getPolygon().nbElements());
-	ROS_DEBUG_STREAM("Nb line: " << tracker_.Lline.nbElements());
+			<< tracker_.faces.getPolygon().size());
+
+	std::list<vpMbtDistanceLine *> linesList;
+	tracker_.getLline(linesList);
+	ROS_DEBUG_STREAM("Nb line: " << linesList.size());
 	ROS_DEBUG_STREAM("nline: " << tracker_.nline);
 	ROS_DEBUG_STREAM("Visible faces: " << tracker_.nbvisiblepolygone);
       }

@@ -131,25 +131,27 @@ namespace visp_tracker
   {
     sites_.moving_edge_sites.clear();
 
-    tracker_.getLline()->front();
-    while (!tracker_.getLline()->outside())
+    std::list<vpMbtDistanceLine*> linesList;
+    tracker_.getLline(linesList, 0);
+
+    std::list<vpMbtDistanceLine*>::iterator linesIterator =
+      linesList.begin();
+    for (; linesIterator != linesList.end(); ++linesIterator)
       {
-	vpMbtDistanceLine* l = tracker_.getLline()->value();
-	if (l && l->isVisible() && l->meline)
+	vpMbtDistanceLine* line = *linesIterator;
+
+	if (line && line->isVisible() && line->meline)
 	  {
-	    l->meline->list.front();
-	    while (!l->meline->list.outside())
+	    std::list<vpMeSite>::const_iterator sitesIterator =
+	      line->meline->list.begin();
+	    for (; sitesIterator != line->meline->list.end(); ++sitesIterator)
 	      {
-		vpMeSite pix = l->meline->list.value();
 		visp_tracker::MovingEdgeSite movingEdgeSite;
-		movingEdgeSite.x = pix.ifloat;
-		movingEdgeSite.y = pix.jfloat;
-		movingEdgeSite.suppress = pix.suppress;
-		sites_.moving_edge_sites.push_back(movingEdgeSite);
-		l->meline->list.next();
+		movingEdgeSite.x = sitesIterator->ifloat;
+		movingEdgeSite.y = sitesIterator->jfloat;
+		movingEdgeSite.suppress = sitesIterator->suppress;
 	      }
 	  }
-	tracker_.getLline()->next();
       }
   }
 
