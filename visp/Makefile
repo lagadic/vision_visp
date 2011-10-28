@@ -3,7 +3,7 @@ all: visp
 VERSION     = 2.6.1
 TARBALL     = build/ViSP-$(VERSION).tar.gz
 TARBALL_URL = \
-http://gforge.inria.fr/frs/download.php/27536/ViSP-$(VERSION).tar.gz
+http://gforge.inria.fr/frs/download.php/29283/ViSP-$(VERSION).tar.gz
 UNPACK_CMD  = tar xfz
 SOURCE_DIR  = build/ViSP-$(VERSION)
 TARBALL_PATCH =
