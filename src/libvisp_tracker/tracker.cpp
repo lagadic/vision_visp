@@ -138,12 +138,18 @@ namespace visp_tracker
 	const velocityDuringInterval_t& newerVelocity =
 	  velocities_.back();
 	if(newerVelocity.first >= stampedTwist->header.stamp.toSec())
-	  throw std::runtime_error
-	    ("camera velocity estimation timestamp is inconsistent");
-
-	if(stampedTwist->header.frame_id != header_.frame_id)
-	  throw std::runtime_error
-	    ("velocity is not given in the wanted frame");
+	  {
+	    ROS_WARN_THROTTLE
+	      (5, "camera velocity estimation timestamp is inconsistent");
+	    return;
+	  }
+      }
+    if(!header_.frame_id.empty()
+       && stampedTwist->header.frame_id != header_.frame_id)
+      {
+	ROS_WARN_THROTTLE
+	  (5, "velocity is not given in the wanted frame");
+	return;
       }
 
     vpColVector velocity(6);
@@ -340,7 +346,6 @@ namespace visp_tracker
 	  throw std::runtime_error
 	    ("invalid colum size during velocity integration");
 
-
 	cMo_ = vpExponentialMap::direct(velocity, dt).inverse() * cMo_;
       }
     velocities_.erase(velocities_.begin(), it);
@@ -365,7 +370,14 @@ namespace visp_tracker
 	    lastTrackedImage_ = header_.seq;
 
 	    // Update cMo.
-	    integrateCameraVelocity(lastHeader, header_);
+	    try
+	      {
+		integrateCameraVelocity(lastHeader, header_);
+	      }
+	    catch(std::exception& e)
+	      {
+		ROS_WARN_STREAM_THROTTLE(5, e.what());
+	      }
 
 	    if (state_ == TRACKING || state_ == LOST)
 	      try
