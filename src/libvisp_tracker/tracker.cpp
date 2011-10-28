@@ -132,6 +132,20 @@ namespace visp_tracker
   Tracker::cameraVelocityCallback(const geometry_msgs::TwistStampedConstPtr&
 				  stampedTwist)
   {
+    // Consistency checks.
+    if(!velocities_.empty())
+      {
+	const velocityDuringInterval_t& newerVelocity =
+	  velocities_.back();
+	if(newerVelocity.first >= stampedTwist->header.stamp.toSec())
+	  throw std::runtime_error
+	    ("camera velocity estimation timestamp is inconsistent");
+
+	if(stampedTwist->header.frame_id != header_.frame_id)
+	  throw std::runtime_error
+	    ("velocity is not given in the wanted frame");
+      }
+
     vpColVector velocity(6);
     velocity[0] = stampedTwist->twist.linear.x;
     velocity[1] = stampedTwist->twist.linear.y;
@@ -140,7 +154,9 @@ namespace visp_tracker
     velocity[4] = stampedTwist->twist.angular.y;
     velocity[5] = stampedTwist->twist.angular.z;
 
-    velocities_.push_back(std::make_pair(0., velocity));
+    velocities_.push_back(std::make_pair
+			  (stampedTwist->header.stamp.toSec(),
+			   velocity));
   }
 
   void
@@ -239,7 +255,7 @@ namespace visp_tracker
     cameraVelocitycallback_t callback =
       boost::bind(&Tracker::cameraVelocityCallback, this, _1);
     cameraVelocitySubscriber_ =
-      nodeHandle_.subscribe(camera_velocity_topic, 1, callback);
+      nodeHandle_.subscribe(camera_velocity_topic, queueSize_, callback);
 
     // Camera subscriber.
     cameraSubscriber_ =
