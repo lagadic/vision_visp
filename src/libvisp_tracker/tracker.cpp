@@ -292,13 +292,16 @@ namespace visp_tracker
     velocities_t::iterator it = velocities_.begin();
 
     // Before the last image: do not integrate, remove.
-    for(; it->first <= lastHeader.stamp.toSec() && it != velocities_.end();
+    for(; it != velocities_.end()
+	  && it->first <= lastHeader.stamp.toSec();
 	++it)
       ;
     velocities_.erase(velocities_.begin(), it);
+    it = velocities_.begin();
 
     // Between last and current: integrate and erase.
-    for(; it->first <= currentHeader.stamp.toSec() && it != velocities_.end();
+    for(; it != velocities_.end()
+	  && it->first <= currentHeader.stamp.toSec();
 	++it)
       {
 	double start = 0.;
