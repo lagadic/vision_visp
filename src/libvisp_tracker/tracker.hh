@@ -1,5 +1,6 @@
 #ifndef VISP_TRACKER_TRACKER_HH
 # define VISP_TRACKER_TRACKER_HH
+# include <boost/circular_buffer.hpp>
 # include <boost/filesystem/path.hpp>
 
 # include <dynamic_reconfigure/server.h>
@@ -7,6 +8,8 @@
 # include <image_proc/advertisement_checker.h>
 
 # include <image_transport/image_transport.h>
+
+# include <geometry_msgs/TwistStamped.h>
 
 # include <sensor_msgs/Image.h>
 # include <sensor_msgs/CameraInfo.h>
@@ -56,12 +59,21 @@ namespace visp_tracker
     bool
     trackingMetaDataCallback(visp_tracker::TrackingMetaData::Request&,
 			     visp_tracker::TrackingMetaData::Response& res);
+    void
+    cameraVelocityCallback(const geometry_msgs::TwistStampedConstPtr& twist);
 
     void updateMovingEdgeSites();
 
     void checkInputs();
     void waitForImage();
+
+    void integrateCameraVelocity(const std_msgs::Header& lastHeader,
+				 const std_msgs::Header& currentHeader);
   private:
+    typedef std::pair<double, vpColVector> velocityDuringInterval_t;
+    typedef boost::circular_buffer<velocityDuringInterval_t> velocities_t;
+    static const velocities_t::size_type MAX_VELOCITY_VALUES = 1000;
+
     unsigned queueSize_;
 
     ros::NodeHandle nodeHandle_;
@@ -85,6 +97,7 @@ namespace visp_tracker
     reconfigureSrv_t reconfigureSrv_;
     ros::Publisher resultPublisher_;
     ros::Publisher movingEdgeSitesPublisher_;
+    ros::Subscriber cameraVelocitySubscriber_;
 
     ros::ServiceServer initService_;
     ros::ServiceServer trackingMetaDataService_;
@@ -102,6 +115,10 @@ namespace visp_tracker
 
     /// \brief Helper used to check that subscribed topics exist.
     image_proc::AdvertisementChecker checkInputs_;
+
+    vpHomogeneousMatrix cMo_;
+
+    velocities_t velocities_;
   };
 } // end of namespace visp_tracker.
 

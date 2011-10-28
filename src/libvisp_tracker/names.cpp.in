@@ -5,6 +5,7 @@ namespace visp_tracker
   std::string default_tracker_prefix("/tracker_mbt");
   std::string result_topic("result");
   std::string moving_edge_sites_topic("moving_edge_sites");
+  std::string camera_velocity_topic("camera_velocity");
   std::string init_service("init_tracker");
   std::string tracking_meta_data_service("tracking_meta_data");
 

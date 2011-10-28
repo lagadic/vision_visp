@@ -16,6 +16,7 @@
 #include <visp_tracker/TrackingResult.h>
 
 #include <boost/bind.hpp>
+#include <visp/vpExponentialMap.h>
 #include <visp/vpImage.h>
 #include <visp/vpImageConvert.h>
 #include <visp/vpCameraParameters.h>
@@ -82,7 +83,9 @@ namespace visp_tracker
     try
       {
 	ROS_DEBUG_STREAM("Trying to load the model: " << modelPath_.c_str());
-	tracker_.loadModel(getModelFileFromModelName(modelName_, modelPath_).external_file_string().c_str());
+	tracker_.loadModel
+	  (getModelFileFromModelName
+	   (modelName_, modelPath_).external_file_string().c_str());
       }
     catch(...)
       {
@@ -92,14 +95,13 @@ namespace visp_tracker
     ROS_DEBUG("Model has been successfully loaded.");
 
     // Load the initial cMo.
-    vpHomogeneousMatrix cMo;
-    transformToVpHomogeneousMatrix(cMo, req.initial_cMo);
+    transformToVpHomogeneousMatrix(cMo_, req.initial_cMo);
 
     // Try to initialize the tracker.
-    ROS_INFO_STREAM("Initializing tracker with cMo:\n" << cMo);
+    ROS_INFO_STREAM("Initializing tracker with cMo:\n" << cMo_);
     try
       {
-	tracker_.init(image_, cMo);
+	tracker_.init(image_, cMo_);
 	ROS_INFO("Tracker successfully initialized.");
 
 	movingEdge.print();
@@ -124,6 +126,21 @@ namespace visp_tracker
     res.model_path.data = modelPath_;
     res.model_name.data = modelName_;
     return true;
+  }
+
+  void
+  Tracker::cameraVelocityCallback(const geometry_msgs::TwistStampedConstPtr&
+				  stampedTwist)
+  {
+    vpColVector velocity(6);
+    velocity[0] = stampedTwist->twist.linear.x;
+    velocity[1] = stampedTwist->twist.linear.y;
+    velocity[2] = stampedTwist->twist.linear.z;
+    velocity[3] = stampedTwist->twist.angular.x;
+    velocity[4] = stampedTwist->twist.angular.y;
+    velocity[5] = stampedTwist->twist.angular.z;
+
+    velocities_.push_back(std::make_pair(0., velocity));
   }
 
   void
@@ -178,6 +195,7 @@ namespace visp_tracker
       reconfigureSrv_(),
       resultPublisher_(),
       movingEdgeSitesPublisher_(),
+      cameraVelocitySubscriber_(),
       initService_(),
       trackingMetaDataService_(),
       header_(),
@@ -187,8 +205,13 @@ namespace visp_tracker
       tracker_(),
       sites_(),
       lastTrackedImage_(),
-      checkInputs_(ros::NodeHandle(), ros::this_node::getName())
+      checkInputs_(ros::NodeHandle(), ros::this_node::getName()),
+      cMo_ (),
+      velocities_ (MAX_VELOCITY_VALUES)
   {
+    // Set cMo to identity.
+    cMo_.eye();
+
     // Parameters.
     ros::param::param<std::string>("~camera_prefix", cameraPrefix_, "");
 
@@ -208,6 +231,15 @@ namespace visp_tracker
     movingEdgeSitesPublisher_ =
       nodeHandle_.advertise<visp_tracker::MovingEdgeSites>
       (visp_tracker::moving_edge_sites_topic, queueSize_);
+
+    // Camera velocity subscriber.
+    typedef boost::function<
+    void (const geometry_msgs::TwistStampedConstPtr&)>
+      cameraVelocitycallback_t;
+    cameraVelocitycallback_t callback =
+      boost::bind(&Tracker::cameraVelocityCallback, this, _1);
+    cameraVelocitySubscriber_ =
+      nodeHandle_.subscribe(camera_velocity_topic, 1, callback);
 
     // Camera subscriber.
     cameraSubscriber_ =
@@ -251,36 +283,82 @@ namespace visp_tracker
       (visp_tracker::tracking_meta_data_service, trackingMetaDataCallback);
   }
 
+  void Tracker::integrateCameraVelocity(const std_msgs::Header& lastHeader,
+					const std_msgs::Header& currentHeader)
+  {
+    if (currentHeader.stamp <= lastHeader.stamp)
+      return;
+
+    velocities_t::iterator it = velocities_.begin();
+
+    // Before the last image: do not integrate, remove.
+    for(; it->first <= lastHeader.stamp.toSec() && it != velocities_.end();
+	++it)
+      ;
+    velocities_.erase(velocities_.begin(), it);
+
+    // Between last and current: integrate and erase.
+    for(; it->first <= currentHeader.stamp.toSec() && it != velocities_.end();
+	++it)
+      {
+	double start = 0.;
+	if (it == velocities_.begin())
+	  start = lastHeader.stamp.toSec();
+	else
+	  {
+	    velocities_t::const_iterator prev = it;
+	    --prev;
+	    start = it->first;
+	  }
+	const double& end = it->first;
+	double dt = end - start;
+
+	const vpColVector& velocity = it->second;
+
+	if (dt <= 0.)
+	  throw std::runtime_error("invalid velocity message");
+	if (velocity.getCols() != 6)
+	  throw std::runtime_error
+	    ("invalid colum size during velocity integration");
+
+
+	cMo_ = vpExponentialMap::direct(velocity, dt).inverse() * cMo_;
+      }
+    velocities_.erase(velocities_.begin(), it);
+  }
+
   void Tracker::spin()
   {
     ros::Rate loopRateTracking(100);
-    vpHomogeneousMatrix cMo;
     visp_tracker::TrackingResult result;
-    unsigned long lastHeaderSeq = 0;
+    std_msgs::Header lastHeader;
 
     while (ros::ok())
       {
 	// When a camera sequence is played several times,
 	// the seq id will decrease, in this case we want to
 	// continue the tracking.
-	if (header_.seq < lastHeaderSeq)
+	if (header_.seq < lastHeader.seq)
 	  lastTrackedImage_ = 0;
-	lastHeaderSeq = header_.seq;
 
 	if (lastTrackedImage_ < header_.seq)
 	  {
 	    lastTrackedImage_ = header_.seq;
-	    if (state_ == TRACKING)
+
+	    // Update cMo.
+	    integrateCameraVelocity(lastHeader, header_);
+
+	    if (state_ == TRACKING || state_ == LOST)
 	      try
 		{
+		  tracker_.init(image_, cMo_);
 		  tracker_.track(image_);
-		  tracker_.getPose(cMo);
+		  tracker_.getPose(cMo_);
 		}
 	      catch(...)
 		{
-		  ROS_WARN("tracking lost");
+		  ROS_WARN_THROTTLE(10, "tracking lost");
 		  state_ = LOST;
-		  cMo.eye();
 		}
 
 	    // Publish the tracking result.
@@ -288,7 +366,7 @@ namespace visp_tracker
 	    result.is_tracking = state_ == TRACKING;
 
 	    if (state_ == TRACKING)
-	      vpHomogeneousMatrixToTransform(result.cMo, cMo);
+	      vpHomogeneousMatrixToTransform(result.cMo, cMo_);
 	    resultPublisher_.publish(result);
 
 	    if (state_ == TRACKING)
@@ -298,6 +376,8 @@ namespace visp_tracker
 	    sites_.header = header_;
 	    movingEdgeSitesPublisher_.publish(sites_);
 	  }
+	lastHeader = header_;
+
 	ros::spinOnce();
 	loopRateTracking.sleep();
       }
