@@ -74,10 +74,16 @@ namespace visp_tracker
     // Retrieve meta-data from tracker.
     //FIXME: we suppose here that these info cannot change at runtime.
     retrieveMetaData();
+    if (!ros::ok())
+      return;
 
     initializeTracker();
+    if (!ros::ok())
+      return;
 
     checkInputs();
+    if (!ros::ok())
+      return;
 
     // Subscribe to camera and tracker synchronously.
     imageSubscriber_.subscribe
@@ -129,7 +135,11 @@ namespace visp_tracker
 		 image_.getWidth(), image_.getHeight(),
 		 "ViSP MBT tracker (viewer)");
     vpImagePoint point (10, 10);
+    vpImagePoint pointTime (22, 10);
     ros::Rate loop_rate(80);
+
+    boost::format fmt("tracking (x=%f y=%f z=%f)");
+    boost::format fmtTime("time = %f");
 
     while (ros::ok())
       {
@@ -142,10 +152,12 @@ namespace visp_tracker
 
 	    ROS_DEBUG_STREAM_THROTTLE(10, "cMo:\n" << *cMo_);
 
-	    boost::format fmt("tracking (x=%f y=%f z=%f)");
 	    fmt % (*cMo_)[0][3] % (*cMo_)[1][3] % (*cMo_)[2][3];
 	    vpDisplay::displayCharString
 	      (image_, point, fmt.str().c_str(), vpColor::red);
+	    fmtTime % info_->header.stamp.toSec();
+	    vpDisplay::displayCharString
+	      (image_, pointTime, fmtTime.str().c_str(), vpColor::red);
 	  }
 	else
 	  vpDisplay::displayCharString
@@ -176,8 +188,27 @@ namespace visp_tracker
       (trackingMetaDataService_);
 
     visp_tracker::TrackingMetaData srv;
-    if (!client.call(srv))
-      throw std::runtime_error("failed to retrieve tracking meta-data");
+    bool failed = true;
+    ros::Rate rate (1.);
+    while (ros::ok () && failed)
+      {
+	try
+	  {
+	    if (!client.call(srv))
+	      throw std::runtime_error
+		("failed to retrieve tracking meta-data");
+	    failed = false;
+	  }
+	catch(...)
+	  {
+	    failed = true;
+	  }
+	ros::spinOnce();
+	rate.sleep();
+      }
+
+    if (!ros::ok())
+      return;
 
     if (srv.response.model_name.data == "")
       throw std::runtime_error
