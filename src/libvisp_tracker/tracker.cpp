@@ -423,7 +423,23 @@ namespace visp_tracker
 	velocities_.erase(velocities_.begin(), it);
       }
 
+    ROS_DEBUG_STREAM_THROTTLE
+      (5,
+       "applying control feedback, camera motion estimation is:\n" << cMc_);
     cMo_ = cMc_.inverse() * cMo_;
+  }
+
+  std::string
+  Tracker::velocitiesDebugMessage()
+  {
+    std::stringstream ss;
+    ss << "velocities_ array size: " << velocities_.size() << "\n";
+    if (!velocities_.empty())
+      ss << "Velocities:\n";
+    for (unsigned i = 0; i < std::min(velocities_.size(), 10u); ++i)
+      ss << "- t = " << velocities_[i].first
+	 << " / v(t) = \n" << velocities_[i].second << "\n";
+    return ss.str();
   }
 
   void Tracker::spin()
@@ -483,6 +499,8 @@ namespace visp_tracker
 	    movingEdgeSitesPublisher_.publish(sites_);
 	  }
 	lastHeader = header_;
+
+	ROS_DEBUG_STREAM_THROTTLE (5, velocitiesDebugMessage());
 
 	ros::spinOnce();
 	loopRateTracking.sleep();

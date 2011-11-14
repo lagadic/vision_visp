@@ -69,6 +69,8 @@ namespace visp_tracker
 
     void integrateCameraVelocity(const std_msgs::Header& lastHeader,
 				 const std_msgs::Header& currentHeader);
+
+    std::string velocitiesDebugMessage();
   private:
     typedef std::pair<double, vpColVector> velocityDuringInterval_t;
     typedef boost::circular_buffer<velocityDuringInterval_t> velocities_t;
