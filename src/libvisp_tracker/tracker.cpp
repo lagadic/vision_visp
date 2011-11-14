@@ -305,50 +305,125 @@ namespace visp_tracker
       (visp_tracker::tracking_meta_data_service, trackingMetaDataCallback);
   }
 
+
+  // lastHeader is the date where the previous image has been acquired,
+  // currentHeader is the date where the current image has been acquired.
+  //
+  // The goal is to compute the camera displacement between these two dates
+  // and update the camera position accordingly by integrating the speed
+  // on the correct interval.
+  //
+  //   ----    ----
+  //  - |  ----    -
+  // -  |  |  |    |------
+  // |  |  |  |    |  | |
+  // t0 t1 s  t2   t3 e t4
+  //
+  // - t_{0..5} are the available velocities.
+  // - v(t_i) the associated velocities
+  // Note: v(t0) is applied from t0 to t1
+  //
+  // - s and e the previous and current image timestamps.
+  //
+  // The goal is to integrate the camera speed between s and e.
+  //
+  // Let cMc_ the new camera position w.r.t. the old one,
+  //     cMo  the object position w.r.t. the camera at s
+  // and c_Mo the object position w.r.t. the camera a e (wanted!).
+  // In this case: cMc_ =   integral_{t_3}^{e} v(t_3) . dt
+  //                      * integral_{t_2}^{t_3} v(t_2) . dt
+  //                      * integral_{s}^{t_2} v(t_1) . dt
+  //
+  // The object motion is opposite: oMo_ = cMc_^{-1}
+  // c_Mo = c_Mc * cMo_ = cMc_.inverse() * cMo
+  //
+  //
+  // In this case, t0 should be removed without being integrated but t2
+  // should be kept and taken into account.
   void Tracker::integrateCameraVelocity(const std_msgs::Header& lastHeader,
 					const std_msgs::Header& currentHeader)
   {
+    // If the new image is older than the previous one, do not do anything.
     if (currentHeader.stamp <= lastHeader.stamp)
+      {
+	ROS_DEBUG_THROTTLE(5, "new image is older than previous one");
+	return;
+      }
+
+    // There is nothing to integrate.
+    if (velocities_.empty())
       return;
 
-    velocities_t::iterator it = velocities_.begin();
+    // The interval on which the camera velocity will be integrated.
+    double start = lastHeader.stamp.toSec();
+    double end = currentHeader.stamp.toSec();
 
-    // Before the last image: do not integrate, remove.
-    for(; it != velocities_.end()
-	  && it->first <= lastHeader.stamp.toSec();
-	++it)
+    // First, remove from the vector velocities that have already
+    // been integrated or which are too old.
+    velocities_t::iterator it = velocities_.begin();
+    for(; it != velocities_.end() && it->first < start; ++it)
       ;
-    velocities_.erase(velocities_.begin(), it);
+    // Here the iterator point to the first element which is after start.
+    // We must keep it and the previous value too.
+    //
+    // In the example, we would point on t2 so we must go back on t1
+    // and call erase which will erase [t0,t1).
+
+    if (it != velocities_.begin())
+      {
+	--it;
+	velocities_.erase(velocities_.begin(), it);
+      }
+
+    // There is nothing to integrate.
+    if (velocities_.empty())
+      return;
+
+    // Second, search for velocities we must integrate.
+    // (iterator _must_ be reset after a deletion)
     it = velocities_.begin();
 
-    // Between last and current: integrate and erase.
-    for(; it != velocities_.end()
-	  && it->first <= currentHeader.stamp.toSec();
-	++it)
-      {
-	double start = 0.;
-	if (it == velocities_.begin())
-	  start = lastHeader.stamp.toSec();
-	else
-	  {
-	    velocities_t::const_iterator prev = it;
-	    --prev;
-	    start = it->first;
-	  }
-	const double& end = it->first;
-	double dt = end - start;
+    vpHomogeneousMatrix cMc_;
+    cMc_.eye();
 
+    for(; it != velocities_.end(); ++it)
+      {
+	velocities_t::iterator current = it;
+	velocities_t::iterator next = it; ++next;
+
+	// If current is after end, there is nothing more to
+	// integrate.
+	if (current->first >= end)
+	  break;
+
+	// Partial interval on which the velocity will be integrated.
+	double s = std::max(start, current->first);
+	double e = 0.;
+
+	if (next == velocities_.end())
+	  e = end;
+	else
+	  e = std::min(end, next->first);
+	double dt = e - s;
 	const vpColVector& velocity = it->second;
 
-	if (dt <= 0.)
-	  throw std::runtime_error("invalid velocity message");
-	if (velocity.getCols() != 6)
+	if (dt < 0.)
+	  ROS_DEBUG_THROTTLE(5, "invalid dt");
+	if (velocity.getRows() != 6)
 	  throw std::runtime_error
 	    ("invalid colum size during velocity integration");
 
-	cMo_ = vpExponentialMap::direct(velocity, dt).inverse() * cMo_;
+
+	cMc_ = vpExponentialMap::direct(velocity, dt) * cMc_;
       }
-    velocities_.erase(velocities_.begin(), it);
+
+    if (it != velocities_.begin())
+      {
+	--it;
+	velocities_.erase(velocities_.begin(), it);
+      }
+
+    cMo_ = cMc_.inverse() * cMo_;
   }
 
   void Tracker::spin()
