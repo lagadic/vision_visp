@@ -54,6 +54,7 @@ namespace visp_tracker
       movingEdge_(),
       cameraParameters_(),
       tracker_(),
+      startFromSavedPose_(),
       checkInputs_()
   {
     tracker_.resetTracker();
@@ -67,6 +68,12 @@ namespace visp_tracker
     ros::param::param<std::string>("~model_path", modelPath_,
 				   visp_tracker::default_model_path);
     ros::param::param<std::string>("~model_name", modelName_, "");
+
+    ros::param::param<bool>
+      ("~start_from_saved_pose", startFromSavedPose_, false);
+
+    ros::param::param<bool>
+      ("~confirm_init", confirmInit_, true);
 
     if (modelName_ == "")
       throw std::runtime_error("empty model");
@@ -166,34 +173,47 @@ namespace visp_tracker
 	    // Initialize.
 	    vpDisplay::display(image_);
 	    vpDisplay::flush(image_);
-	    initClick();
+	    if (!startFromSavedPose_)
+	      initClick();
+	    else
+	      {
+		cMo = loadInitialPose();
+		startFromSavedPose_ = false;
+		tracker_.init(image_, cMo);
+	      }
 	    tracker_.getPose(cMo);
 
 	    ROS_INFO_STREAM("initial pose [tx,ty,tz,tux,tuy,tuz]:\n"
 			    << vpPoseVector(cMo));
 
 	    // Track once to make sure initialization is correct.
-	    vpImagePoint ip;
-	    vpMouseButton::vpMouseButtonType button = vpMouseButton::button1;
-	    do
+	    if (confirmInit_)
 	      {
-		vpDisplay::display(image_);
-		tracker_.track(image_);
-		tracker_.display(image_, cMo, cameraParameters_,
-				 vpColor::red, 2);
-		vpDisplay::displayCharString
-		  (image_, point, "tracking, click to initialize tracker",
-		   vpColor::red);
-		vpDisplay::flush(image_);
-		tracker_.getPose(cMo);
+		vpImagePoint ip;
+		vpMouseButton::vpMouseButtonType button =
+		  vpMouseButton::button1;
+		do
+		  {
+		    vpDisplay::display(image_);
+		    tracker_.track(image_);
+		    tracker_.display(image_, cMo, cameraParameters_,
+				     vpColor::red, 2);
+		    vpDisplay::displayCharString
+		      (image_, point, "tracking, click to initialize tracker",
+		       vpColor::red);
+		    vpDisplay::flush(image_);
+		    tracker_.getPose(cMo);
 
-		ros::spinOnce();
-		loop_rate_tracking.sleep();
-		if (!ros::ok())
-		  return;
+		    ros::spinOnce();
+		    loop_rate_tracking.sleep();
+		    if (!ros::ok())
+		      return;
+		  }
+		while(!vpDisplay::getClick(image_, ip, button, false));
+		ok = true;
 	      }
-	    while(!vpDisplay::getClick(image_, ip, button, false));
-	    ok = true;
+	    else
+	      ok = true;
 	  }
 	catch(const std::string& str)
 	  {

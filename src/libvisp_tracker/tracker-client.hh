@@ -101,6 +101,9 @@ namespace visp_tracker
     vpCameraParameters cameraParameters_;
     vpMbEdgeTracker tracker_;
 
+    bool startFromSavedPose_;
+    bool confirmInit_;
+
     /// \brief Helper used to check that subscribed topics exist.
     image_proc::AdvertisementChecker checkInputs_;
   };
