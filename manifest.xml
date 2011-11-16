@@ -30,6 +30,7 @@
   <depend package="image_transport"/>
   <depend package="geometry_msgs"/>
   <depend package="dynamic_reconfigure"/>
+  <depend package="tf"/>
   <depend package="opencv2"/>
   <depend package="bullet"/>
   <depend package="visp"/>

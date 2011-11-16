@@ -14,6 +14,8 @@
 # include <sensor_msgs/Image.h>
 # include <sensor_msgs/CameraInfo.h>
 
+# include <tf/transform_broadcaster.h>
+
 # include <visp_tracker/Init.h>
 # include <visp_tracker/MovingEdgeConfig.h>
 # include <visp_tracker/MovingEdgeSites.h>
@@ -121,6 +123,9 @@ namespace visp_tracker
     vpHomogeneousMatrix cMo_;
 
     velocities_t velocities_;
+
+    tf::TransformBroadcaster transformBroadcaster_;
+    std::string childFrameId_;
   };
 } // end of namespace visp_tracker.
 

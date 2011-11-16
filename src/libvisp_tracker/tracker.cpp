@@ -3,14 +3,15 @@
 #include <boost/scope_exit.hpp>
 #include <boost/version.hpp>
 
-#include <ros/ros.h>
-#include <ros/transport_hints.h>
+#include <dynamic_reconfigure/server.h>
 #include <image_proc/advertisement_checker.h>
 #include <image_transport/image_transport.h>
 #include <ros/param.h>
-#include <dynamic_reconfigure/server.h>
-#include <std_msgs/String.h>
+#include <ros/ros.h>
+#include <ros/transport_hints.h>
 #include <sensor_msgs/Image.h>
+#include <std_msgs/String.h>
+#include <tf/transform_broadcaster.h>
 
 #include <visp_tracker/MovingEdgeSites.h>
 #include <visp_tracker/TrackingResult.h>
@@ -229,7 +230,9 @@ namespace visp_tracker
       lastTrackedImage_(),
       checkInputs_(ros::NodeHandle(), ros::this_node::getName()),
       cMo_ (),
-      velocities_ (MAX_VELOCITY_VALUES)
+      velocities_ (MAX_VELOCITY_VALUES),
+      transformBroadcaster_ (),
+      childFrameId_ ("visp_tracker") // FIXME: should not be static
   {
     // Set cMo to identity.
     cMo_.eye();
@@ -446,6 +449,7 @@ namespace visp_tracker
   {
     ros::Rate loopRateTracking(100);
     visp_tracker::TrackingResult result;
+    tf::Transform transform;
     std_msgs::Header lastHeader;
 
     while (ros::ok())
@@ -497,6 +501,27 @@ namespace visp_tracker
 	      sites_.moving_edge_sites.clear();
 	    sites_.header = header_;
 	    movingEdgeSitesPublisher_.publish(sites_);
+
+	    // Publish the transform
+	    if (state_ == TRACKING)
+	      {
+		transform.setOrigin
+		  (tf::Vector3(result.cMo.translation.x,
+			       result.cMo.translation.y,
+			       result.cMo.translation.z));
+		transform.setRotation
+		  (tf::Quaternion
+		   (result.cMo.rotation.x,
+		    result.cMo.rotation.y,
+		    result.cMo.rotation.z,
+		    result.cMo.rotation.w));
+		transformBroadcaster_.sendTransform
+		  (tf::StampedTransform
+		   (transform,
+		    result.header.stamp,
+		    result.header.frame_id,
+		    childFrameId_));
+	      }
 	  }
 	lastHeader = header_;
 
