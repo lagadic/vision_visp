@@ -8,6 +8,7 @@
 
   <node pkg="visp_tracker" type="client" name="tracker_mbt_client">
     <param name="camera_prefix" value="/wide_left/camera" />
+    <param name="model_path" value="$(find visp_tracker)/models" />
     <param name="model_name" value="laas-box" />
   </node>
 </launch>
