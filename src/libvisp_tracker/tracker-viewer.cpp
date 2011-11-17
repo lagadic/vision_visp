@@ -179,6 +179,11 @@ namespace visp_tracker
     if (!client.call(srv))
       throw std::runtime_error("failed to retrieve tracking meta-data");
 
+    if (srv.response.model_name.data == "")
+      throw std::runtime_error
+	("Tracking not initialized: please initialize"
+	 " the tracking and relaunch the viewer.");
+
     // Compute topic and services names.
     rectifiedImageTopic_ =
       ros::names::clean(srv.response.camera_prefix.data + "/image_rect");
