@@ -24,3 +24,8 @@ libdc1394-dev:
   arch: libdc1394
   fedora: libdc1394-devel
   macports: libdc1394
+
+visp:
+  ubuntu:
+    source:
+      uri: 'https://raw.github.com/laas/vision_visp/master/visp.rdmanifest'
