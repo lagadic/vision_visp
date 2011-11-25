@@ -12,6 +12,8 @@ namespace visp_tracker
   extern std::string tracking_meta_data_service;
 
   extern std::string default_model_path;
+
+  extern std::string model_description_param;
 } // end of namespace visp_tracker;
 
 #endif //! VISP_TRACKER_NAMES_HH

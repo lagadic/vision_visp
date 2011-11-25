@@ -4,6 +4,8 @@
 
 #include <boost/bind.hpp>
 #include <boost/filesystem.hpp>
+#include <boost/filesystem/fstream.hpp>
+#include <boost/filesystem/path.hpp>
 #include <boost/format.hpp>
 #include <boost/optional.hpp>
 
@@ -210,11 +212,6 @@ namespace visp_tracker
     if (!ros::ok())
       return;
 
-    if (srv.response.model_name.data == "")
-      throw std::runtime_error
-	("Tracking not initialized: please initialize"
-	 " the tracking and relaunch the viewer.");
-
     // Compute topic and services names.
     rectifiedImageTopic_ =
       ros::names::clean(srv.response.camera_prefix.data + "/image_rect");
@@ -225,14 +222,27 @@ namespace visp_tracker
       getModelFileFromModelName(srv.response.model_name.data,
 				srv.response.model_path.data);
 
-    if (!boost::filesystem::is_regular_file(vrmlPath_))
+    boost::filesystem::ofstream modelStream;
+    if (srv.response.model_name.data.empty()
+	&& srv.response.model_path.data.empty())
       {
-	boost::format fmt("VRML model %1% is not a regular file");
-	fmt % vrmlPath_;
-	throw std::runtime_error(fmt.str());
+	std::string path;
+	if (!makeModelFile(modelStream, path))
+	  throw std::runtime_error
+	    ("failed to load the model from the parameter server");
+	vrmlPath_ = path;
+	ROS_INFO_STREAM("Model loaded from the parameter server.");
       }
-
-    ROS_INFO_STREAM("VRML file: " << vrmlPath_);
+    else
+      {
+	if (!boost::filesystem::is_regular_file(vrmlPath_))
+	  {
+	    boost::format fmt("VRML model %1% is not a regular file");
+	    fmt % vrmlPath_;
+	    throw std::runtime_error(fmt.str());
+	  }
+	ROS_INFO_STREAM("VRML file: " << vrmlPath_);
+      }
   }
 
   void

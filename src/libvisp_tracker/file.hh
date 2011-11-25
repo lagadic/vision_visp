@@ -1,6 +1,7 @@
 #ifndef VISP_TRACKER_FILE_HH
 # define VISP_TRACKER_FILE_HH
 # include <string>
+# include <boost/filesystem/fstream.hpp>
 # include <boost/filesystem/path.hpp>
 
 boost::filesystem::path
@@ -23,5 +24,8 @@ getConfigurationFileFromModelName(const std::string& modelName,
 boost::filesystem::path
 getInitialPoseFileFromModelName (const std::string& modelName,
 				 const std::string& defaultPath);
+
+bool
+makeModelFile(boost::filesystem::ofstream& stream, std::string& fullModelPath);
 
 #endif //! VISP_TRACKER_FILE_HH

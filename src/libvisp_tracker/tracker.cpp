@@ -1,5 +1,7 @@
 #include <stdexcept>
 
+#include <boost/filesystem/fstream.hpp>
+#include <boost/format.hpp>
 #include <boost/scope_exit.hpp>
 #include <boost/version.hpp>
 
@@ -61,6 +63,18 @@ namespace visp_tracker
     modelPath_ = req.model_path.data;
     modelName_ = req.model_name.data;
 
+    std::string fullModelPath
+      (getModelFileFromModelName
+       (modelName_, modelPath_).external_file_string());
+
+    boost::filesystem::ofstream modelStream;
+
+    // If no model is passed, use the parameter server to fill the
+    // the fullModelPath variable.
+    if (modelPath_.empty() and modelName_.empty())
+      if (!makeModelFile(modelStream, fullModelPath))
+	return true;
+
     // Load moving edges.
     vpMe movingEdge;
     convertInitRequestToVpMe(req, tracker_, movingEdge);
@@ -83,14 +97,13 @@ namespace visp_tracker
     // Load the model.
     try
       {
-	ROS_DEBUG_STREAM("Trying to load the model: " << modelPath_.c_str());
-	tracker_.loadModel
-	  (getModelFileFromModelName
-	   (modelName_, modelPath_).external_file_string().c_str());
+	ROS_DEBUG_STREAM("Trying to load the model: " << fullModelPath);
+	tracker_.loadModel(fullModelPath.c_str());
+	modelStream.close();
       }
     catch(...)
       {
-	ROS_ERROR_STREAM("Failed to load the model: " << modelPath_.c_str());
+	ROS_ERROR_STREAM("Failed to load the model: " << fullModelPath);
 	return true;
       }
     ROS_DEBUG("Model has been successfully loaded.");

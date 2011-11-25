@@ -10,4 +10,6 @@ namespace visp_tracker
   std::string tracking_meta_data_service("tracking_meta_data");
 
   std::string default_model_path("@PROJECT_SOURCE_DIR@/models");
+
+  std::string model_description_param("model_description");
 } // end of namespace visp_tracker;

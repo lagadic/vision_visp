@@ -1,8 +1,11 @@
 # Initialize the tracking.
 #
-# During the initialization the tracked object
-# is chosen and its initial pose is required
-# to start the tracking.
+# During the initialization the tracked object is chosen and its
+# initial pose is required to start the tracking.
+#
+# If model_path and model_name are both empty, the node makes the
+# assumption that the model is available throught the parameter
+# server.
 
 # Model database location on the filesystem.
 std_msgs/String model_path

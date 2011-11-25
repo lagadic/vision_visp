@@ -237,8 +237,22 @@ namespace visp_tracker
       nodeHandle_.serviceClient<visp_tracker::Init>(initService_);
     visp_tracker::Init srv;
 
-    srv.request.model_path.data = modelPath_;
-    srv.request.model_name.data = modelName_;
+    // Load the model and send it to the parameter server.
+    boost::filesystem::path modelPath =
+      getModelFileFromModelName (modelName_, modelPath_);
+
+    boost::filesystem::ifstream modelStream(modelPath);
+    std::string modelDescription
+      ((std::istreambuf_iterator<char>(modelStream)),
+       std::istreambuf_iterator<char>());
+
+    boost::format fmt("%1%/%2%");
+    fmt % trackerPrefix_;
+    fmt % model_description_param;
+    ros::param::set(fmt.str(), modelDescription);
+
+    srv.request.model_path.data = "";
+    srv.request.model_name.data = "";
     vpHomogeneousMatrixToTransform(srv.request.initial_cMo, cMo);
 
     convertVpMeToInitRequest(movingEdge_, tracker_, srv);
