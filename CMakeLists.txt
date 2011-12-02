@@ -62,9 +62,6 @@ target_link_libraries(client libvisp_tracker visp-2)
 rosbuild_add_executable(viewer src/nodes/viewer.cpp)
 target_link_libraries(viewer libvisp_tracker visp-2)
 
-# Viewer
-rosbuild_add_executable(republish src/nodes/republish.cpp)
-
 
 #############
 # Bag files #
