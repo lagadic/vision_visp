@@ -1,7 +1,8 @@
 <!-- -*- xml -*- -->
 <launch>
   <node pkg="rosbag" type="rosbag" name="rosbag"
-        args="play $(find visp_tracker)/bag/tutorial-static-box.bag -l"/>
+	args="play  --clock -l
+	      $(find visp_tracker)/bag/tutorial-static-box.bag"/>
 
   <node pkg="visp_tracker" type="tracker" name="tracker_mbt">
     <param name="camera_prefix" value="/wide_left/camera" />
@@ -16,4 +17,40 @@
   </node>
 
   <node pkg="visp_tracker" type="viewer" name="tracker_mbt_viewer"/>
+
+
+
+  <!-- Optional: localizating the robot using the tracker -->
+
+  <!-- First, provide the transformation from the base_link to the
+       camera, static in this example.
+       Here the camera is one meter upside the base_link.
+
+       This also converts from body frames orientation to camera
+       orientation.
+       I.e. body frames: x front (toward), y left, z up
+            camera frames: z front (toward), x right, y bottom
+    -->
+  <!--
+     <node pkg="tf"
+	   type="static_transform_publisher" name="base_link_to_camera"
+	   args="0 0 1 -0.49999984 0.49960184 -0.49999984 0.50039816 /base_link
+		 /camera_wide_left 100" />
+     -->
+  <node pkg="tf"
+	type="static_transform_publisher" name="base_link_to_camera"
+	args="0.060 0.072 0.683 -0.542 0.542 -0.455 0.455 /base_link /camera_wide_left 100" />
+
+  <!-- Second, launch the localization node. Parameters define the
+  object position w.r.t. the world frame -->
+  <node pkg="visp_tracker" type="tf_localization.py" name="tf_localization">
+    <param name="object_translation_x" value="-0.16781327" />
+    <param name="object_translation_y" value="-1.32482741" />
+    <param name="object_translation_z" value="0.30264801" />
+
+    <param name="object_translation_qx" value="0.68557113" />
+    <param name="object_translation_qy" value="-0.1106115" />
+    <param name="object_translation_qz" value="0.58803323" />
+    <param name="object_translation_qw" value="0.41469777" />
+  </node>
 </launch>
