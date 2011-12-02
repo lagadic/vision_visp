@@ -19,7 +19,6 @@
 # include <visp_tracker/MovingEdgeConfig.h>
 # include <visp_tracker/MovingEdgeSites.h>
 # include <visp_tracker/TrackingResult.h>
-# include <visp_tracker/TrackingMetaData.h>
 
 # include <visp/vpCameraParameters.h>
 # include <visp/vpHomogeneousMatrix.h>
@@ -81,11 +80,8 @@ namespace visp_tracker
     std::string modelName_;
 
     std::string cameraPrefix_;
-    std::string trackerPrefix_;
     std::string rectifiedImageTopic_;
     std::string cameraInfoTopic_;
-
-    std::string initService_;
 
     boost::filesystem::path vrmlPath_;
     boost::filesystem::path initPath_;

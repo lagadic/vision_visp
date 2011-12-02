@@ -48,32 +48,22 @@ namespace visp_tracker
 
     // If something goes wrong, rollback all changes.
     BOOST_SCOPE_EXIT((&res)(&tracker_)(&state_)
-		     (&lastTrackedImage_)(&modelPath_)(&modelName_))
+		     (&lastTrackedImage_))
       {
 	if(!res.initialization_succeed)
 	  {
 	    tracker_.resetTracker();
 	    state_ = WAITING_FOR_INITIALIZATION;
 	    lastTrackedImage_ = 0;
-	    modelPath_ = "";
-	    modelName_ = "";
 	  }
       } BOOST_SCOPE_EXIT_END;
 
-    modelPath_ = req.model_path.data;
-    modelName_ = req.model_name.data;
-
-    std::string fullModelPath
-      (getModelFileFromModelName
-       (modelName_, modelPath_).external_file_string());
-
+    std::string fullModelPath;
     boost::filesystem::ofstream modelStream;
 
-    // If no model is passed, use the parameter server to fill the
-    // the fullModelPath variable.
-    if (modelPath_.empty() and modelName_.empty())
-      if (!makeModelFile(modelStream, fullModelPath))
-	return true;
+    // Load model from parameter.
+    if (!makeModelFile(modelStream, fullModelPath))
+      return true;
 
     // Load moving edges.
     vpMe movingEdge;
@@ -128,17 +118,6 @@ namespace visp_tracker
     // Initialization is valid.
     res.initialization_succeed = true;
     state_ = TRACKING;
-    return true;
-  }
-
-  bool
-  Tracker::trackingMetaDataCallback
-  (visp_tracker::TrackingMetaData::Request&,
-   visp_tracker::TrackingMetaData::Response& res)
-  {
-    res.camera_prefix.data = cameraPrefix_;
-    res.model_path.data = modelPath_;
-    res.model_name.data = modelName_;
     return true;
   }
 
@@ -217,12 +196,10 @@ namespace visp_tracker
 
   Tracker::Tracker(unsigned queueSize)
     : queueSize_(queueSize),
-      nodeHandle_("tracker_mbt"),
+      nodeHandle_(),
       imageTransport_(nodeHandle_),
       state_(WAITING_FOR_INITIALIZATION),
       image_(),
-      modelPath_(),
-      modelName_(),
       cameraPrefix_(),
       rectifiedImageTopic_(),
       cameraInfoTopic_(),
@@ -233,7 +210,6 @@ namespace visp_tracker
       movingEdgeSitesPublisher_(),
       cameraVelocitySubscriber_(),
       initService_(),
-      trackingMetaDataService_(),
       header_(),
       info_(),
       movingEdge_(),
@@ -253,9 +229,20 @@ namespace visp_tracker
     // Parameters.
     ros::param::param<std::string>("~camera_prefix", cameraPrefix_, "");
 
+    if (cameraPrefix_.empty ())
+      {
+	ROS_FATAL
+	  ("The camera_prefix parameter not set.\n"
+	   "Please relaunch the tracker while setting this parameter, i.e.\n"
+	   "$ rosrun visp_tracker tracker _camera_prefix:=/my/camera");
+	ros::shutdown ();
+	return;
+      }
+    ros::param::set("camera_prefix", cameraPrefix_);
+
     // Compute topic and services names.
     rectifiedImageTopic_ =
-      ros::names::clean(cameraPrefix_ + "/image_rect");
+      ros::names::resolve(cameraPrefix_ + "/image_rect");
 
     // Check for subscribed topics.
     checkInputs();
@@ -312,13 +299,9 @@ namespace visp_tracker
     // Service declaration.
     initCallback_t initCallback =
       boost::bind(&Tracker::initCallback, this, _1, _2);
-    trackingMetaDataCallback_t trackingMetaDataCallback =
-      boost::bind(&Tracker::trackingMetaDataCallback, this, _1, _2);
 
     initService_ = nodeHandle_.advertiseService
       (visp_tracker::init_service, initCallback);
-    trackingMetaDataService_ = nodeHandle_.advertiseService
-      (visp_tracker::tracking_meta_data_service, trackingMetaDataCallback);
   }
 
 
@@ -552,6 +535,7 @@ namespace visp_tracker
     while (ros::ok()
 	   && (!image_.getWidth() || !image_.getHeight()))
       {
+	ROS_INFO_THROTTLE(1, "waiting for a rectified image...");
 	ros::spinOnce();
 	loop_rate.sleep();
       }

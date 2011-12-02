@@ -17,7 +17,6 @@
 
 # include <visp_tracker/MovingEdgeSites.h>
 # include <visp_tracker/TrackingResult.h>
-# include <visp_tracker/TrackingMetaData.h>
 
 # include <visp/vpCameraParameters.h>
 # include <visp/vpImage.h>
@@ -57,10 +56,6 @@ namespace visp_tracker
     /// \brief Make sure the topics we subscribe already exist.
     void checkInputs();
 
-    /// \brief Retrieve from the tracking node the camera prefix and
-    /// model metadata.
-    void retrieveMetaData();
-
     /// \brief Hang until the first image is received.
     void waitForImage();
 
@@ -88,20 +83,10 @@ namespace visp_tracker
     /// \name Topics and services strings.
     /// \{
 
-    /// \brief Topic name prefix used by tracker.
-    std::string trackerPrefix_;
-    /// \brief Full topic name for meta-data
-    std::string trackingMetaDataService_;
-
     /// \brief Full topic name for rectified image.
     std::string rectifiedImageTopic_;
     /// \brief Full topic name for camera information.
     std::string cameraInfoTopic_;
-
-    /// \brief Full topic name for result topic.
-    std::string resultTopic_;
-    /// \brief Full topic name for moving edge sites topic.
-    std::string movingEdgeSitesTopic_;
 
     /// \}
 

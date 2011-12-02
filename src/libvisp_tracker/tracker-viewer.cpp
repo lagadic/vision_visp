@@ -36,12 +36,8 @@ namespace visp_tracker
     : queueSize_(queueSize),
       nodeHandle_(),
       imageTransport_(nodeHandle_),
-      trackerPrefix_(),
-      trackingMetaDataService_(),
       rectifiedImageTopic_(),
       cameraInfoTopic_(),
-      resultTopic_(),
-      movingEdgeSitesTopic_(),
       checkInputs_(ros::NodeHandle(), ros::this_node::getName()),
       tracker_(),
       cameraParameters_(),
@@ -61,23 +57,45 @@ namespace visp_tracker
       countTrackingResult_(0u),
       countMovingEdgeSites_(0u)
   {
-    // Parameters.
-    ros::param::param<std::string>
-      ("~tracker_prefix", trackerPrefix_, visp_tracker::default_tracker_prefix);
+    // Compute topic and services names.
+    std::string cameraPrefix;
 
-    trackingMetaDataService_ = ros::names::clean
-      (trackerPrefix_ + "/" + visp_tracker::tracking_meta_data_service);
-    resultTopic_ =
-      ros::names::clean(trackerPrefix_ + "/" + visp_tracker::result_topic);
-    movingEdgeSitesTopic_ =
-      ros::names::clean
-      (trackerPrefix_ + "/" + visp_tracker::moving_edge_sites_topic);
+    ros::Rate rate (1);
+    while (cameraPrefix.empty ())
+      {
+	ros::param::get ("camera_prefix", cameraPrefix);
+	if (!ros::param::has ("camera_prefix"))
+	  {
+	    ROS_WARN
+	      ("the camera_prefix parameter does not exist.\n"
+	       "This may mean that:\n"
+	       "- the tracker is not launched,\n"
+	       "- the tracker and viewer are not running in the same namespace."
+	       );
+	  }
+	else if (cameraPrefix.empty ())
+	  {
+	    ROS_INFO
+	      ("tracker is not yet initialized, waiting...\n"
+	       "You may want to launch the client to initialize the tracker.");
+	  }
+	if (!ros::ok ())
+	  return;
+	rate.sleep ();
+      }
 
-    // Retrieve meta-data from tracker.
-    //FIXME: we suppose here that these info cannot change at runtime.
-    retrieveMetaData();
-    if (!ros::ok())
-      return;
+    rectifiedImageTopic_ =
+      ros::names::resolve(cameraPrefix + "/image_rect");
+    cameraInfoTopic_ =
+      ros::names::resolve(cameraPrefix + "/camera_info");
+
+    boost::filesystem::ofstream modelStream;
+    std::string path;
+    if (!makeModelFile(modelStream, path))
+      throw std::runtime_error
+	("failed to load the model from the parameter server");
+    ROS_INFO_STREAM("Model loaded from the parameter server.");
+    vrmlPath_ = path;
 
     initializeTracker();
     if (!ros::ok())
@@ -93,9 +111,9 @@ namespace visp_tracker
     cameraInfoSubscriber_.subscribe
       (nodeHandle_, cameraInfoTopic_, queueSize_);
     trackingResultSubscriber_.subscribe
-      (nodeHandle_, resultTopic_, queueSize_);
+      (nodeHandle_, visp_tracker::result_topic, queueSize_);
     movingEdgeSitesSubscriber_.subscribe
-      (nodeHandle_, movingEdgeSitesTopic_, queueSize_);
+      (nodeHandle_, visp_tracker::moving_edge_sites_topic, queueSize_);
 
     synchronizer_.connectInput
       (imageSubscriber_, cameraInfoSubscriber_,
@@ -138,10 +156,14 @@ namespace visp_tracker
 		 "ViSP MBT tracker (viewer)");
     vpImagePoint point (10, 10);
     vpImagePoint pointTime (22, 10);
+    vpImagePoint pointCameraTopic (34, 10);
     ros::Rate loop_rate(80);
 
     boost::format fmt("tracking (x=%f y=%f z=%f)");
     boost::format fmtTime("time = %f");
+
+    boost::format fmtCameraTopic("camera topic = %s");
+    fmtCameraTopic % rectifiedImageTopic_;
 
     while (ros::ok())
       {
@@ -160,6 +182,9 @@ namespace visp_tracker
 	    fmtTime % info_->header.stamp.toSec();
 	    vpDisplay::displayCharString
 	      (image_, pointTime, fmtTime.str().c_str(), vpColor::red);
+	    vpDisplay::displayCharString
+	      (image_, pointCameraTopic, fmtCameraTopic.str().c_str(),
+	       vpColor::red);
 	  }
 	else
 	  vpDisplay::displayCharString
@@ -177,71 +202,9 @@ namespace visp_tracker
     while (ros::ok()
 	   && (!image_.getWidth() || !image_.getHeight()))
       {
+	ROS_INFO_THROTTLE(1, "waiting for a rectified image...");
 	ros::spinOnce();
 	loop_rate.sleep();
-      }
-  }
-
-  void
-  TrackerViewer::retrieveMetaData()
-  {
-    ros::ServiceClient client =
-      nodeHandle_.serviceClient<visp_tracker::TrackingMetaData>
-      (trackingMetaDataService_);
-
-    visp_tracker::TrackingMetaData srv;
-    bool failed = true;
-    ros::Rate rate (1.);
-    while (ros::ok () && failed)
-      {
-	try
-	  {
-	    if (!client.call(srv))
-	      throw std::runtime_error
-		("failed to retrieve tracking meta-data");
-	    failed = false;
-	  }
-	catch(...)
-	  {
-	    failed = true;
-	  }
-	ros::spinOnce();
-	rate.sleep();
-      }
-
-    if (!ros::ok())
-      return;
-
-    // Compute topic and services names.
-    rectifiedImageTopic_ =
-      ros::names::clean(srv.response.camera_prefix.data + "/image_rect");
-    cameraInfoTopic_ =
-      ros::names::clean(srv.response.camera_prefix.data + "/camera_info");
-
-    vrmlPath_ =
-      getModelFileFromModelName(srv.response.model_name.data,
-				srv.response.model_path.data);
-
-    boost::filesystem::ofstream modelStream;
-    if (srv.response.model_name.data.empty()
-	&& srv.response.model_path.data.empty())
-      {
-	std::string path;
-	if (!makeModelFile(modelStream, path))
-	  throw std::runtime_error
-	    ("failed to load the model from the parameter server");
-	vrmlPath_ = path;
-	ROS_INFO_STREAM("Model loaded from the parameter server.");
-      }
-    else
-      {
-	if (!boost::filesystem::is_regular_file(vrmlPath_))
-	  {
-	    boost::format fmt("VRML model %1% is not a regular file");
-	    fmt % vrmlPath_;
-	    throw std::runtime_error(fmt.str());
-	  }
-	ROS_INFO_STREAM("VRML file: " << vrmlPath_);
       }
   }
 
@@ -251,8 +214,8 @@ namespace visp_tracker
     ros::V_string topics;
     topics.push_back(rectifiedImageTopic_);
     topics.push_back(cameraInfoTopic_);
-    topics.push_back(resultTopic_);
-    topics.push_back(movingEdgeSitesTopic_);
+    topics.push_back(visp_tracker::result_topic);
+    topics.push_back(visp_tracker::moving_edge_sites_topic);
     checkInputs_.start(topics, 60.0);
   }
 

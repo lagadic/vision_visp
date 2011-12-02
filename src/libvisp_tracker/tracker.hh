@@ -20,7 +20,6 @@
 # include <visp_tracker/MovingEdgeConfig.h>
 # include <visp_tracker/MovingEdgeSites.h>
 # include <visp_tracker/TrackingResult.h>
-# include <visp_tracker/TrackingMetaData.h>
 
 # include <visp/vpCameraParameters.h>
 # include <visp/vpHomogeneousMatrix.h>
@@ -41,10 +40,6 @@ namespace visp_tracker
 				  visp_tracker::Init::Response& res)>
     initCallback_t;
 
-  typedef boost::function<bool (visp_tracker::TrackingMetaData::Request&,
-				visp_tracker::TrackingMetaData::Response& res)>
-  trackingMetaDataCallback_t;
-
     enum State
       {
 	WAITING_FOR_INITIALIZATION,
@@ -58,9 +53,6 @@ namespace visp_tracker
   protected:
     bool initCallback(visp_tracker::Init::Request& req,
 		      visp_tracker::Init::Response& res);
-    bool
-    trackingMetaDataCallback(visp_tracker::TrackingMetaData::Request&,
-			     visp_tracker::TrackingMetaData::Response& res);
     void
     cameraVelocityCallback(const geometry_msgs::TwistStampedConstPtr& twist);
 
@@ -87,9 +79,6 @@ namespace visp_tracker
 
     image_t image_;
 
-    std::string modelPath_;
-    std::string modelName_;
-
     std::string cameraPrefix_;
     std::string rectifiedImageTopic_;
     std::string cameraInfoTopic_;
@@ -104,7 +93,6 @@ namespace visp_tracker
     ros::Subscriber cameraVelocitySubscriber_;
 
     ros::ServiceServer initService_;
-    ros::ServiceServer trackingMetaDataService_;
 
     std_msgs::Header header_;
     sensor_msgs::CameraInfoConstPtr info_;

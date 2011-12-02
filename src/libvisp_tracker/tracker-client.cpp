@@ -43,10 +43,8 @@ namespace visp_tracker
       modelPath_(),
       modelName_(),
       cameraPrefix_(),
-      trackerPrefix_(),
       rectifiedImageTopic_(),
       cameraInfoTopic_(),
-      initService_(),
       vrmlPath_(),
       initPath_(),
       cameraSubscriber_(),
@@ -60,11 +58,6 @@ namespace visp_tracker
     tracker_.resetTracker();
 
     // Parameters.
-    ros::param::param<std::string>("~camera_prefix", cameraPrefix_, "");
-    ros::param::param<std::string>("~tracker_prefix",
-				   trackerPrefix_,
-				   visp_tracker::default_tracker_prefix);
-
     ros::param::param<std::string>("~model_path", modelPath_,
 				   visp_tracker::default_model_path);
     ros::param::param<std::string>("~model_name", modelName_, "");
@@ -75,17 +68,43 @@ namespace visp_tracker
     ros::param::param<bool>
       ("~confirm_init", confirmInit_, true);
 
-    if (modelName_ == "")
-      throw std::runtime_error("empty model");
+    if (modelName_.empty ())
+      throw std::runtime_error
+	("empty model\n"
+	 "Relaunch the client while setting the model_name parameter, i.e.\n"
+	 "$ rosrun visp_tracker client _model_name:=my-model"
+	 );
 
     // Compute topic and services names.
-    rectifiedImageTopic_ =
-      ros::names::clean(cameraPrefix_ + "/image_rect");
-    cameraInfoTopic_ =
-      ros::names::clean(cameraPrefix_ + "/camera_info");
 
-    initService_ =
-    ros::names::clean(trackerPrefix_ + "/" + visp_tracker::init_service);
+    ros::Rate rate (1);
+    while (cameraPrefix_.empty ())
+      {
+	ros::param::get ("camera_prefix", cameraPrefix_);
+	if (!ros::param::has ("camera_prefix"))
+	  {
+	    ROS_WARN
+	      ("the camera_prefix parameter does not exist.\n"
+	       "This may mean that:\n"
+	       "- the tracker is not launched,\n"
+	       "- the tracker and viewer are not running in the same namespace."
+	       );
+	  }
+	else if (cameraPrefix_.empty ())
+	  {
+	    ROS_INFO
+	      ("tracker is not yet initialized, waiting...\n"
+	       "You may want to launch the client to initialize the tracker.");
+	  }
+	if (!ros::ok ())
+	  return;
+	rate.sleep ();
+      }
+
+    rectifiedImageTopic_ =
+      ros::names::resolve(cameraPrefix_ + "/image_rect");
+    cameraInfoTopic_ =
+      ros::names::resolve(cameraPrefix_ + "/camera_info");
 
     // Check for subscribed topics.
     checkInputs();
@@ -227,14 +246,25 @@ namespace visp_tracker
       }
 
     ROS_INFO_STREAM("Initialization done, sending initial cMo:\n" << cMo);
-    sendcMo(cMo);
+    try
+      {
+	sendcMo(cMo);
+      }
+    catch(std::exception& e)
+      {
+	ROS_ERROR_STREAM("failed to send cMo: " << e.what ());
+      }
+    catch(...)
+      {
+	ROS_ERROR("unknown error happened while sending the cMo, retrying...");
+      }
   }
 
   void
   TrackerClient::sendcMo(const vpHomogeneousMatrix& cMo)
   {
     ros::ServiceClient client =
-      nodeHandle_.serviceClient<visp_tracker::Init>(initService_);
+      nodeHandle_.serviceClient<visp_tracker::Init>(visp_tracker::init_service);
     visp_tracker::Init srv;
 
     // Load the model and send it to the parameter server.
@@ -246,16 +276,19 @@ namespace visp_tracker
       ((std::istreambuf_iterator<char>(modelStream)),
        std::istreambuf_iterator<char>());
 
-    boost::format fmt("%1%/%2%");
-    fmt % trackerPrefix_;
-    fmt % model_description_param;
-    ros::param::set(fmt.str(), modelDescription);
+    ros::param::set (model_description_param, modelDescription);
 
-    srv.request.model_path.data = "";
-    srv.request.model_name.data = "";
     vpHomogeneousMatrixToTransform(srv.request.initial_cMo, cMo);
 
     convertVpMeToInitRequest(movingEdge_, tracker_, srv);
+
+    ros::Rate rate (1);
+    while (!client.waitForExistence ())
+      {
+	ROS_INFO
+	  ("Waiting for the initialization service to become available.");
+	rate.sleep ();
+      }
 
     if (client.call(srv))
       {
@@ -514,6 +547,7 @@ namespace visp_tracker
     while (ros::ok()
 	   && (!image_.getWidth() || !image_.getHeight()))
       {
+	ROS_INFO_THROTTLE(1, "waiting for a rectified image...");
 	ros::spinOnce();
 	loop_rate.sleep();
       }

@@ -3,14 +3,8 @@
 # During the initialization the tracked object is chosen and its
 # initial pose is required to start the tracking.
 #
-# If model_path and model_name are both empty, the node makes the
-# assumption that the model is available throught the parameter
-# server.
-
-# Model database location on the filesystem.
-std_msgs/String model_path
-# Model name
-std_msgs/String model_name
+# The model is retrieved through the parameter server using the
+# model_description parameter.
 
 # Object initial pose.
 geometry_msgs/Transform initial_cMo

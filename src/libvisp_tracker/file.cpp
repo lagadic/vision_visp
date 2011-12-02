@@ -57,19 +57,14 @@ makeModelFile(boost::filesystem::ofstream& modelStream,
 	      std::string& fullModelPath)
 {
   std::string modelDescription;
-
-  boost::format fmt("%1%/%2%");
-  fmt % "tracker_mbt";
-  fmt % visp_tracker::model_description_param;
-
-  if (!ros::param::has(fmt.str()))
+  if (!ros::param::has(visp_tracker::model_description_param))
     {
       ROS_ERROR_STREAM("Failed to initialize: no model is provided.");
       return false;
     }
   ROS_DEBUG_STREAM("Trying to load the model from the parameter server.");
 
-  ros::param::get(fmt.str(), modelDescription);
+  ros::param::get(visp_tracker::model_description_param, modelDescription);
 
   char* tmpname = strdup("/tmp/tmpXXXXXX");
   if (mkdtemp(tmpname) == NULL)
