@@ -91,6 +91,23 @@ namespace visp_tracker
 
     boost::filesystem::ofstream modelStream;
     std::string path;
+
+    while (!ros::param::has(visp_tracker::model_description_param))
+      {
+	if (!ros::param::has(visp_tracker::model_description_param))
+	  {
+	    ROS_WARN
+	      ("the model_description parameter does not exist.\n"
+	       "This may mean that:\n"
+	       "- the tracker is not launched or not initialized,\n"
+	       "- the tracker and viewer are not running in the same namespace."
+	       );
+	  }
+	if (!ros::ok ())
+	  return;
+	rate.sleep ();
+      }
+
     if (!makeModelFile(modelStream, path))
       throw std::runtime_error
 	("failed to load the model from the parameter server");
@@ -151,9 +168,12 @@ namespace visp_tracker
   void
   TrackerViewer::spin()
   {
+    boost::format fmtWindowTitle ("ViSP MBT tracker viewer - [ns: %s]");
+    fmtWindowTitle % ros::this_node::getNamespace ();
+
     vpDisplayX d(image_,
 		 image_.getWidth(), image_.getHeight(),
-		 "ViSP MBT tracker (viewer)");
+		 fmtWindowTitle.str().c_str());
     vpImagePoint point (10, 10);
     vpImagePoint pointTime (22, 10);
     vpImagePoint pointCameraTopic (34, 10);
@@ -214,7 +234,7 @@ namespace visp_tracker
     ros::V_string topics;
     topics.push_back(rectifiedImageTopic_);
     topics.push_back(cameraInfoTopic_);
-    topics.push_back(visp_tracker::result_topic);
+    topics.push_back(visp_tracker::object_position_topic);
     topics.push_back(visp_tracker::moving_edge_sites_topic);
     checkInputs_.start(topics, 60.0);
   }

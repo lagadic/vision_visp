@@ -16,7 +16,6 @@
 #include <tf/transform_broadcaster.h>
 
 #include <visp_tracker/MovingEdgeSites.h>
-#include <visp_tracker/TrackingResult.h>
 
 #include <boost/bind.hpp>
 #include <visp/vpExponentialMap.h>
@@ -207,6 +206,7 @@ namespace visp_tracker
       cameraSubscriber_(),
       reconfigureSrv_(),
       resultPublisher_(),
+      transformationPublisher_(),
       movingEdgeSitesPublisher_(),
       cameraVelocitySubscriber_(),
       initService_(),
@@ -251,6 +251,10 @@ namespace visp_tracker
     resultPublisher_ =
       nodeHandle_.advertise<visp_tracker::TrackingResult>
       (visp_tracker::result_topic, queueSize_);
+
+    transformationPublisher_ =
+      nodeHandle_.advertise<geometry_msgs::TransformStamped>
+      (visp_tracker::object_position_topic, queueSize_);
 
     // Moving edge sites_ publisher.
     movingEdgeSitesPublisher_ =
@@ -445,6 +449,7 @@ namespace visp_tracker
   {
     ros::Rate loopRateTracking(100);
     visp_tracker::TrackingResult result;
+    geometry_msgs::TransformStamped objectPosition;
     tf::Transform transform;
     std_msgs::Header lastHeader;
 
@@ -484,39 +489,56 @@ namespace visp_tracker
 		}
 
 	    // Publish the tracking result.
-	    result.header = header_;
-	    result.is_tracking = state_ == TRACKING;
-
-	    if (state_ == TRACKING)
-	      vpHomogeneousMatrixToTransform(result.cMo, cMo_);
-	    resultPublisher_.publish(result);
-
-	    if (state_ == TRACKING)
-	      updateMovingEdgeSites();
-	    else
-	      sites_.moving_edge_sites.clear();
-	    sites_.header = header_;
-	    movingEdgeSitesPublisher_.publish(sites_);
-
-	    // Publish the transform
 	    if (state_ == TRACKING)
 	      {
+		// Publish position.
+		objectPosition.header = header_;
+		vpHomogeneousMatrixToTransform(objectPosition.transform, cMo_);
+		transformationPublisher_.publish(objectPosition);
+
+		// Publish result.
+		result.header = header_;
+		result.is_tracking = true;
+		result.cMo = objectPosition.transform;
+		resultPublisher_.publish(result);
+
+		// Publish moving edge sites.
+		updateMovingEdgeSites();
+		sites_.header = header_;
+		movingEdgeSitesPublisher_.publish(sites_);
+
+		// Publish to tf.
 		transform.setOrigin
-		  (tf::Vector3(result.cMo.translation.x,
-			       result.cMo.translation.y,
-			       result.cMo.translation.z));
+		  (tf::Vector3(objectPosition.transform.translation.x,
+			       objectPosition.transform.translation.y,
+			       objectPosition.transform.translation.z));
 		transform.setRotation
 		  (tf::Quaternion
-		   (result.cMo.rotation.x,
-		    result.cMo.rotation.y,
-		    result.cMo.rotation.z,
-		    result.cMo.rotation.w));
+		   (objectPosition.transform.rotation.x,
+		    objectPosition.transform.rotation.y,
+		    objectPosition.transform.rotation.z,
+		    objectPosition.transform.rotation.w));
 		transformBroadcaster_.sendTransform
 		  (tf::StampedTransform
 		   (transform,
-		    result.header.stamp,
-		    result.header.frame_id,
+		    objectPosition.header.stamp,
+		    objectPosition.header.frame_id,
 		    childFrameId_));
+	      }
+	    else
+	      {
+		result.header = header_;
+		result.is_tracking = false;
+		result.cMo.translation.x = 0.;
+		result.cMo.translation.y = 0.;
+		result.cMo.translation.z = 0.;
+
+		result.cMo.rotation.x = 0.;
+		result.cMo.rotation.y = 0.;
+		result.cMo.rotation.z = 0.;
+		result.cMo.rotation.w = 0.;
+
+		sites_.moving_edge_sites.clear();
 	      }
 	  }
 	lastHeader = header_;

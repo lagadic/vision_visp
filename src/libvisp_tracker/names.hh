@@ -6,6 +6,7 @@ namespace visp_tracker
 {
   extern std::string default_tracker_name;
   extern std::string result_topic;
+  extern std::string object_position_topic;
   extern std::string moving_edge_sites_topic;
   extern std::string camera_velocity_topic;
   extern std::string init_service;

@@ -89,6 +89,8 @@ namespace visp_tracker
 
     reconfigureSrv_t reconfigureSrv_;
     ros::Publisher resultPublisher_;
+    ros::Publisher transformationPublisher_;
+    tf::TransformBroadcaster tfBroadcaster_;
     ros::Publisher movingEdgeSitesPublisher_;
     ros::Subscriber cameraVelocitySubscriber_;
 

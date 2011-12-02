@@ -178,8 +178,11 @@ namespace visp_tracker
   void
   TrackerClient::spin()
   {
+    boost::format fmtWindowTitle ("ViSP MBT tracker initialization - [ns: %s]");
+    fmtWindowTitle % ros::this_node::getNamespace ();
+
     vpDisplayX d(image_, image_.getWidth(), image_.getHeight(),
-		 "ViSP MBT tracker initialization");
+		 fmtWindowTitle.str().c_str());
 
     ros::Rate loop_rate_tracking(200);
     bool ok = false;
