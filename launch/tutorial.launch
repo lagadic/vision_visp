@@ -10,6 +10,9 @@
   <node pkg="visp_tracker" type="client" name="tracker_mbt_client">
     <param name="model_path" value="$(find visp_tracker)/models" />
     <param name="model_name" value="laas-box" />
+
+    <!-- load recommended settings -->
+    <rosparam file="$(find visp_tracker)/models/laas-box/tracker.yaml" />
   </node>
 
   <node pkg="visp_tracker" type="viewer" name="tracker_mbt_viewer"/>
