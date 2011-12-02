@@ -221,7 +221,7 @@ namespace visp_tracker
       cMo_ (),
       velocities_ (MAX_VELOCITY_VALUES),
       transformBroadcaster_ (),
-      childFrameId_ ("visp_tracker") // FIXME: should not be static
+      childFrameId_ ()
   {
     // Set cMo to identity.
     cMo_.eye();
@@ -239,6 +239,8 @@ namespace visp_tracker
 	return;
       }
     ros::param::set("camera_prefix", cameraPrefix_);
+
+    ros::param::param<std::string>("frame_id", childFrameId_, "object_position");
 
     // Compute topic and services names.
     rectifiedImageTopic_ =
@@ -493,6 +495,7 @@ namespace visp_tracker
 	      {
 		// Publish position.
 		objectPosition.header = header_;
+		objectPosition.child_frame_id = childFrameId_;
 		vpHomogeneousMatrixToTransform(objectPosition.transform, cMo_);
 		transformationPublisher_.publish(objectPosition);
 
