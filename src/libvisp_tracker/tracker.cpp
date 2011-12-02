@@ -441,7 +441,8 @@ namespace visp_tracker
     ss << "velocities_ array size: " << velocities_.size() << "\n";
     if (!velocities_.empty())
       ss << "Velocities:\n";
-    for (unsigned i = 0; i < std::min(velocities_.size(), 10u); ++i)
+    for (unsigned i = 0;
+	 i < std::min(velocities_.size(), static_cast<std::size_t> (10u)); ++i)
       ss << "- t = " << velocities_[i].first
 	 << " / v(t) = \n" << velocities_[i].second << "\n";
     return ss.str();
