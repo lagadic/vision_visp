@@ -61,8 +61,8 @@ def callback(cMo_msg):
 
     br.sendTransform(blMw_t, blMw_q,
                      cMo_msg.header.stamp,
-                     mapFrameId,
-                     baseLinkFrameId)
+                     baseLinkFrameId,
+                     mapFrameId)
     #rospy.loginfo("map position sent")
 
 # Frame ids.

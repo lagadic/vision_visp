@@ -10,12 +10,13 @@
 
   -->
 <launch>
+  <param name="use_sim_time" value="true" />
 
   <!-- Play the video sequence. Timestamps are changed to match your
      current computer time. -->
  <node pkg="rosbag" type="rosbag"
-  name="rosbag" args="play --clock -l $(find
-  visp_tracker)/bag/tutorial-static-box.bag"/>
+  name="rosbag" args="play --clock -l -r 0.5 $(find
+  visp_tracker)/bag/tutorial-static-box.uncompressed.bag"/>
 
  <!-- Launch the tracking node -->
   <node pkg="visp_tracker" type="tracker" name="tracker_mbt">
@@ -55,9 +56,9 @@
 	   args="0 0 1 -0.49999984 0.49960184 -0.49999984 0.50039816 /base_link
 		 /camera_wide_left 100" />
      -->
-  <node pkg="tf"
-	type="static_transform_publisher" name="base_link_to_camera"
-	args="0.060 0.072 0.683 -0.542 0.542 -0.455 0.455 /base_link /camera_wide_left 100" />
+  <node pkg="tf" type="static_transform_publisher"
+	name="base_link_to_camera" args="0.060 0.072 0.683 -0.542
+	0.542 -0.455 0.455 /base_link /camera_wide_left 100" />
 
   <!-- Second, launch the localization node. Parameters define the
   object position w.r.t. the world frame -->
