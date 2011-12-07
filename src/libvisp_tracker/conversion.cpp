@@ -5,6 +5,7 @@
 
 #include <LinearMath/btMatrix3x3.h>
 #include <LinearMath/btQuaternion.h>
+#include <tf/transform_datatypes.h>
 
 #include <sensor_msgs/Image.h>
 #include <sensor_msgs/image_encodings.h>
@@ -84,7 +85,7 @@ void vpHomogeneousMatrixToTransform(geometry_msgs::Transform& dst,
 				    const vpHomogeneousMatrix& src)
 {
   btMatrix3x3 rotation;
-  btQuaternion quaternion;
+  tf::Quaternion quaternion;
   for(unsigned i = 0; i < 3; ++i)
     for(unsigned j = 0; j < 3; ++j)
       rotation[i][j] = src[i][j];
@@ -103,7 +104,7 @@ void vpHomogeneousMatrixToTransform(geometry_msgs::Transform& dst,
 void transformToVpHomogeneousMatrix(vpHomogeneousMatrix& dst,
 				    const geometry_msgs::Transform& src)
 {
-  btQuaternion quaternion
+  tf::Quaternion quaternion
     (src.rotation.x, src.rotation.y, src.rotation.z, src.rotation.w);
   btMatrix3x3 rotation(quaternion);
 
