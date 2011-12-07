@@ -10,20 +10,27 @@
 
   -->
 <launch>
+  <!-- Use the timestamps embedded in the ROS bag file -->
   <param name="use_sim_time" value="true" />
 
-  <!-- Play the video sequence. Timestamps are changed to match your
-     current computer time. -->
- <node pkg="rosbag" type="rosbag"
-  name="rosbag" args="play --clock -l -r 0.5 $(find
-  visp_tracker)/bag/tutorial-static-box.uncompressed.bag"/>
+  <!-- Play the video sequence, publish the clock topic to preserve
+       the original timestamps. -->
+ <node pkg="rosbag" type="rosbag" name="rosbag" args="play --clock -l
+  $(find visp_tracker)/bag/tutorial-static-box.uncompressed.bag"/>
 
  <!-- Launch the tracking node -->
   <node pkg="visp_tracker" type="tracker" name="tracker_mbt">
     <param name="camera_prefix" value="/wide_left/camera" />
   </node>
 
-  <!-- Launch the client (GUI) -->
+  <!-- Launch the client (GUI).
+
+       It is mandatory to provide an initial estimation of the object
+       position in order to start the tracking. To achieve this, this
+       graphical tool can be used. It is not required to call it
+       through this launch file, you can also directly call the
+       initialization service to provide the initial estimation.
+    -->
   <node pkg="visp_tracker" type="client" name="tracker_mbt_client">
     <param name="model_path" value="$(find visp_tracker)/models" />
     <param name="model_name" value="laas-box" />
@@ -34,28 +41,38 @@
     <rosparam file="$(find visp_tracker)/models/laas-box/tracker.yaml" />
   </node>
 
-  <!-- Launch the viewer (GUI) -->
-  <node pkg="visp_tracker" type="viewer" name="tracker_mbt_viewer"/>
+
+  <!-- Launch the viewer (GUI)
+
+       This is totally optional. When the tracker is running on a
+       remote computer, it is highly recommended to rely on
+       image_transport to stream compressed images. You can use the
+       ~image_transport parameter to do so, see the image_transport
+       package documentation for more information.
+  -->
+    <node pkg="visp_tracker" type="viewer" name="tracker_mbt_viewer"/>
 
 
 
-  <!-- Optional: localizating the robot using the tracker -->
+  <!--
+     Optional: localizing the robot using the tracker.
+
+     This part provides the /map coordinate frame using the tracker.
+
+     The general idea is that the position of a particular object is
+     known in the global frame. By comparing the relative position
+     between the camera and the oject, the robot position can be
+     estimated.
+    -->
 
   <!-- First, provide the transformation from the base_link to the
        camera, static in this example.
-       Here the camera is one meter upside the base_link.
 
-       This also converts from body frames orientation to camera
+       This also converts body frames orientation to camera
        orientation.
        I.e. body frames: x front (toward), y left, z up
             camera frames: z front (toward), x right, y bottom
     -->
-  <!--
-     <node pkg="tf"
-	   type="static_transform_publisher" name="base_link_to_camera"
-	   args="0 0 1 -0.49999984 0.49960184 -0.49999984 0.50039816 /base_link
-		 /camera_wide_left 100" />
-     -->
   <node pkg="tf" type="static_transform_publisher"
 	name="base_link_to_camera" args="0.060 0.072 0.683 -0.542
 	0.542 -0.455 0.455 /base_link /camera_wide_left 100" />
@@ -63,13 +80,13 @@
   <!-- Second, launch the localization node. Parameters define the
   object position w.r.t. the world frame -->
   <node pkg="visp_tracker" type="tf_localization.py" name="tf_localization">
-    <param name="object_translation_x" value="-0.16781327" />
-    <param name="object_translation_y" value="-1.32482741" />
-    <param name="object_translation_z" value="0.30264801" />
+    <param name="object_translation_x" value="1.8442106300000001" />
+    <param name="object_translation_y" value="-0.0083684399999999996" />
+    <param name="object_translation_z" value="0.52310595000000004" />
 
-    <param name="object_translation_qx" value="0.68557113" />
-    <param name="object_translation_qy" value="-0.1106115" />
-    <param name="object_translation_qz" value="0.58803323" />
-    <param name="object_translation_qw" value="0.41469777" />
+    <param name="object_translation_qx" value="0.04655744" />
+    <param name="object_translation_qy" value="-0.12974845" />
+    <param name="object_translation_qz" value="-0.45632887" />
+    <param name="object_translation_qw" value="0.87906866" />
   </node>
 </launch>

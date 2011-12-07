@@ -73,17 +73,18 @@ tr = tf.TransformerROS()
 tl = tf.TransformListener()
 
 # Object position w.r.t. world frame.
-oMw = np.matrix(np.identity(4))
-oMw_t = [0., 0., 0.]
-oMw_q = [0., 0., 0., 1.]
-oMw_t[0] = rospy.get_param('~object_translation_x', 0.)
-oMw_t[1] = rospy.get_param('~object_translation_y', 0.)
-oMw_t[2] = rospy.get_param('~object_translation_z', 0.)
-oMw_q[0] = rospy.get_param('~object_translation_qx', 0.)
-oMw_q[1] = rospy.get_param('~object_translation_qy', 0.)
-oMw_q[2] = rospy.get_param('~object_translation_qz', 0.)
-oMw_q[3] = rospy.get_param('~object_translation_qw', 1.)
-oMw = np.matrix(tr.fromTranslationRotation(oMw_t, oMw_q))
+wMo = np.matrix(np.identity(4))
+wMo_t = [0., 0., 0.]
+wMo_q = [0., 0., 0., 1.]
+wMo_t[0] = rospy.get_param('~object_translation_x', 0.)
+wMo_t[1] = rospy.get_param('~object_translation_y', 0.)
+wMo_t[2] = rospy.get_param('~object_translation_z', 0.)
+wMo_q[0] = rospy.get_param('~object_translation_qx', 0.)
+wMo_q[1] = rospy.get_param('~object_translation_qy', 0.)
+wMo_q[2] = rospy.get_param('~object_translation_qz', 0.)
+wMo_q[3] = rospy.get_param('~object_translation_qw', 1.)
+wMo = np.matrix(tr.fromTranslationRotation(wMo_t, wMo_q))
+oMw = np.linalg.inv(wMo)
 
 blMc = np.matrix(np.identity(4))
 
