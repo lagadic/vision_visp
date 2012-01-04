@@ -167,23 +167,32 @@ namespace visp_tracker
 
     std::list<vpMbtDistanceLine*>::iterator linesIterator =
       linesList.begin();
+    if (linesList.empty())
+      ROS_DEBUG_THROTTLE(10, "no distance lines");
+    bool noVisibleLine = true;
     for (; linesIterator != linesList.end(); ++linesIterator)
       {
 	vpMbtDistanceLine* line = *linesIterator;
 
-	if (line && line->isVisible() && line->meline)
+	if (line && line->isVisible())
 	  {
 	    std::list<vpMeSite>::const_iterator sitesIterator =
 	      line->meline->list.begin();
+	    if (line->meline->list.empty())
+	      ROS_DEBUG_THROTTLE(10, "no moving edge for a line");
 	    for (; sitesIterator != line->meline->list.end(); ++sitesIterator)
 	      {
 		visp_tracker::MovingEdgeSite movingEdgeSite;
 		movingEdgeSite.x = sitesIterator->ifloat;
 		movingEdgeSite.y = sitesIterator->jfloat;
 		movingEdgeSite.suppress = sitesIterator->suppress;
+		sites_.moving_edge_sites.push_back (movingEdgeSite);
 	      }
+	    noVisibleLine = false;
 	  }
       }
+    if (noVisibleLine)
+      ROS_DEBUG_THROTTLE(10, "no distance lines");
   }
 
   void Tracker::checkInputs()
