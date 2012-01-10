@@ -1,7 +1,7 @@
-libgsl:
-  debian: libgl1-gsl-dev
-  fedora: gsl-devel
-  ubuntu: libgsl0-dev
+liblapack:
+  debian: liblapack-dev
+  fedora: lapack-devel
+  ubuntu: liblapack-dev
 
 libcoin60:
   fedora: Coin2-devel #FIXME: check this.
@@ -25,6 +25,10 @@ libdc1394-dev:
   fedora: libdc1394-devel
   macports: libdc1394
 
+
+# Add rdmanifest to allow to depend on visp as a system dependency.
+# This will not replace the visp ROS package as long as rosdeb
+# will not support rosmanifest dependencies.
 visp:
   ubuntu:
     source:
