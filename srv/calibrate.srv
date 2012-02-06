@@ -1,0 +1,7 @@
+int32 method
+float32 lambda
+int32 sample_width
+int32 sample_height
+---
+float64[] stdDevErrs
+float64[] stdDevErrsDist
