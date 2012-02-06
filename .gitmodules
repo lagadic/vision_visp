@@ -3,10 +3,13 @@
 	url = git://github.com/laas/visp_tracker.git
 [submodule "visp_hand2eye_calibration"]
 	path = visp_hand2eye_calibration
-	url = git://scm.gforge.inria.fr/hand2eyecalib/hand2eyecalib.git
+	url = git://github.com/filipnovotny/visp_hand2eye_calibration.git
 [submodule "visp_camera_calibration"]
 	path = visp_camera_calibration
-	url = git://scm.gforge.inria.fr/vispcameracalib/vispcameracalib.git
+	url = git://github.com/filipnovotny/visp_camera_calibration.git
+[submodule "visp_bridge_calibration"]
+	path = visp_bridge_calibration
+	url = git://github.com/filipnovotny/visp_bridge_calibration.git
 [submodule "visp_bridge"]
 	path = visp_bridge
-	url = git://scm.gforge.inria.fr/vispbridge/vispbridge.git
+	url = git://github.com/filipnovotny/visp_bridge.git
