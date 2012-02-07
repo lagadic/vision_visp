@@ -128,9 +128,9 @@ namespace visp_camera_calibration
     D[0]=cam.get_kdu();
     D[1] = D[2] = D[3] = D[4] = 0.;
     cam_info.D = D;
-    cam_info.P.fill(0);
-    cam_info.K.fill(0);
-    cam_info.R.fill(0);
+    cam_info.P.assign(0.);
+    cam_info.K.assign(0.);
+    cam_info.R.assign(0.);
 
     cam_info.R[0] = 1.;
     cam_info.R[1 * 3 + 1] = 1.;
