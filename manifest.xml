@@ -1,11 +1,11 @@
 <package>
   <description brief="visp_bridge">
 
-     visp_bridge
+     visp_bridge converts between ROS structures and ViSP structures.
 
   </description>
-  <author>fnovotny</author>
-  <license>BSD</license>
+  <author>Filip Novotny</author>
+  <license>GPLv2</license>
   <export>
     <cpp
        cflags="-I${prefix}/src"
