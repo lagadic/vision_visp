@@ -1,13 +1,13 @@
 <package>
   <description brief="visp_hand2eye_calib">
 
-     visp_hand2eye_calib
+     visp_hand2eye_calibration estimates the camera position with respect to its effector using the ViSP library
 
   </description>
-  <author>fnovotny</author>
-  <license>BSD</license>
+  <author>Filip Novotny</author>
+  <license>GPLv2</license>
   <review status="unreviewed" notes=""/>
-  <url>http://ros.org/wiki/visp_hand2eye_calib</url>
+  <url>http://ros.org/wiki/visp_hand2eye_calibration</url>
   <depend package="roscpp"/>
   <depend package="rospy"/>
   <depend package="geometry_msgs"/>
