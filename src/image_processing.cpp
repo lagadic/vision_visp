@@ -299,13 +299,23 @@ void ImageProcessing::rawImageCallback(const sensor_msgs::Image::ConstPtr& image
         ROS_ERROR("bad projection.");
       }
     }
-    point_correspondence_publisher_.publish(calib_all_points);
+
     vpImagePoint ip;
     ROS_INFO("Click on the interface window to continue");
     vpDisplay::displayRectangle(img_,0,0,img_.getWidth(),15,vpColor::black,true);
     vpDisplay::displayCharString(img_,10,10,"Click on the interface window to continue",vpColor::red);
     vpDisplay::flush(img_);
-    while(ros::ok() && !vpDisplay::getClick(img_,ip,false));
+    vpMouseButton::vpMouseButtonType btn;
+    while(ros::ok() && !vpDisplay::getClick(img_,ip,btn, false));
+    if(btn==vpMouseButton::button1)
+      point_correspondence_publisher_.publish(calib_all_points);
+    else{
+      mutex_iface_.unlock();
+      rawImageCallback(image);
+      return;
+    }
+
+
 
   }catch(...){
     ROS_ERROR("calibration failed.");
