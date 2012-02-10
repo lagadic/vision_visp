@@ -48,6 +48,7 @@
 */
 
 #include "names.h"
+#include "ros/ros.h"
 
 namespace visp_camera_calibration
 {
@@ -69,6 +70,12 @@ namespace visp_camera_calibration
   std::string selected_points_x_param("/visp_camera_calibration/visp_camera_calibration_image_processing/selected_points_x");
   std::string selected_points_y_param("/visp_camera_calibration/visp_camera_calibration_image_processing/selected_points_y");
   std::string selected_points_z_param("/visp_camera_calibration/visp_camera_calibration_image_processing/selected_points_z");
+
+  void remap(){
+    if (ros::names::remap("image") != "image") {
+      visp_camera_calibration::raw_image_topic = ros::names::remap("image");
+    }
+  }
 }
 
 

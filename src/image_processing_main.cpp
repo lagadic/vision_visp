@@ -50,8 +50,10 @@
 #include "image_processing.h"
 #include "ros/ros.h"
 
+
 int main(int argc,char** argv){
   ros::init(argc, argv, "image_processing");
+
   visp_camera_calibration::ImageProcessing proc;
   proc.interface();
   return 0;

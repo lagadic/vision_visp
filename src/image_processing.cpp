@@ -80,6 +80,7 @@ ImageProcessing::ImageProcessing() :
     img_(480,640,128),
     cam_(600,600,0,0)
 {
+  visp_camera_calibration::remap();
   //Setup ROS environment
   //prepare function objects,define publishers & subscribers
   raw_image_subscriber_callback_t raw_image_callback = boost::bind(&ImageProcessing::rawImageCallback, this, _1);

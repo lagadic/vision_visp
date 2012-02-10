@@ -4,7 +4,7 @@
 
 		<node pkg="visp_camera_calibration" name="visp_camera_calibration_calibrator" type="visp_camera_calibration_calibrator"/>
 		
-		<node pkg="visp_camera_calibration" name="visp_camera_calibration_image_processing" type="visp_camera_calibration_image_processing">
+		<node pkg="visp_camera_calibration" name="visp_camera_calibration_image_processing" type="visp_camera_calibration_image_processing" args="image:=/visp_camera_calibration/image_raw">
 		      <param name="gray_level_precision" value="0.7" />
 		      <param name="size_precision" value="0.5" />
 		      <param name="pause_at_each_frame" value="True" />
