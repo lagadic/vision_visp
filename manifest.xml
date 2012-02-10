@@ -1,5 +1,5 @@
 <package>
-  <description brief="visp_bridge">
+  <description brief="Compatibility bridge between visp as ros">
 
      visp_bridge converts between ROS structures and ViSP structures.
 
