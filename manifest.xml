@@ -1,5 +1,5 @@
 <package>
-  <description brief="visp_camera_calib">
+  <description brief="Camera calibration using visp">
      visp_camera_calibration allows easy calibration of 
      cameras using a customizable pattern.
   </description>
