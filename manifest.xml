@@ -1,5 +1,5 @@
 <package>
-  <description brief="visp_hand2eye_calib">
+  <description brief="calibration of camera position with respect to the effector">
 
      visp_hand2eye_calibration estimates the camera position with respect to its effector using the ViSP library
 
