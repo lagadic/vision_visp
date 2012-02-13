@@ -58,7 +58,7 @@
 namespace visp_hand2eye_calibration{ 
   class Client{
   private:
-    ros::NodeHandle n;
+    ros::NodeHandle n_;
     ros::Publisher camera_object_publisher_;
     ros::Publisher world_effector_publisher_;
     ros::ServiceClient reset_service_;

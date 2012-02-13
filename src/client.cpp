@@ -61,26 +61,27 @@ namespace visp_hand2eye_calibration
 Client::Client()
 {
   camera_object_publisher_
-      = n.advertise<geometry_msgs::Transform> (visp_hand2eye_calibration::camera_object_topic, 1000);
+      = n_.advertise<geometry_msgs::Transform> (visp_hand2eye_calibration::camera_object_topic, 1000);
   world_effector_publisher_
-      = n.advertise<geometry_msgs::Transform> (visp_hand2eye_calibration::world_effector_topic, 1000);
+      = n_.advertise<geometry_msgs::Transform> (visp_hand2eye_calibration::world_effector_topic, 1000);
+
   reset_service_
-      = n.serviceClient<visp_hand2eye_calibration::reset> (visp_hand2eye_calibration::reset_service);
+      = n_.serviceClient<visp_hand2eye_calibration::reset> (visp_hand2eye_calibration::reset_service);
   compute_effector_camera_service_
-      = n.serviceClient<visp_hand2eye_calibration::compute_effector_camera> (
+      = n_.serviceClient<visp_hand2eye_calibration::compute_effector_camera> (
                                                                                       visp_hand2eye_calibration::compute_effector_camera_service);
   compute_effector_camera_quick_service_
-      = n.serviceClient<visp_hand2eye_calibration::compute_effector_camera_quick> (
+      = n_.serviceClient<visp_hand2eye_calibration::compute_effector_camera_quick> (
                                                                                             visp_hand2eye_calibration::compute_effector_camera_quick_service);
 }
 
 void Client::initAndSimulate()
 {
-  if (!reset_service_.call(reset_comm))
-  {
-    ROS_ERROR("Failed to call reset");
-    return;
+  if(!reset_service_.call(reset_comm)){
+    ROS_ERROR("could not call reset");
+
   }
+
 
   // We want to calibrate the hand to eye extrinsic camera parameters from 6 couple of poses: cMo and wMe
   const int N = 6;

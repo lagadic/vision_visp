@@ -56,6 +56,8 @@
 #include "visp_hand2eye_calibration/compute_effector_camera_quick.h"
 #include "visp_hand2eye_calibration/compute_effector_camera.h"
 #include "visp_hand2eye_calibration/reset.h"
+#include "image_proc/advertisement_checker.h"
+
 #include <vector>
 
 class vpHomogeneousMatrix;
@@ -70,6 +72,7 @@ namespace visp_hand2eye_calibration{
     ros::ServiceServer reset_service_;
     ros::Subscriber camera_object_subscriber_;
     ros::Subscriber world_effector_subscriber_;
+    image_proc::AdvertisementChecker check_inputs_;
 
     std::vector<vpHomogeneousMatrix> cMo_vec_;
     std::vector<vpHomogeneousMatrix> wMe_vec_;

@@ -14,6 +14,7 @@
   <depend package="std_msgs"/>
   <depend package="visp"/>
   <depend package="visp_bridge"/>
+  <depend package="image_proc"/>
 
 </package>
 

@@ -52,10 +52,13 @@
 
 int main(int argc,char**argv){
   ros::init(argc, argv, "client");
+
   visp_hand2eye_calibration::Client ct;
-  std::cout << "Please connect a TSAI calibrator and press ENTER" << std::endl;
+
+  ROS_INFO("Please connect a TSAI calibrator and press ENTER");
   getchar();
   ct.initAndSimulate();
+
   ct.computeUsingQuickService();
   ct.computeFromTopicStream();
   return 0 ;
