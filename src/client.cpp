@@ -77,9 +77,11 @@ Client::Client()
 
 void Client::initAndSimulate()
 {
-  if(!reset_service_.call(reset_comm)){
-    ROS_ERROR("could not call reset");
-
+  ROS_INFO("Waiting for topics...");
+  ros::Duration(1.).sleep();
+  while(!reset_service_.call(reset_comm)){
+    if(!ros::ok()) return;
+    ros::Duration(1).sleep();
   }
 
 
@@ -142,6 +144,7 @@ void Client::initAndSimulate()
     emc_quick_comm.request.world_effector.transforms.push_back(pose_w_e);
 
   }
+  ros::Duration(1.).sleep();
 }
 
 void Client::computeUsingQuickService()

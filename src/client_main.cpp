@@ -55,8 +55,6 @@ int main(int argc,char**argv){
 
   visp_hand2eye_calibration::Client ct;
 
-  ROS_INFO("Please connect a TSAI calibrator and press ENTER");
-  getchar();
   ct.initAndSimulate();
 
   ct.computeUsingQuickService();
