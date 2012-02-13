@@ -139,14 +139,13 @@ void Camera::sendVideo(){
   while(ros::ok() && !vpDisplay::getClick(img_,false));
   visp_camera_calibration::calibrate calibrate_comm;
   calibrate_comm.request.method = vpCalibration::CALIB_VIRTUAL_VS_DIST;
-  calibrate_comm.request.lambda = 0.5;
   calibrate_comm.request.sample_width= img_.getWidth();
   calibrate_comm.request.sample_height = img_.getHeight();
   if (calibrate_service_.call(calibrate_comm)){
       ROS_INFO("service called successfully");
 
       ROS_INFO("standard deviation with distorsion:");
-      for(std::vector<double>::iterator i = calibrate_comm.response.stdDevErrsDist.begin();i!=calibrate_comm.response.stdDevErrsDist.end();i++)
+      for(std::vector<double>::iterator i = calibrate_comm.response.stdDevErrs.begin();i!=calibrate_comm.response.stdDevErrs.end();i++)
         ROS_INFO("%f",*i);
   }else{
     ROS_ERROR("Failed to call service");

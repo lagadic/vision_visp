@@ -54,6 +54,7 @@
 // define topic and service names for the visp_hand2eye_calibration package.
 namespace visp_camera_calibration
 {
+  extern std::string camera_prefix;
   extern std::string raw_image_topic;
   extern std::string point_correspondence_topic;
   extern std::string calibrate_service;

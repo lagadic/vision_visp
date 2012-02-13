@@ -94,6 +94,7 @@ namespace visp_camera_calibration
   bool Calibrator::calibrateCallback(visp_camera_calibration::calibrate::Request  &req, visp_camera_calibration::calibrate::Response &res){
     std::vector<double> dev;
     std::vector<double> dev_dist;
+    double lambda = .5;
     ROS_INFO("called service calibrate");
     vpCameraParameters cam;
 
@@ -103,7 +104,7 @@ namespace visp_camera_calibration
     double v0 = req.sample_height/2;
 
     cam.initPersProjWithoutDistortion(px, py, u0, v0);
-    vpCalibration::setLambda(req.lambda);
+    vpCalibration::setLambda(lambda);
 
     vpCalibration::computeCalibrationMulti(vpCalibration::vpCalibrationMethodType(req.method),calibrations_.size(),&(calibrations_[0]),cam,false);
 
@@ -119,8 +120,18 @@ namespace visp_camera_calibration
       dev.push_back(deviation);
       dev_dist.push_back(deviation_dist);
     }
-    res.stdDevErrs = dev;
-    res.stdDevErrsDist = dev_dist;
+    switch(req.method){
+      case vpCalibration::CALIB_LAGRANGE_VIRTUAL_VS:
+      case vpCalibration::CALIB_VIRTUAL_VS:
+        res.stdDevErrs = dev;
+        break;
+      case vpCalibration::CALIB_LAGRANGE_VIRTUAL_VS_DIST:
+      case vpCalibration::CALIB_VIRTUAL_VS_DIST:
+        res.stdDevErrs= dev_dist;
+        break;
+    }
+
+
     ROS_INFO_STREAM("" << cam);
     sensor_msgs::SetCameraInfo set_camera_info_comm;
     sensor_msgs::CameraInfo cam_info;
