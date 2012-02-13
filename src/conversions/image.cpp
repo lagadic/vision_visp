@@ -1,6 +1,6 @@
 /****************************************************************************
  *
- * $Id: file.cpp 3496 2011-11-22 15:14:32Z fnovotny $
+ * $Id: image.cpp 3496 2011-11-22 15:14:32Z fnovotny $
  *
  * This file is part of the ViSP software.
  * Copyright (C) 2005 - 2012 by INRIA. All rights reserved.
@@ -44,7 +44,7 @@
 
 /*!
   \file image.cpp
-  \brief 
+  \brief Implements conversions between ViSP and ROS image types
 */
 
 
@@ -55,6 +55,7 @@
 #include <stdexcept>
 
 namespace visp_bridge{
+
   sensor_msgs::Image toSensorMsgsImage(const vpImage<unsigned char>& src)
   {
     sensor_msgs::Image dst;
@@ -67,6 +68,7 @@ namespace visp_bridge{
 
     return dst;
   }
+
 
   vpImage<unsigned char> toVispImage(const sensor_msgs::Image& src){
     using sensor_msgs::image_encodings::MONO8;
