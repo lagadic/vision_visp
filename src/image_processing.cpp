@@ -271,7 +271,7 @@ void ImageProcessing::rawImageCallback(const sensor_msgs::Image::ConstPtr& image
               bbox.getTop()<5 || bbox.getBottom()>(double)img_.getHeight()-5||
               vpMath::abs(ip.get_u() - cog.get_u()) > 10 ||
               vpMath::abs(ip.get_v() - cog.get_v()) > 10){
-            ROS_ERROR("tracking failed[suspicious point location].");
+            ROS_DEBUG("tracking failed[suspicious point location].");
           }else{
             //point matches
             double x=0, y=0;
@@ -294,10 +294,10 @@ void ImageProcessing::rawImageCallback(const sensor_msgs::Image::ConstPtr& image
             vpDisplay::flush(img_);
           }
         } catch(...){
-          ROS_ERROR("tracking failed.");
+          ROS_DEBUG("tracking failed.");
         }
       } else {
-        ROS_ERROR("bad projection.");
+        ROS_DEBUG("bad projection.");
       }
     }
 
