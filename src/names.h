@@ -3,7 +3,7 @@
  * $Id: file.h 3496 2011-11-22 15:14:32Z fnovotny $
  *
  * This file is part of the ViSP software.
- * Copyright (C) 2005 - 2011 by INRIA. All rights reserved.
+ * Copyright (C) 2005 - 2012 by INRIA. All rights reserved.
  *
  * This software is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
