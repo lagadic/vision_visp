@@ -100,9 +100,9 @@ void Client::initAndSimulate()
   erc[2] = vpMath::rad(25); // 25 deg
 
   eMc.buildFrom(etc, erc);
-  ROS_INFO("1) SIMULATION:");
-  ROS_INFO_STREAM("Simulated hand to eye transformation: eMc" <<std::endl<<eMc<<std::endl);
-  ROS_INFO_STREAM("Theta U rotation: " << vpMath::deg(erc[0]) << " " << vpMath::deg(erc[1]) << " " << vpMath::deg(erc[2]) << std::endl);
+  ROS_INFO("1) GROUND TRUTH:");
+
+  ROS_INFO_STREAM("hand to eye transformation: " <<std::endl<<visp_bridge::toGeometryMsgsTransform(eMc)<<std::endl);
 
   vpColVector v_c(6); // camera velocity used to produce 6 simulated poses
   for (int i = 0; i < N; i++)
@@ -154,12 +154,7 @@ void Client::computeUsingQuickService()
   ROS_INFO("2) QUICK SERVICE:");
   if (compute_effector_camera_quick_service_.call(emc_quick_comm))
   {
-    ROS_INFO_STREAM("effector_camera: "<< emc_quick_comm.response.effector_camera);
-
-    eMc = visp_bridge::toVispHomogeneousMatrix(emc_quick_comm.response.effector_camera);
-    ROS_INFO_STREAM(std::endl << "Output: hand to eye calibration result: eMc estimated: "<< std::endl << eMc << std::endl );
-    eMc.extract(erc);
-    ROS_INFO_STREAM("Theta U rotation: " << vpMath::deg(erc[0]) << " " << vpMath::deg(erc[1]) << " " << vpMath::deg(erc[2]) << std::endl);
+    ROS_INFO_STREAM("hand_camera: "<< std::endl << emc_quick_comm.response.effector_camera);
   }
   else
   {
@@ -174,12 +169,7 @@ void Client::computeFromTopicStream()
   ROS_INFO("3) TOPIC STREAM:");
   if (compute_effector_camera_service_.call(emc_comm))
   {
-    ROS_INFO_STREAM("effector_camera: "<< emc_comm.response.effector_camera);
-
-    eMc = visp_bridge::toVispHomogeneousMatrix(emc_comm.response.effector_camera);
-    ROS_INFO_STREAM(std::endl << "Output: hand to eye calibration result: eMc estimated: "<< std::endl << eMc << std::endl );
-    eMc.extract(erc);
-    ROS_INFO_STREAM("Theta U rotation: " << vpMath::deg(erc[0]) << " " << vpMath::deg(erc[1]) << " " << vpMath::deg(erc[2]) << std::endl);
+    ROS_INFO_STREAM("hand_camera: " << std::endl << emc_comm.response.effector_camera);
   }
   else
   {
