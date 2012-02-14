@@ -3,7 +3,7 @@
  * $Id: file.h 3496 2011-11-22 15:14:32Z fnovotny $
  *
  * This file is part of the ViSP software.
- * Copyright (C) 2005 - 2011 by INRIA. All rights reserved.
+ * Copyright (C) 2005 - 2012 by INRIA. All rights reserved.
  *
  * This software is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -56,7 +56,6 @@ namespace visp_hand2eye_calibration
 {
   extern std::string camera_object_topic;
   extern std::string world_effector_topic;
-  extern std::string moving_edge_sites_topic;
   extern std::string compute_effector_camera_service;
   extern std::string compute_effector_camera_quick_service;
 
