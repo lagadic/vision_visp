@@ -9,16 +9,13 @@
   <url>http://ros.org/wiki/visp_camera_calibration</url>
   <depend package="std_msgs"/>
   <depend package="rospy"/>
-  <depend package="rospy"/>
   <depend package="roscpp"/>
-  <depend package="geometry_msgs"/>
+
   <depend package="visp"/>
-  <depend package="sensor_msgs"/>
-  <depend package="image_geometry"/>
-  <depend package="image_transport"/>
+  <depend package="sensor_msgs"/> <!-- For Image data types -->
   <depend package="visp_bridge"/>
   <depend package="opencv2"/>
-  <depend package="camera_calibration_parsers"/>
+  <depend package="camera_calibration_parsers"/> <!-- Write camera data to ini file -->
 
 </package>
 
