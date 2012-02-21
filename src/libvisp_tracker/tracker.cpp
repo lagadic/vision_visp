@@ -306,6 +306,28 @@ namespace visp_tracker
 
     // Tracker initialization.
     initializeVpCameraFromCameraInfo(cameraParameters_, info_);
+
+    // Double check camera parameters.
+
+    if (cameraParameters_.get_px () == 0.
+	|| cameraParameters_.get_px () == 1.
+	|| cameraParameters_.get_py () == 0.
+	|| cameraParameters_.get_py () == 1.
+	|| cameraParameters_.get_u0 () == 0.
+	|| cameraParameters_.get_u0 () == 1.
+	|| cameraParameters_.get_v0 () == 0.
+	|| cameraParameters_.get_v0 () == 1.)
+      ROS_WARN ("Dubious camera parameters detected.\n"
+		"\n"
+		"It seems that the matrix P from your camera\n"
+		"calibration topics is wrong.\n"
+		"The tracker will continue anyway, but you\n"
+		"should double check your calibration data,\n"
+		"especially if the model re-projection fails.\n"
+		"\n"
+		"This warning is triggered is px, py, u0 or v0\n"
+		"is set to 0. or 1. (exactly).");
+
     tracker_.setCameraParameters(cameraParameters_);
     tracker_.setDisplayMovingEdges(false);
 
@@ -563,12 +585,15 @@ namespace visp_tracker
       }
   }
 
+  // Make sure that we have an image *and* associated calibration
+  // data.
   void
   Tracker::waitForImage()
   {
     ros::Rate loop_rate(10);
     while (ros::ok()
-	   && (!image_.getWidth() || !image_.getHeight()))
+	   && (!image_.getWidth() || !image_.getHeight())
+	   && (!info_ || info_->K[0] == 0.))
       {
 	ROS_INFO_THROTTLE(1, "waiting for a rectified image...");
 	ros::spinOnce();

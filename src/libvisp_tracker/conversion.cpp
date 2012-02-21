@@ -9,7 +9,7 @@
 
 #include <sensor_msgs/Image.h>
 #include <sensor_msgs/image_encodings.h>
-
+#include <sensor_msgs/distortion_models.h>
 
 #include <visp/vpImage.h>
 
@@ -210,13 +210,38 @@ void convertInitRequestToVpMe(const visp_tracker::Init::Request& req,
 void initializeVpCameraFromCameraInfo(vpCameraParameters& cam,
 				      sensor_msgs::CameraInfoConstPtr info)
 {
+  if (!info)
+    throw std::runtime_error ("missing camera calibration data");
+
+  // Check that the camera is calibrated, as specified in the
+  // sensor_msgs/CameraInfo message documentation.
+  if (info->K.size() != 3 * 3 || info->K[0] == 0.)
+    throw std::runtime_error ("uncalibrated camera");
+
+  // Check matrix size.
   if (!info || info->P.size() != 3 * 4)
     throw std::runtime_error
       ("camera calibration P matrix has an incorrect size");
 
-  const double& px = info->P[0 * 4 + 0];
-  const double& py = info->P[1 * 4 + 1];
-  const double& u0 = info->P[0 * 4 + 2];
-  const double& v0 = info->P[1 * 4 + 2];
-  cam.initPersProjWithoutDistortion(px, py, u0, v0);
+  if (info->distortion_model.empty ())
+    {
+      const double& px = info->K[0 * 3 + 0];
+      const double& py = info->K[1 * 3 + 1];
+      const double& u0 = info->K[0 * 3 + 2];
+      const double& v0 = info->K[1 * 3 + 2];
+      cam.initPersProjWithoutDistortion(px, py, u0, v0);
+      return;
+    }
+
+  if (info->distortion_model == sensor_msgs::distortion_models::PLUMB_BOB)
+    {
+      const double& px = info->P[0 * 4 + 0];
+      const double& py = info->P[1 * 4 + 1];
+      const double& u0 = info->P[0 * 4 + 2];
+      const double& v0 = info->P[1 * 4 + 2];
+      cam.initPersProjWithoutDistortion(px, py, u0, v0);
+      return;
+    }
+
+  throw std::runtime_error ("unsupported distortion model");
 }
