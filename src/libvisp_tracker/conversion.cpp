@@ -85,7 +85,7 @@ void vpHomogeneousMatrixToTransform(geometry_msgs::Transform& dst,
 				    const vpHomogeneousMatrix& src)
 {
   btMatrix3x3 rotation;
-  tf::Quaternion quaternion;
+  btQuaternion quaternion;
   for(unsigned i = 0; i < 3; ++i)
     for(unsigned j = 0; j < 3; ++j)
       rotation[i][j] = src[i][j];
@@ -104,7 +104,7 @@ void vpHomogeneousMatrixToTransform(geometry_msgs::Transform& dst,
 void transformToVpHomogeneousMatrix(vpHomogeneousMatrix& dst,
 				    const geometry_msgs::Transform& src)
 {
-  tf::Quaternion quaternion
+  btQuaternion quaternion
     (src.rotation.x, src.rotation.y, src.rotation.z, src.rotation.w);
   btMatrix3x3 rotation(quaternion);
 
