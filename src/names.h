@@ -54,6 +54,7 @@
 // define topic and service names for the visp_hand2eye_calibration package.
 namespace visp_hand2eye_calibration
 {
+  extern std::string node_prefix;
   extern std::string camera_object_topic;
   extern std::string world_effector_topic;
   extern std::string compute_effector_camera_service;
