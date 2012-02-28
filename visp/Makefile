@@ -25,7 +25,7 @@ CMAKE_FLAGS = -DCMAKE_INSTALL_PREFIX=`rospack find visp`/$(INSTALL_DIR)/ \
 	      -DUSE_LIBPNG=ON -DUSE_LIBPLOTTER=ON                        \
 	      -DDESIRED_QT_VERSION=4					 \
 	      -DOpenCV_DIR=`rospack find opencv2`/opencv		 \
-	      -DBOOT_ROOT=`rosboost-cfg --root`
+	      -DBOOST_ROOT=`rosboost-cfg --root`
 
 include $(shell rospack find mk)/download_unpack_build.mk
 
