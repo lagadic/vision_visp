@@ -32,10 +32,10 @@
   <rosdep name="libdc1394-dev"/>
   <rosdep name="libxml2"/>
   <rosdep name="libjpeg"/>
-  <rosdep name="libpng"/>
+  <rosdep name="libpng12-dev"/>
 
-  <rosdep name="liblapack"/>
-  <rosdep name="libcoin60"/>
-  <rosdep name="libsoqt4"/>
+  <rosdep name="liblapack-dev"/>
+  <rosdep name="libcoin60-dev"/>
+  <rosdep name="libsoqt4-dev"/>
   <rosdep name="gtk2"/>
 </package>

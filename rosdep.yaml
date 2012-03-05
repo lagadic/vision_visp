@@ -1,13 +1,13 @@
-liblapack:
+liblapack-dev:
   debian: liblapack-dev
   fedora: lapack-devel
   ubuntu: liblapack-dev
 
-libcoin60:
+libcoin60-dev:
   fedora: Coin2-devel #FIXME: check this.
   ubuntu: libcoin60-dev
 
-libsoqt4:
+libsoqt4-dev:
   fedora: SoQt-devel
   ubuntu: libsoqt4-dev
 
@@ -15,7 +15,7 @@ libjpeg:
   fedora: libjpeg-devel
   ubuntu: libjpeg62-dev
 
-libpng:
+libpng12-dev:
   fedora: libpng-devel
   ubuntu: libpng12-dev
 
