@@ -44,7 +44,8 @@ rosbuild_add_library(libvisp_tracker
   src/libvisp_tracker/tracker-viewer.cpp
   "${CMAKE_BINARY_DIR}/src/libvisp_tracker/names.cpp")
 target_link_libraries(libvisp_tracker visp-2)
-rosbuild_link_boost(libvisp_tracker filesystem system)
+rosbuild_link_boost(libvisp_tracker
+  filesystem system signals regex date_time program_options thread)
 
 ########
 # Node #
