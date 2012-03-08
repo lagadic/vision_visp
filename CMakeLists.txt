@@ -23,7 +23,7 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 
 
 #common commands for building c++ executables and libraries
-rosbuild_add_library(${PROJECT_NAME} src/conversions/3dpose.cpp src/conversions/image.cpp src/vpQuaternionVector.cpp)
+rosbuild_add_library(${PROJECT_NAME} src/conversions/3dpose.cpp src/conversions/image.cpp src/conversions/camera.cpp src/vpQuaternionVector.cpp)
 
 
 
