@@ -50,9 +50,11 @@
 #include "calibrator.h"
 #include "names.h"
 #include "conversions/image.h"
+#include "conversions/camera.h"
 #include "sensor_msgs/SetCameraInfo.h"
 #include "sensor_msgs/CameraInfo.h"
 #include "visp_camera_calibration/CalibPoint.h"
+
 #include <vector>
 
 namespace visp_camera_calibration
@@ -134,39 +136,8 @@ namespace visp_camera_calibration
 
     ROS_INFO_STREAM("" << cam);
     sensor_msgs::SetCameraInfo set_camera_info_comm;
-    sensor_msgs::CameraInfo cam_info;
-    std::vector<double> D(5);
-    D[0]=cam.get_kdu();
-    D[1] = D[2] = D[3] = D[4] = 0.;
-    cam_info.D = D;
-    cam_info.P.assign(0.);
-    cam_info.K.assign(0.);
-    cam_info.R.assign(0.);
 
-    cam_info.R[0] = 1.;
-    cam_info.R[1 * 3 + 1] = 1.;
-    cam_info.R[2 * 3 + 2] = 1.;
-
-    cam_info.P[0 * 4 + 0] = cam.get_px();
-    cam_info.P[1 * 4 + 1] = cam.get_py();
-    cam_info.P[0 * 4 + 2] = cam.get_u0();
-    cam_info.P[1 * 4 + 2] = cam.get_v0();
-    cam_info.P[2 * 4 + 2] = 1;
-
-
-    cam_info.K[0 * 3 + 0] = cam.get_px();
-    cam_info.K[1 * 3 + 1] = cam.get_py();
-    cam_info.K[0 * 3 + 2] = cam.get_u0();
-    cam_info.K[1 * 3 + 2] = cam.get_v0();
-    cam_info.K[2 * 3 + 2] = 1;
-
-    cam_info.distortion_model = "plumb_bob";
-    cam_info.binning_x = 0;
-    cam_info.binning_y = 0;
-    cam_info.width = req.sample_width;
-    cam_info.height = req.sample_height;
-
-    set_camera_info_comm.request.camera_info = cam_info;
+    set_camera_info_comm.request.camera_info = visp_bridge::toSensorMsgsCameraInfo(cam,req.sample_width,req.sample_height);
 
     if(set_camera_info_service_.call(set_camera_info_comm) && set_camera_info_bis_service_.call(set_camera_info_comm)){
       ROS_INFO("set_camera_info service called successfully");
