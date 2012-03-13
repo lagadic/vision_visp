@@ -17,6 +17,7 @@
   <depend stack="geometry" /> <!-- tf -->
   <depend stack="image_common" /> <!-- image_transport, camera_calibration_parsers -->
   <depend stack="image_pipeline" /> <!-- image_proc -->
+  <depend stack="robot_model" /> <!-- resource_retriever -->
   <depend stack="ros" />
   <depend stack="ros_comm" /> <!-- std_msgs, rosbag, rospy, roscpp -->
   <depend stack="vision_opencv" /> <!-- opencv2, image_geometry -->
