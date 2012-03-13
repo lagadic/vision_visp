@@ -29,7 +29,7 @@
     </node>
 
     <node pkg="visp_tracker" type="client" name="tracker_mbt_client">
-      <param name="model_path" value="$(find visp_tracker)/models" />
+      <param name="model_path" value="package://visp_tracker/models" />
       <param name="model_name" value="laas-box" />
       <rosparam file="$(find visp_tracker)/models/laas-box/tracker.yaml" />
     </node>
@@ -42,7 +42,7 @@
     </node>
 
     <node pkg="visp_tracker" type="client" name="tracker_mbt_client">
-      <param name="model_path" value="$(find visp_tracker)/models" />
+      <param name="model_path" value="package://visp_tracker/models" />
       <param name="model_name" value="laas-box" />
       <rosparam file="$(find visp_tracker)/models/laas-box/tracker.yaml" />
     </node>

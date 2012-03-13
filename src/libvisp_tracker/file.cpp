@@ -3,8 +3,9 @@
 #include <iostream>
 #include <string>
 
-#include <boost/format.hpp>
+#include <boost/filesystem/fstream.hpp>
 #include <boost/filesystem/path.hpp>
+#include <boost/format.hpp>
 
 #include <ros/ros.h>
 
@@ -12,44 +13,40 @@
 #include "names.hh"
 
 
-boost::filesystem::path
+std::string
 getInitFileFromModelName (const std::string& modelName,
 			  const std::string& defaultPath)
 {
-  boost::filesystem::path res(defaultPath);
-  res /= modelName;
-  res /= modelName + ".init";
-  return res;
+  boost::format fmt("%1%/%2%/%2%.init");
+  fmt % defaultPath % modelName;
+  return fmt.str ();
 }
 
-boost::filesystem::path
+std::string
 getModelFileFromModelName (const std::string& modelName,
 			   const std::string& defaultPath)
 {
-  boost::filesystem::path res(defaultPath);
-  res /= modelName;
-  res /= modelName + ".wrl";
-  return res;
+  boost::format fmt("%1%/%2%/%2%.wrl");
+  fmt % defaultPath % modelName;
+  return fmt.str ();
 }
 
-boost::filesystem::path
+std::string
 getConfigurationFileFromModelName (const std::string& modelName,
 				   const std::string& defaultPath)
 {
-  boost::filesystem::path res(defaultPath);
-  res /= modelName;
-  res /= modelName + ".xml";
-  return res;
+  boost::format fmt("%1%/%2%/%2%.xml");
+  fmt % defaultPath % modelName;
+  return fmt.str ();
 }
 
-boost::filesystem::path
+std::string
 getInitialPoseFileFromModelName (const std::string& modelName,
 				 const std::string& defaultPath)
 {
-  boost::filesystem::path res(defaultPath);
-  res /= modelName;
-  res /= modelName + ".0.pos";
-  return res;
+  boost::format fmt("%1%/%2%/%2%.0.pos");
+  fmt % defaultPath % modelName;
+  return fmt.str ();
 }
 
 bool

@@ -1,29 +1,27 @@
 #ifndef VISP_TRACKER_FILE_HH
 # define VISP_TRACKER_FILE_HH
 # include <string>
-# include <boost/filesystem/fstream.hpp>
-# include <boost/filesystem/path.hpp>
 
 # include "names.hh"
 
-boost::filesystem::path
+std::string
 getInitFileFromModelName(const std::string& modelName,
 			 const std::string& defaultPath);
 
-boost::filesystem::path
+std::string
 getConfigurationFileFromModelName(const std::string& modelName,
 				  const std::string& configurationName,
 				  const std::string& defaultPath);
 
-boost::filesystem::path
+std::string
 getModelFileFromModelName(const std::string& modelName,
 			  const std::string& defaultPath);
 
-boost::filesystem::path
+std::string
 getConfigurationFileFromModelName(const std::string& modelName,
 				  const std::string& defaultPath);
 
-boost::filesystem::path
+std::string
 getInitialPoseFileFromModelName (const std::string& modelName,
 				 const std::string& defaultPath);
 

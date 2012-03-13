@@ -34,6 +34,7 @@
   <depend package="opencv2"/>
   <depend package="bullet"/>
   <depend package="visp"/>
+  <depend package="resource_retriever"/>
 
   <depend package="rosbag"/> <!-- For tutorial/testing -->
 </package>

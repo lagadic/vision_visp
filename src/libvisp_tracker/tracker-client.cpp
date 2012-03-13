@@ -1,5 +1,6 @@
 #include <cstdlib>
 #include <fstream>
+#include <sstream>
 
 #include <boost/filesystem.hpp>
 #include <boost/filesystem/fstream.hpp>
@@ -53,7 +54,8 @@ namespace visp_tracker
       cameraParameters_(),
       tracker_(),
       startFromSavedPose_(),
-      checkInputs_()
+      checkInputs_(),
+      resourceRetriever_()
   {
     tracker_.resetTracker();
 
@@ -128,18 +130,18 @@ namespace visp_tracker
     ROS_INFO_STREAM("Init file: " << initPath_);
 
     // Check that required files exist.
-    if (!boost::filesystem::is_regular_file(vrmlPath_))
-      {
-	boost::format fmt("VRML model %1% is not a regular file");
-	fmt % vrmlPath_;
-	throw std::runtime_error(fmt.str());
-      }
-    if (!boost::filesystem::is_regular_file(initPath_))
-      {
-	boost::format fmt("Initialization file %1% is not a regular file");
-	fmt % initPath_;
-	throw std::runtime_error(fmt.str());
-      }
+    // if (!boost::filesystem::is_regular_file(vrmlPath_))
+    //   {
+    // 	boost::format fmt("VRML model %1% is not a regular file");
+    // 	fmt % vrmlPath_;
+    // 	throw std::runtime_error(fmt.str());
+    //   }
+    // if (!boost::filesystem::is_regular_file(initPath_))
+    //   {
+    // 	boost::format fmt("Initialization file %1% is not a regular file");
+    // 	fmt % initPath_;
+    // 	throw std::runtime_error(fmt.str());
+    //   }
 
     // Load the 3d model.
     loadModel();
@@ -271,14 +273,8 @@ namespace visp_tracker
     visp_tracker::Init srv;
 
     // Load the model and send it to the parameter server.
-    boost::filesystem::path modelPath =
-      getModelFileFromModelName (modelName_, modelPath_);
-
-    boost::filesystem::ifstream modelStream(modelPath);
-    std::string modelDescription
-      ((std::istreambuf_iterator<char>(modelStream)),
-       std::istreambuf_iterator<char>());
-
+    std::string modelDescription = fetchResource
+      (getModelFileFromModelName (modelName_, modelPath_));
     ros::param::set (model_description_param, modelDescription);
 
     vpHomogeneousMatrixToTransform(srv.request.initial_cMo, cMo);
@@ -311,7 +307,15 @@ namespace visp_tracker
       {
 	ROS_DEBUG_STREAM("Trying to load the model "
 			 << vrmlPath_.external_file_string());
-	tracker_.loadModel(vrmlPath_.external_file_string().c_str());
+
+	std::string modelPath;
+	boost::filesystem::ofstream modelStream;
+	if (!makeModelFile(modelStream,
+			   vrmlPath_.external_file_string(),
+			   modelPath))
+	  throw std::runtime_error ("failed to retrieve model");
+
+	tracker_.loadModel(modelPath.c_str());
 	ROS_INFO("VRML model has been successfully loaded.");
 
 	ROS_DEBUG_STREAM("Nb hidden faces: "
@@ -337,9 +341,12 @@ namespace visp_tracker
     vpHomogeneousMatrix cMo;
     cMo.eye();
 
-    boost::filesystem::path initialPose =
-      getInitialPoseFileFromModelName(modelName_, modelPath_);
-    boost::filesystem::ifstream file(initialPose);
+    std::string initialPose =
+      getInitialPoseFileFromModelName (modelName_, modelPath_);
+    std::string resource = fetchResource (initialPose);
+    std::stringstream file;
+    file << resource;
+
     if (!file.good())
       {
 	ROS_WARN_STREAM("failed to load initial pose: " << initialPose << "\n"
@@ -368,7 +375,12 @@ namespace visp_tracker
     boost::filesystem::ofstream file(initialPose);
     if (!file.good())
       {
-	ROS_WARN_STREAM("failed to save initial pose: " << initialPose);
+	ROS_WARN_STREAM
+	  ("failed to save initial pose: " << initialPose
+	   <<"\n"
+	   <<"Note: this is normal is you use a remote resource."
+	   <<"\n"
+	   <<"I.e. your model path starts with http://, package://, etc.");
 	return;
       }
     vpPoseVector pose;
@@ -381,9 +393,12 @@ namespace visp_tracker
   {
     points_t points;
 
-    boost::filesystem::path init =
+    std::string init =
       getInitFileFromModelName(modelName_, modelPath_);
-    boost::filesystem::ifstream file(init);
+    std::string resource = fetchResource(init);
+    std::stringstream file;
+    file << resource;
+
     if (!file.good())
       {
 	boost::format fmt("failed to load initialization points: %1");
@@ -554,5 +569,57 @@ namespace visp_tracker
 	ros::spinOnce();
 	loop_rate.sleep();
       }
+  }
+
+  std::string
+  TrackerClient::fetchResource(const std::string& s)
+  {
+    resource_retriever::MemoryResource resource =
+      resourceRetriever_.get(s);
+    std::string result;
+    result.resize(resource.size);
+    unsigned i = 0;
+    for (; i < resource.size; ++i)
+      result[i] = resource.data.get()[i];
+    return result;
+  }
+
+  bool
+  TrackerClient::makeModelFile(boost::filesystem::ofstream& modelStream,
+			       const std::string& resourcePath,
+			       std::string& fullModelPath)
+  {
+    resource_retriever::MemoryResource resource =
+      resourceRetriever_.get(resourcePath);
+    std::string result;
+    result.resize(resource.size);
+    unsigned i = 0;
+    for (; i < resource.size; ++i)
+      result[i] = resource.data.get()[i];
+    result[resource.size];
+
+    char* tmpname = strdup("/tmp/tmpXXXXXX");
+    if (mkdtemp(tmpname) == NULL)
+      {
+	ROS_ERROR_STREAM
+	  ("Failed to create the temporary directory: " << strerror(errno));
+	return false;
+      }
+    boost::filesystem::path path(tmpname);
+    path /= "model.wrl";
+    free(tmpname);
+
+    fullModelPath = path.external_file_string();
+
+    modelStream.open(path);
+    if (!modelStream.good())
+      {
+	ROS_ERROR_STREAM
+	  ("Failed to create the temporary file: " << path);
+	return false;
+      }
+    modelStream << result;
+    modelStream.flush();
+    return true;
   }
 } // end of namespace visp_tracker.

@@ -31,9 +31,14 @@
        graphical tool can be used. It is not required to call it
        through this launch file, you can also directly call the
        initialization service to provide the initial estimation.
+
+       The model_path variable can either be a standard Unix path or a
+       path using the resource_retriever syntax.
+       See http://ros.org/wiki/resource_retriever
+
     -->
   <node pkg="visp_tracker" type="client" name="tracker_mbt_client">
-    <param name="model_path" value="$(find visp_tracker)/models" />
+    <param name="model_path" value="package://visp_tracker/models" />
     <param name="model_name" value="laas-box" />
 
     <!-- Load recommended settings for tracking initialization. They

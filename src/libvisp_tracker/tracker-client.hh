@@ -1,5 +1,6 @@
 #ifndef VISP_TRACKER_TRACKER_CLIENT_HH
 # define VISP_TRACKER_TRACKER_CLIENT_HH
+# include <boost/filesystem/fstream.hpp>
 # include <boost/filesystem/path.hpp>
 
 # include <dynamic_reconfigure/server.h>
@@ -15,6 +16,8 @@
 
 # include <sensor_msgs/Image.h>
 # include <sensor_msgs/CameraInfo.h>
+
+# include <resource_retriever/retriever.h>
 
 # include <visp_tracker/MovingEdgeConfig.h>
 # include <visp_tracker/MovingEdgeSites.h>
@@ -68,6 +71,12 @@ namespace visp_tracker
     void waitForImage();
 
     void sendcMo(const vpHomogeneousMatrix& cMo);
+
+    std::string fetchResource(const std::string&);
+    bool makeModelFile(boost::filesystem::ofstream& modelStream,
+		       const std::string& resourcePath,
+		       std::string& fullModelPath);
+
   private:
     unsigned queueSize_;
 
@@ -102,6 +111,8 @@ namespace visp_tracker
 
     /// \brief Helper used to check that subscribed topics exist.
     image_proc::AdvertisementChecker checkInputs_;
+
+    resource_retriever::Retriever resourceRetriever_;
   };
 } // end of namespace visp_tracker.
 
