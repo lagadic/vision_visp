@@ -1,6 +1,7 @@
 #include <cstdlib>
 #include <fstream>
 #include <sstream>
+#include <stdexcept>
 
 #include <boost/filesystem.hpp>
 #include <boost/filesystem/fstream.hpp>
@@ -239,6 +240,11 @@ namespace visp_tracker
 	    else
 	      ok = true;
 	  }
+	catch(const std::runtime_error& e)
+	  {
+	    ROS_ERROR_STREAM("failed to initialize: "
+			     << e.what() << ", retrying...");
+	  }
 	catch(const std::string& str)
 	  {
 	    ROS_ERROR_STREAM("failed to initialize: "
@@ -343,7 +349,18 @@ namespace visp_tracker
 
     std::string initialPose =
       getInitialPoseFileFromModelName (modelName_, modelPath_);
-    std::string resource = fetchResource (initialPose);
+    std::string resource;
+    try
+      {
+	resource = fetchResource (initialPose);
+      }
+    catch (...)
+      {
+	ROS_WARN_STREAM
+	  ("failed to retrieve initial pose: " << initialPose << "\n"
+	   << "using identity as initial pose");
+	return cMo;
+      }
     std::stringstream file;
     file << resource;
 
