@@ -68,7 +68,6 @@ class ImageProcessing
 
   unsigned long queue_size_;
   bool pause_image_;
-  boost::mutex mutex_iface_;
 
   ros::Subscriber raw_image_subscriber_;
   ros::Publisher point_correspondence_publisher_;

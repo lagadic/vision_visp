@@ -164,7 +164,7 @@ bool ImageProcessing::setCameraInfoBisCallback(sensor_msgs::SetCameraInfo::Reque
   return true;
 }
 void ImageProcessing::rawImageCallback(const sensor_msgs::Image::ConstPtr& image){
-  mutex_iface_.lock();
+  ros::Rate loop_rate(200);
   double gray_level_precision;
   double size_precision;
   bool pause_at_each_frame = false; //Wait for user input each time a new frame is recieved.
@@ -190,29 +190,31 @@ void ImageProcessing::rawImageCallback(const sensor_msgs::Image::ConstPtr& image
     vpDisplay::flush(img_);
     if(pause_image_){
       pause_image_= false;
-    }else{
-      mutex_iface_.unlock();
+    }
+    else{
       return;
     }
   }
 
   pose.clearPoint();
   calib.clearPoint();
+	vpImagePoint ip;
 
   //lets the user select keypoints
   for(unsigned int i=0;i<selected_points_.size();i++){
     try{
-
       vpDot2 d;
       d.setGrayLevelPrecision(gray_level_precision);
       d.setSizePrecision(size_precision);
+      
+			ROS_INFO("Click on point %d",i+1);
       vpDisplay::displayRectangle(img_,0,0,img_.getWidth(),15,vpColor::black,true);
       vpDisplay::displayCharString(img_,10,10,boost::str(boost::format("click on point %1%") % (i+1)).c_str(),vpColor::red);
-      vpDisplay::flush(img_);
-      ROS_INFO("Click on point %d",i+1);
-      d.initTracking(img_);
+      vpDisplay::flush(img_);  
+      while(ros::ok() && !vpDisplay::getClick(img_,ip,false));
+      
+      d.initTracking(img_, ip);
 
-      vpImagePoint ip;
       ip.set_ij(d.getCog().get_i(),d.getCog().get_j());
       double x=0,y=0;
       vpPixelMeterConversion::convertPoint(cam_, ip, x, y);
@@ -220,11 +222,12 @@ void ImageProcessing::rawImageCallback(const sensor_msgs::Image::ConstPtr& image
       selected_points_[i].set_y(y);
       pose.addPoint(selected_points_[i]);
       calib.addPoint(selected_points_[i].get_oX(),selected_points_[i].get_oY(),selected_points_[i].get_oZ(), ip);
-      vpDisplay::displayCross(img_, d.getCog(), 10, vpColor::red);
+      
+			vpDisplay::displayCross(img_, d.getCog(), 10, vpColor::red);
+			vpDisplay::flush(img_);
     }catch(vpTrackingException e){
       ROS_ERROR("Failed to init point");
     }
-    vpDisplay::flush(img_);
   }
 
 
@@ -246,9 +249,8 @@ void ImageProcessing::rawImageCallback(const sensor_msgs::Image::ConstPtr& image
           model_point_iter++){
       //project each model point into image according to current calibration
       vpColVector _cP, _p ;
-      vpImagePoint ip;
-
-      model_point_iter->changeFrame(cMoTmp,_cP) ;
+      
+			model_point_iter->changeFrame(cMoTmp,_cP) ;
       model_point_iter->projection(_cP,_p) ;
       vpMeterPixelConversion::convertPoint(camTmp,_p[0],_p[1], ip);
       if (10 < ip.get_u() && ip.get_u() < img_.getWidth()-10 &&
@@ -260,10 +262,8 @@ void ImageProcessing::rawImageCallback(const sensor_msgs::Image::ConstPtr& image
           md.setSizePrecision(size_precision);
 
           md.initTracking(img_, ip);
-          if(!ros::ok()){
-            mutex_iface_.unlock();
-            return;
-          }
+          if(!ros::ok())
+						return;
 
           vpRect bbox = md.getBBox();
           vpImagePoint cog = md.getCog();
@@ -289,8 +289,8 @@ void ImageProcessing::rawImageCallback(const sensor_msgs::Image::ConstPtr& image
 
             calib_all_points.points.push_back(cp);
 
-
             model_point_iter->display(img_,cMoTmp,camTmp) ;
+            loop_rate.sleep(); //To avoid refresh problems
             vpDisplay::flush(img_);
           }
         } catch(...){
@@ -301,39 +301,32 @@ void ImageProcessing::rawImageCallback(const sensor_msgs::Image::ConstPtr& image
       }
     }
 
-    vpImagePoint ip;
-    ROS_INFO("Click on the interface window to continue");
+    ROS_INFO("Left click on the interface window to continue, right click to restart");
     vpDisplay::displayRectangle(img_,0,0,img_.getWidth(),15,vpColor::black,true);
-    vpDisplay::displayCharString(img_,10,10,"Click on the interface window to continue",vpColor::red);
+    vpDisplay::displayCharString(img_,10,10,"Left click on the interface window to continue, right click to restart",vpColor::red);
     vpDisplay::flush(img_);
+		
     vpMouseButton::vpMouseButtonType btn;
     while(ros::ok() && !vpDisplay::getClick(img_,ip,btn, false));
+		
     if(btn==vpMouseButton::button1)
       point_correspondence_publisher_.publish(calib_all_points);
     else{
-      mutex_iface_.unlock();
       rawImageCallback(image);
       return;
     }
-
-
-
   }catch(...){
     ROS_ERROR("calibration failed.");
   }
-  mutex_iface_.unlock();
 }
 
 void ImageProcessing::interface()
 {
   vpImagePoint ip;
-  spinner_.start();
   while(ros::ok()){
-    if(mutex_iface_.try_lock()){
-      if(vpDisplay::getClick(img_,ip,false))
-        pause_image_ = true;
-      mutex_iface_.unlock();
-    }
+    ros::spinOnce();
+    if(vpDisplay::getClick(img_,ip,false))
+      pause_image_ = true;
   }
   ros::waitForShutdown();
 }
