@@ -335,7 +335,10 @@ namespace visp_tracker
       }
     catch(...)
       {
-	boost::format fmt("Failed to load the model %1%");
+	boost::format fmt
+	  ("Failed to load the model %1%\n"
+	   "Do you use resource_retriever syntax?\n"
+	   "I.e. replace /my/model/path by file:///my/model/path");
 	fmt % vrmlPath_;
 	throw std::runtime_error(fmt.str());
       }
