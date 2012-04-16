@@ -9,7 +9,7 @@ namespace visp_tracker
   std::string camera_velocity_topic("camera_velocity");
   std::string init_service("init_tracker");
 
-  std::string default_model_path("@PROJECT_SOURCE_DIR@/models");
+  std::string default_model_path("package://visp_tracker/models");
 
   std::string model_description_param("model_description");
 } // end of namespace visp_tracker;
