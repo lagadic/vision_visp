@@ -1,0 +1,1 @@
+add_library(datamatrix_detector detector.cpp)
