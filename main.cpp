@@ -15,6 +15,10 @@
 #include <visp/vpImageConvert.h>
 #include <visp/vpImagePoint.h>
 #include <visp/vpImageTools.h>
+#include <visp/vpTrackingException.h>
+#include <visp/vpPose.h>
+#include <visp/vpPixelMeterConversion.h>
+#include <visp/vpMeterPixelConversion.h>
 
 
 #define INIT_DMX 0
@@ -28,6 +32,7 @@ int main(int argc, char**argv)
 
 
   CmdLine cmd(argc,argv);
+  if(cmd.should_exit()) return 0;
   datamatrix::Detector dmx_detector;
 
   vpMbEdgeTracker tracker; // Create a model based tracker.
@@ -36,6 +41,10 @@ int main(int argc, char**argv)
   vpCameraParameters cam;
   vpImage<unsigned char> Igray;
   vpVideoReader reader;
+
+  std::vector<vpPoint> points3D_inner = cmd.get_inner_points_3D(),points3D_outer=cmd.get_outer_points_3D();
+  std::vector<vpPoint> f = cmd.get_flashcode_points_3D();
+
   if(cmd.using_single_image()){
     if(cmd.get_verbose())
       std::cout << "Loading: " << cmd.get_single_image_path() << std::endl;
@@ -52,14 +61,11 @@ int main(int argc, char**argv)
   tracker.loadConfigFile(cmd.get_xml_file().c_str() ); // Load the configuration of the tracker
   //tracker.getCameraParameters(cam); // Get the camera parameters used by the tracker (from the configuration file).
   tracker.loadModel(cmd.get_wrl_file().c_str()); // load the 3d model, to read .wrl model the 3d party library coin is required, if coin is not installed .cao file can be used.
+  cam.initPersProjWithDistortion(543.1594454,539.1300717,320.1025306,212.8181022,0.01488495076,-0.01484690262);
 
-  cam.initPersProjWithDistortion(548.83913,541.05367,309.68288,246.39086,-0.01019,0.01019);
-
-  vpImageTools::undistort(_I,cam,I);
+  I = _I;
+  //vpImageTools::undistort(_I,cam,I);
   d.init(I);
-  vpDisplay::display(I);
-
-
   vpDisplay::display(I);
 
   cv::Mat cvI;
@@ -70,6 +76,26 @@ int main(int argc, char**argv)
     double centerX = (double)(polygon[0].x+polygon[1].x+polygon[2].x+polygon[3].x)/4.;
     double centerY = (double)(polygon[0].y+polygon[1].y+polygon[2].y+polygon[3].y)/4.;
     const vpImagePoint center((unsigned int)centerY,(unsigned int)centerX);
+
+    vpPose pose;
+
+    for(int i=0;i<f.size();i++){
+      double x=0, y=0;
+      vpImagePoint poly_pt(polygon[i].y,polygon[i].x);
+
+      vpPixelMeterConversion::convertPoint(cam, poly_pt, x, y);
+      f[i].set_x(x);
+      f[i].set_y(y);
+    }
+
+
+    for(int i=0;i<f.size();i++)
+      pose.addPoint(f[i]);
+
+    pose.computePose(vpPose::LAGRANGE,cMo);
+    pose.computePose(vpPose::VIRTUAL_VS,cMo);
+    vpDisplay::displayFrame(I,cMo,cam,0.01,vpColor::none,2);
+
     const vpImagePoint corner0(polygon[0].y,polygon[0].x);
     const vpImagePoint corner1(polygon[1].y,polygon[1].x);
     const vpImagePoint corner2(polygon[2].y,polygon[2].x);
@@ -78,11 +104,11 @@ int main(int argc, char**argv)
     std::vector<vpImagePoint> model_inner_corner(4);
     std::vector<vpImagePoint> model_outer_corner(4);
     for(int i=0;i<4;i++){
-      model_inner_corner[i].set_i(center.get_i() + (int)((double)(polygon[i].y - center.get_i())/cmd.get_inner_ratio()));
-      model_inner_corner[i].set_j(center.get_j() + (int)((double)(polygon[i].x - center.get_j())/cmd.get_inner_ratio()));
+      points3D_outer[i].project(cMo);
+      points3D_inner[i].project(cMo);
+      vpMeterPixelConversion::convertPoint(cam,points3D_outer[i].get_x(),points3D_outer[i].get_y(),model_outer_corner[i]);
+      vpMeterPixelConversion::convertPoint(cam,points3D_inner[i].get_x(),points3D_inner[i].get_y(),model_inner_corner[i]);
 
-      model_outer_corner[i].set_i(center.get_i() + (int)((double)(polygon[i].y - center.get_i())/(cmd.get_inner_ratio()*cmd.get_outer_ratio())));
-      model_outer_corner[i].set_j(center.get_j() + (int)((double)(polygon[i].x - center.get_j())/(cmd.get_inner_ratio()*cmd.get_outer_ratio())));
       if(cmd.get_verbose()){
         std::cout << "model inner corner: (" << model_inner_corner[i].get_i() << "," << model_inner_corner[i].get_j() << ")" << std::endl;
       }
@@ -123,39 +149,31 @@ int main(int argc, char**argv)
     vpDisplay::displayCross(I,model_outer_corner[2],2,vpColor::cyan,2);
     vpDisplay::displayCharString(I,model_outer_corner[3],"mo4",vpColor::darkRed);
     vpDisplay::displayCross(I,model_outer_corner[3],2,vpColor::darkRed,2);
-/*
- * -0.099  -0.099  0.000
- 0.099  -0.099  0.000
- 0.099  0.099  0.000
--0.099  0.099  0.000
- *
- */
-    std::vector<vpPoint> points3D;
+
+
 
     vpImageConvert::convert(I,Igray);
-    vpPoint p1,p2,p3,p4;
-    p1.setWorldCoordinates( -0.099 , -0.099 , 0.000);
-    p2.setWorldCoordinates( 0.099 , -0.099 , 0.000);
-    p3.setWorldCoordinates( 0.099 , 0.099 , 0.000);
-    p4.setWorldCoordinates( -0.099 , 0.099 , 0.000);
-    points3D.push_back(p1);
-    points3D.push_back(p2);
-    points3D.push_back(p3);
-    points3D.push_back(p4);
-    tracker.initFromPoints(Igray,model_outer_corner,points3D);
-    tracker.track(Igray); // track the object on this image
-    tracker.getPose(cMo); // get the pose
-    tracker.display(I, cMo, cam, vpColor::blue, 1);// display the model at the computed pose.
 
     vpDisplay::flush(I);
     vpDisplay::getClick(I);
-
-    for(int i=0;i<100;i++){
-      vpDisplay::display(I);
+    try{
+      tracker.initFromPoints(Igray,model_outer_corner,points3D_outer);
       tracker.track(Igray); // track the object on this image
       tracker.getPose(cMo); // get the pose
       tracker.display(I, cMo, cam, vpColor::blue, 1);// display the model at the computed pose.
+
       vpDisplay::flush(I);
+      vpDisplay::getClick(I);
+
+      for(int i=0;i<100;i++){
+        vpDisplay::display(I);
+        tracker.track(Igray); // track the object on this image
+        tracker.getPose(cMo); // get the pose
+        tracker.display(I, cMo, cam, vpColor::blue, 1);// display the model at the computed pose.
+        vpDisplay::flush(I);
+      }
+    }catch(vpTrackingException& e){
+      std::cout << "Tracking failed" << std::endl;
     }
     vpDisplay::getClick(I);
   }else{
@@ -165,7 +183,6 @@ int main(int argc, char**argv)
 
   while(true){
     reader.acquire(Igray);
-    //vpImageTools::undistort(_I,cam,I);
 
     vpImageConvert::convert(Igray,I);
     vpDisplay::display(I);

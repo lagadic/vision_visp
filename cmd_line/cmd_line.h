@@ -6,6 +6,7 @@
 #include <boost/program_options/parsers.hpp>
 #include <exception>
 #include <string>
+#include <visp/vpPoint.h>
 
 class CmdLine{
  private:
@@ -18,6 +19,9 @@ class CmdLine{
   std::string data_dir_;
   std::string pattern_name_;
   std::string single_image_name_;
+  std::vector<vpPoint> flashcode_points_3D_;
+  std::vector<vpPoint> inner_points_3D_;
+  std::vector<vpPoint> outer_points_3D_;
  public:
   CmdLine(int argc,char**argv);
   bool dmtx_only();
@@ -51,5 +55,9 @@ class CmdLine{
   bool using_single_image();
 
   std::string get_single_image_path();
+
+  std::vector<vpPoint>& get_flashcode_points_3D();
+  std::vector<vpPoint>& get_inner_points_3D();
+  std::vector<vpPoint>& get_outer_points_3D();
 };
 #endif

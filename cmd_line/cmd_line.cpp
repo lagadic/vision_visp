@@ -1,26 +1,71 @@
 #include "cmd_line.h"
 #include <iostream>
+#include <fstream>
 
 namespace po = boost::program_options;
 CmdLine:: CmdLine(int argc,char**argv) : should_exit_(false) {
-  po::options_description prog_args("Program options");
-  prog_args.add_options()
+  std::string config_file;
+  po::options_description prog_args;
+  po::options_description general("General options");
+  std::vector<double> flashcode_coordinates,inner_coordinates,outer_coordinates;
+  general.add_options()
       ("dmtxonly,d", "only detect the datamatrix")
       ("video-source,s", po::value<int>(&video_channel_)->default_value(1),"video source. For example 1 for /video/1")
       ("data-directory,D", po::value<std::string>(&data_dir_)->default_value("./data"),"directory from which to load images")
       ("single-image,I", po::value<std::string>(&single_image_name_),"load this single image (relative to data dir)")
       ("pattern-name,P", po::value<std::string>(&pattern_name_)->default_value("pattern"),"name of xml,init and wrl files")
-      ("inner-ratio,i", po::value<double>(&inner_ratio_)->default_value(.708333333),"ratio between flashcode width and inner contour width")
-      ("outer-ratio,o", po::value<double>(&outer_ratio_)->default_value(.5),"ratio inner contour width and outer contour width")
       ("showfps,f", "show framerate")
       ("verbose,v", "show states of the tracker")
       ("dmx-detector-timeout,T", po::value<int>(&dmx_timeout_)->default_value(1000), "timeout for datamatrix detection in ms")
+      ("config-file,c", po::value<std::string>(&config_file)->default_value("./data/config.cfg"), "config file for the program")
 
       ("help", "produce help message")
       ;
   
+  po::options_description configuration("Configuration");
+  configuration.add_options()
+      ("flashcode-coordinates,F",
+      po::value< std::vector<double> >(&flashcode_coordinates)->multitoken()->composing(),
+      "3D coordinates of the flashcode in clockwise order")
+      ("inner-coordinates,i",
+            po::value< std::vector<double> >(&inner_coordinates)->multitoken()->composing(),
+            "3D coordinates of the inner region in clockwise order")
+      ("outer-coordinates,o",
+                  po::value< std::vector<double> >(&outer_coordinates)->multitoken()->composing(),
+                  "3D coordinates of the outer region in clockwise order")
+      ;
+  prog_args.add(general);
+  prog_args.add(configuration);
   po::store(po::parse_command_line(argc, argv, prog_args), vm_);
   po::notify(vm_);
+  if(get_verbose())
+    std::cout << "Loading config from:" << config_file.c_str() << std::endl;
+
+  std::ifstream in( config_file.c_str() );
+  po::store(po::parse_config_file(in,prog_args,false), vm_);
+  po::notify(vm_);
+  in.close();
+
+  for(int i =0;i<flashcode_coordinates.size()/3;i++){
+    vpPoint p;
+    p.setWorldCoordinates(flashcode_coordinates[i*3],flashcode_coordinates[i*3+1],flashcode_coordinates[i*3+2]);
+    flashcode_points_3D_.push_back(p);
+  }
+
+  for(int i =0;i<inner_coordinates.size()/3;i++){
+    vpPoint p;
+    p.setWorldCoordinates(inner_coordinates[i*3],inner_coordinates[i*3+1],inner_coordinates[i*3+2]);
+    inner_points_3D_.push_back(p);
+  }
+
+  for(int i =0;i<outer_coordinates.size()/3;i++){
+    vpPoint p;
+    p.setWorldCoordinates(outer_coordinates[i*3],outer_coordinates[i*3+1],outer_coordinates[i*3+2]);
+    outer_points_3D_.push_back(p);
+  }
+
+  if(get_verbose())
+      std::cout << "Loaded " << flashcode_points_3D_.size() << " flashcode extremity points, " << inner_points_3D_.size() << " inner contour points and " << outer_points_3D_.size() << " outer contour points." << std::endl;
 
   if (vm_.count("help")) {
       std::cout << prog_args << std::endl;
@@ -90,4 +135,16 @@ bool CmdLine:: using_single_image(){
 
 std::string CmdLine:: get_single_image_path(){
   return get_data_dir() + single_image_name_;
+}
+
+std::vector<vpPoint>& CmdLine:: get_flashcode_points_3D(){
+  return flashcode_points_3D_;
+}
+
+std::vector<vpPoint>& CmdLine:: get_inner_points_3D(){
+  return inner_points_3D_;
+}
+
+std::vector<vpPoint>& CmdLine:: get_outer_points_3D(){
+  return outer_points_3D_;
 }
