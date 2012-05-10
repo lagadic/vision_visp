@@ -10,7 +10,8 @@ CmdLine:: CmdLine(int argc,char**argv) : should_exit_(false) {
   std::vector<double> flashcode_coordinates,inner_coordinates,outer_coordinates;
   general.add_options()
       ("dmtxonly,d", "only detect the datamatrix")
-      ("video-source,s", po::value<int>(&video_channel_)->default_value(1),"video source. For example 1 for /video/1")
+      ("video-camera,C", "video from camera")
+      ("video-source,s", po::value<std::string>(&video_channel_)->default_value("/dev/video1"),"video source. For example /dev/video1")
       ("data-directory,D", po::value<std::string>(&data_dir_)->default_value("./data"),"directory from which to load images")
       ("single-image,I", po::value<std::string>(&single_image_name_),"load this single image (relative to data dir)")
       ("pattern-name,P", po::value<std::string>(&pattern_name_)->default_value("pattern"),"name of xml,init and wrl files")
@@ -81,7 +82,7 @@ bool CmdLine:: should_exit(){
   return should_exit_;
 }
 
-int CmdLine:: get_video_channel(){
+std::string CmdLine:: get_video_channel(){
   return video_channel_;
 }
 
@@ -107,6 +108,10 @@ double CmdLine:: get_outer_ratio(){
 
 bool CmdLine:: using_data_dir(){
   return vm_.count("data-directory")>0;
+}
+
+bool CmdLine:: using_video_camera(){
+  return vm_.count("video-camera")>0;
 }
 
 std::string CmdLine:: get_data_dir(){

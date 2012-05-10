@@ -12,7 +12,7 @@ class CmdLine{
  private:
   boost::program_options::variables_map vm_;
   bool should_exit_;
-  int video_channel_;
+  std::string video_channel_;
   double inner_ratio_;
   double outer_ratio_;
   int dmx_timeout_;
@@ -28,7 +28,7 @@ class CmdLine{
 
   bool should_exit();
 
-  int get_video_channel();
+  std::string get_video_channel();
 
   int show_fps();
 
@@ -41,6 +41,8 @@ class CmdLine{
   double get_outer_ratio();
 
   bool using_data_dir();
+
+  bool using_video_camera();
 
   std::string get_data_dir();
 

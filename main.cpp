@@ -41,6 +41,7 @@ int main(int argc, char**argv)
   vpCameraParameters cam;
   vpImage<unsigned char> Igray;
   vpVideoReader reader;
+  vpV4l2Grabber video_reader;
 
   std::vector<vpPoint> points3D_inner = cmd.get_inner_points_3D(),points3D_outer=cmd.get_outer_points_3D();
   std::vector<vpPoint> f = cmd.get_flashcode_points_3D();
@@ -48,7 +49,18 @@ int main(int argc, char**argv)
   if(cmd.using_single_image()){
     if(cmd.get_verbose())
       std::cout << "Loading: " << cmd.get_single_image_path() << std::endl;
-    vpImageIo::read(_I,cmd.get_single_image_path());
+    vpImageIo::read(I,cmd.get_single_image_path());
+  }else if(cmd.using_video_camera()){
+    video_reader.setDevice(cmd.get_video_channel().c_str());
+    video_reader.setInput(0);
+    video_reader.setScale(1);
+    video_reader.setFramerate(vpV4l2Grabber::framerate_25fps); //  25 fps
+    video_reader.setPixelFormat(vpV4l2Grabber::V4L2_YUYV_FORMAT);
+    video_reader.setWidth(640);  // Acquired images are 768 width
+    video_reader.setHeight(480); // Acquired images are 576 height
+    video_reader.setNBuffers(3); // 3 ring buffers to ensure real-time acquisition
+    video_reader.open(I);        // Open the grabber
+
   }else{
     std::string filenames((cmd.get_data_dir() + std::string("/images/%08d.jpg")));
     if(cmd.get_verbose())
@@ -56,16 +68,25 @@ int main(int argc, char**argv)
     reader.setFileName( filenames.c_str() );
 
     reader.setFirstFrameIndex(2);
-    reader.open(_I);
+    reader.open(I);
   }
   tracker.loadConfigFile(cmd.get_xml_file().c_str() ); // Load the configuration of the tracker
   //tracker.getCameraParameters(cam); // Get the camera parameters used by the tracker (from the configuration file).
   tracker.loadModel(cmd.get_wrl_file().c_str()); // load the 3d model, to read .wrl model the 3d party library coin is required, if coin is not installed .cao file can be used.
   cam.initPersProjWithDistortion(543.1594454,539.1300717,320.1025306,212.8181022,0.01488495076,-0.01484690262);
-
-  I = _I;
-  //vpImageTools::undistort(_I,cam,I);
   d.init(I);
+
+  if(cmd.using_video_camera()){
+    while(true){
+      video_reader.acquire(I);
+      vpDisplay::display(I);
+      vpDisplay::flush(I);
+      if(vpDisplay::getClick(I,false))
+        break;
+    }
+  }
+  //vpImageTools::undistort(_I,cam,I);
+
   vpDisplay::display(I);
 
   cv::Mat cvI;
@@ -87,7 +108,6 @@ int main(int argc, char**argv)
       f[i].set_x(x);
       f[i].set_y(y);
     }
-
 
     for(int i=0;i<f.size();i++)
       pose.addPoint(f[i]);
@@ -150,8 +170,6 @@ int main(int argc, char**argv)
     vpDisplay::displayCharString(I,model_outer_corner[3],"mo4",vpColor::darkRed);
     vpDisplay::displayCross(I,model_outer_corner[3],2,vpColor::darkRed,2);
 
-
-
     vpImageConvert::convert(I,Igray);
 
     vpDisplay::flush(I);
@@ -182,7 +200,10 @@ int main(int argc, char**argv)
   }
 
   while(true){
-    reader.acquire(Igray);
+    if(cmd.using_video_camera())
+      video_reader.acquire(Igray);
+    else
+      reader.acquire(Igray);
 
     vpImageConvert::convert(Igray,I);
     vpDisplay::display(I);
