@@ -27,6 +27,8 @@
 int main(int argc, char**argv)
 {
   CmdLine cmd(argc,argv);
+
+
   if(cmd.should_exit()) return 0;
 
   //vpDisplayX d;
@@ -59,9 +61,8 @@ int main(int argc, char**argv)
     reader.open(I);
   }
 
-
-
-  //vpDisplay::display(I);
+  vpDisplayX* d = new vpDisplayX();
+  d->init(I);
   tracking::Tracker t(cmd);
 
   t.start();

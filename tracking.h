@@ -16,10 +16,12 @@
 #include <visp/vpMbEdgeTracker.h>
 #include <visp/vpDisplayX.h>
 #include <vector>
+#include "states.hpp"
 
 namespace msm = boost::msm;
 namespace mpl = boost::mpl;
 namespace tracking{
+
   struct input_ready{
     input_ready(vpImage<vpRGBa>& I) : I(I){}
     vpImage<vpRGBa>& I;
@@ -29,51 +31,10 @@ namespace tracking{
     vpImage<vpRGBa>& I;
   };
 
-  struct WaitingForInput : public msm::front::state<>
-  {
-      template <class Event, class Fsm>
-      void on_entry(Event const&, Fsm& )
-      {std::cout <<"entering: WaitingForInput" << std::endl;}
-      template <class Event, class Fsm>
-      void on_exit(Event const&, Fsm& )
-      {std::cout <<"leaving: WaitingForInput" << std::endl;}
-  };
-
-  struct DetectFlashcode : public msm::front::state<>
-  {
-      template <class Event, class Fsm>
-      void on_entry(Event const&, Fsm& )
-      {std::cout <<"entering: DetectFlashcode" << std::endl;}
-      template <class Event, class Fsm>
-      void on_exit(Event const&, Fsm& )
-      {std::cout <<"leaving: DetectFlashcode" << std::endl;}
-  };
-
-  struct DetectModel : public msm::front::state<>
-  {
-      template <class Event, class Fsm>
-      void on_entry(Event const&, Fsm& )
-      {std::cout <<"entering: DetectModel" << std::endl;}
-      template <class Event, class Fsm>
-      void on_exit(Event const&, Fsm& )
-      {std::cout <<"leaving: DetectModel" << std::endl;}
-  };
-
-  struct TrackModel : public msm::front::state<>
-  {
-      template <class Event, class Fsm>
-      void on_entry(Event const&, Fsm& )
-      {std::cout <<"entering: TrackModel" << std::endl;}
-      template <class Event, class Fsm>
-      void on_exit(Event const&, Fsm& )
-      {std::cout <<"leaving: TrackModel" << std::endl;}
-  };
-
 
   class Tracker_ : public msm::front::state_machine_def<Tracker_>{
   private:
     CmdLine cmd;
-    vpDisplayX* d;
     datamatrix::Detector dmx_detector;
     vpMbEdgeTracker tracker; // Create a model based tracker.
     vpImage<vpRGBa> *I;
@@ -87,6 +48,14 @@ namespace tracking{
     std::vector<vpPoint> f;
 
   public:
+    datamatrix::Detector& get_dmx_detector();
+    vpMbEdgeTracker& get_mbt();
+    std::vector<vpPoint>& get_points3D_inner();
+    std::vector<vpPoint>& get_points3D_outer();
+    std::vector<vpPoint>& get_flashcode();
+    vpImage<vpRGBa>& get_I();
+    vpCameraParameters& get_cam();
+
     Tracker_(CmdLine& cmd);
 
     typedef WaitingForInput initial_state;
@@ -96,22 +65,19 @@ namespace tracking{
     bool model_detected(msm::front::none const&);
     bool mbt_success(input_ready const& evt);
 
-    void display_input(input_ready const& evt);
-    void display_input(select_input const& evt);
     void find_flashcode_pos(input_ready const& evt);
     void track_model(input_ready const& evt);
 
     void track(vpImage<vpRGBa>& I);
-    void display_flashcode(vpImage<vpRGBa>& I);
 
     struct transition_table : mpl::vector<
       //    Start               Event              Target                  Action                         Guard
       //   +-----------------+--------------------+-----------------------+------------------------------+------------------------------+
-        row< WaitingForInput , input_ready        , WaitingForInput       , &Tracker_::display_input     ,&Tracker_::no_input_selected    >,
+      g_row< WaitingForInput , input_ready        , WaitingForInput       ,                               &Tracker_::no_input_selected    >,
       //   +-----------------+--------------------+-----------------------+------------------------------+------------------------------+
-        row< WaitingForInput , input_ready        , DetectFlashcode       , &Tracker_::display_input     ,&Tracker_::input_selected       >,
+      g_row< WaitingForInput , input_ready        , DetectFlashcode       ,                               &Tracker_::input_selected       >,
       //   +-----------------+--------------------+-----------------------+------------------------------+------------------------------+
-      a_row< WaitingForInput , select_input       , DetectFlashcode       , &Tracker_::display_input                                      >,
+       _row< WaitingForInput , select_input       , DetectFlashcode                                                                       >,
       //   +-----------------+--------------------+-----------------------+------------------------------+------------------------------+
         row< DetectFlashcode , input_ready        , DetectModel           , &Tracker_::find_flashcode_pos,&Tracker_::flashcode_detected   >,
       //   +-----------------+--------------------+-----------------------+------------------------------+------------------------------+

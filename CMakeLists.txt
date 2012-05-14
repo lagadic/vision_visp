@@ -15,5 +15,5 @@ include_directories ( ${Boost_INCLUDE_DIRS} )
 add_subdirectory(cmd_line)
 add_subdirectory(datamatrix)
 
-ADD_EXECUTABLE( tracking main.cpp tracking.h tracking.cpp video.h video.cpp logitech.hpp)
+ADD_EXECUTABLE( tracking main.cpp states.hpp tracking.h tracking.cpp video.h video.cpp logitech.hpp)
 TARGET_LINK_LIBRARIES( tracking ${OpenCV_LIBS} datamatrix_detector dmtx boost_program_options cmd_line )
