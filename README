@@ -3,7 +3,7 @@ This is a hybrid tracker using two libraries:
 - libdtmx for flashcode detection (http://www.libdmtx.org/)
 
 The tracker is able to initialize itself without any prior information from this kind of patterns:
-![]https://github.com/filipnovotny/flashcode_mbt/tree/master/data/pattern-1.png
+https://github.com/filipnovotny/flashcode_mbt/raw/master/data/pattern-1.png
 
 First, it finds the flashcode and deduces the model from it.
 Afterwards, the model is tracked.
