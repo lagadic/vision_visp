@@ -6,8 +6,7 @@
 //front-end
 #include <boost/msm/front/state_machine_def.hpp>
 #include <visp/vpImage.h>
-#include "cmd_line/cmd_line.h"
-#include "datamatrix/detector.h"
+
 #include <visp/vpMbEdgeTracker.h>
 #include <visp/vpImage.h>
 #include <visp/vpRGBa.h>
@@ -15,9 +14,13 @@
 #include <visp/vpCameraParameters.h>
 #include <visp/vpMbEdgeTracker.h>
 #include <visp/vpDisplay.h>
+#include <visp/vpPlot.h>
 #include <vector>
-#include "states.hpp"
 #include <fstream>
+
+#include "cmd_line/cmd_line.h"
+#include "datamatrix/detector.h"
+#include "states.hpp"
 
 namespace msm = boost::msm;
 namespace mpl = boost::mpl;
@@ -36,21 +39,23 @@ namespace tracking{
   class Tracker_ : public msm::front::state_machine_def<Tracker_>{
   private:
     CmdLine cmd;
-    datamatrix::Detector dmx_detector;
-    vpMbEdgeTracker tracker; // Create a model based tracker.
-    vpImage<vpRGBa> *I;
+    datamatrix::Detector dmx_detector_;
+    vpMbEdgeTracker tracker_; // Create a model based tracker.
+    vpImage<vpRGBa> *I_;
     vpImage<vpRGBa> *_I;
-    vpHomogeneousMatrix cMo; // Pose computed using the tracker.
-    vpCameraParameters cam;
-    vpImage<unsigned char> Igray;
+    vpHomogeneousMatrix cMo_; // Pose computed using the tracker.
+    vpCameraParameters cam_;
+    vpImage<unsigned char> Igray_;
+    vpPlot plot_;
 
-    std::vector<vpPoint> points3D_inner;
-    std::vector<vpPoint> points3D_outer;
-    std::vector<vpPoint> f;
+    std::vector<vpPoint> points3D_inner_;
+    std::vector<vpPoint> points3D_outer_;
+    std::vector<vpPoint> f_;
 
     std::ofstream varfile_;
     int iter_;
   public:
+    //getters to access useful members
     datamatrix::Detector& get_dmx_detector();
     vpMbEdgeTracker& get_mbt();
     std::vector<vpPoint>& get_points3D_inner();
@@ -61,17 +66,17 @@ namespace tracking{
 
     Tracker_(CmdLine& cmd);
 
-    typedef WaitingForInput initial_state;
+    typedef WaitingForInput initial_state;      //initial state of our state machine tracker
+    //Guards
     bool input_selected(input_ready const& evt);
     bool no_input_selected(input_ready const& evt);
     bool flashcode_detected(input_ready const& evt);
     bool model_detected(msm::front::none const&);
     bool mbt_success(input_ready const& evt);
 
+    //actions
     void find_flashcode_pos(input_ready const& evt);
     void track_model(input_ready const& evt);
-
-    void track(vpImage<vpRGBa>& I);
 
     struct transition_table : mpl::vector<
       //    Start               Event              Target                  Action                         Guard

@@ -44,7 +44,10 @@ namespace tracking{
           std::cout <<"leaving: DetectFlashcode" << std::endl;
           vpDisplay::display(evt.I);
           std::vector<cv::Point>& polygon = fsm.get_dmx_detector().get_polygon();
-          if(polygon.size()==0) return;
+          if(polygon.size()==0){
+            vpDisplay::displayCharString(evt.I,vpImagePoint(0,0),"TRACKING LOST",vpColor::red);
+            return;
+          }
 
           const vpImagePoint corner0(polygon[0].y,polygon[0].x);
           const vpImagePoint corner1(polygon[1].y,polygon[1].x);
@@ -120,6 +123,7 @@ namespace tracking{
         template <class Event, class Fsm>
         void on_exit(Event const& evt, Fsm& fsm)
         {
+          std::cout <<"leaving: TrackModel" << std::endl;
           vpHomogeneousMatrix cMo;
           fsm.get_mbt().getPose(cMo);
           vpDisplay::display(evt.I);

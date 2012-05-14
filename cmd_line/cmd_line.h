@@ -17,6 +17,7 @@ class CmdLine{
   double outer_ratio_;
   double var_limit_;
   int dmx_timeout_;
+  int mbt_convergence_steps_;
   std::string data_dir_;
   std::string pattern_name_;
   std::string var_file_;
@@ -33,6 +34,8 @@ class CmdLine{
   std::string get_video_channel();
 
   int show_fps();
+
+  int get_mbt_convergence_steps();
 
   int get_verbose();
 

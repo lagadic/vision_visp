@@ -37,6 +37,9 @@ CmdLine:: CmdLine(int argc,char**argv) : should_exit_(false) {
       ("variance-file,V", po::value< std::string >(&var_file_)->composing(), "file to store variance values")
       ("variance-limit,l", po::value< double >(&var_limit_)->composing(),
           "above this limit the tracker will be considered lost and the pattern will be detected with the flascode")
+      ("mbt-convergence-steps,S", po::value< int >(&mbt_convergence_steps_)->default_value(100)->composing(),
+          "when a new model is found, how many tracking iterations should the tracker perform so the model matches the projection.")
+
       ;
   prog_args.add(general);
   prog_args.add(configuration);
@@ -75,6 +78,10 @@ CmdLine:: CmdLine(int argc,char**argv) : should_exit_(false) {
       std::cout << prog_args << std::endl;
       should_exit_ = true;
   }  
+}
+
+int CmdLine:: get_mbt_convergence_steps(){
+  return mbt_convergence_steps_;
 }
 
 double CmdLine:: get_var_limit(){

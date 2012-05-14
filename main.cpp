@@ -21,17 +21,15 @@
 #include "tracking.h"
 #include <visp/vpDisplayX.h>
 
-#define INIT_DMX 0
-#define INIT_MBT 1
-#define TRACK_MBT 2
-
 int main(int argc, char**argv)
 {
+  //Parse command line arguments
   CmdLine cmd(argc,argv);
 
-  if(cmd.should_exit()) return 0;
+  if(cmd.should_exit()) return 0; //exit if needed
 
-  vpImage<vpRGBa> I,_I;
+  //Read video from a set of images, a single image or a camera
+  vpImage<vpRGBa> I;
   vpVideoReader reader;
   vpV4l2Grabber video_reader;
 
@@ -59,11 +57,19 @@ int main(int argc, char**argv)
     reader.open(I);
   }
 
+  //init display
   vpDisplayX* d = new vpDisplayX();
   d->init(I);
+  //init hybrid tracker
   tracking::Tracker t(cmd);
 
-  t.start();
+  t.start(); //start state machine
+
+  //when we're using a camera, we can have a meaningless video feed
+  //until the user selects the first meaningful image
+  //The first meaningful frame is selected with a click
+  //In other cases, the first meaningful frame is selected by sending
+  //the tracking::select_input event
   if(!cmd.using_video_camera())
     t.process_event(tracking::select_input(I));
 
