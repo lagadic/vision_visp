@@ -116,9 +116,7 @@ namespace tracking{
 
     try{
       tracker.initFromPoints(Igray,model_outer_corner,points3D_outer);
-      std::cout << "initFromPoints ok" << std::endl;
       tracker.track(Igray); // track the object on this image
-      std::cout << "track ok" << std::endl;
       tracker.getPose(cMo); // get the pose
       tracker.setCovarianceComputation(true);
 
@@ -141,10 +139,7 @@ namespace tracking{
       tracker.track(Igray); // track the object on this image
 
       vpMatrix mat = tracker.getCovarianceMatrix();
-      if(cmd.using_var_limit())
-        for(int i=0;i<6;i++)
-          if(mat[i][i]>cmd.get_var_limit())
-            return false;
+
       if(cmd.using_var_file()){
         varfile_ << iter_ << "\t";
         for(int i=0;i<6;i++)
@@ -153,6 +148,10 @@ namespace tracking{
         varfile_ << std::endl;
         iter_++;
       }
+      if(cmd.using_var_limit())
+        for(int i=0;i<6;i++)
+          if(mat[i][i]>cmd.get_var_limit())
+            return false;
     }catch(vpTrackingException& e){
       std::cout << "Tracking lost" << std::endl;
       return false;

@@ -19,6 +19,7 @@
 #include <visp/vpPixelMeterConversion.h>
 #include <visp/vpMeterPixelConversion.h>
 #include "tracking.h"
+#include <visp/vpDisplayX.h>
 
 #define INIT_DMX 0
 #define INIT_MBT 1
@@ -28,10 +29,7 @@ int main(int argc, char**argv)
 {
   CmdLine cmd(argc,argv);
 
-
   if(cmd.should_exit()) return 0;
-
-  //vpDisplayX d;
 
   vpImage<vpRGBa> I,_I;
   vpVideoReader reader;
@@ -47,8 +45,8 @@ int main(int argc, char**argv)
     video_reader.setScale(1);
     video_reader.setFramerate(vpV4l2Grabber::framerate_25fps); //  25 fps
     video_reader.setPixelFormat(vpV4l2Grabber::V4L2_YUYV_FORMAT);
-    video_reader.setWidth(640);  // Acquired images are 768 width
-    video_reader.setHeight(480); // Acquired images are 576 height
+    video_reader.setWidth(640);
+    video_reader.setHeight(480);
     video_reader.setNBuffers(3); // 3 ring buffers to ensure real-time acquisition
     video_reader.open(I);        // Open the grabber
   }else{
@@ -75,7 +73,5 @@ int main(int argc, char**argv)
     else if(!cmd.using_single_image())
       reader.acquire(I);
     t.process_event(tracking::input_ready(I));
-    vpDisplay::flush(I);
-    //vpDisplay::getClick(I);
   }
 }

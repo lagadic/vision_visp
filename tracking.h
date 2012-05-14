@@ -14,7 +14,7 @@
 #include <visp/vpHomogeneousMatrix.h>
 #include <visp/vpCameraParameters.h>
 #include <visp/vpMbEdgeTracker.h>
-#include <visp/vpDisplayX.h>
+#include <visp/vpDisplay.h>
 #include <vector>
 #include "states.hpp"
 #include <fstream>
@@ -85,6 +85,8 @@ namespace tracking{
        _row< DetectFlashcode , input_ready        , DetectFlashcode                                        /* default behaviour */        >,
       //   +-----------------+--------------------+-----------------------+------------------------------+------------------------------+
         row< DetectFlashcode , input_ready        , DetectModel           , &Tracker_::find_flashcode_pos,&Tracker_::flashcode_detected   >,
+      //   +-----------------+--------------------+-----------------------+------------------------------+------------------------------+
+       _row< DetectModel     , msm::front::none   , DetectFlashcode                                        /* default behaviour */        >,
       //   +-----------------+--------------------+-----------------------+------------------------------+------------------------------+
       g_row< DetectModel     , msm::front::none   , TrackModel            ,                               &Tracker_::model_detected       >,
       //   +-----------------+--------------------+-----------------------+------------------------------+------------------------------+
