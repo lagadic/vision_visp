@@ -34,6 +34,9 @@ CmdLine:: CmdLine(int argc,char**argv) : should_exit_(false) {
       ("outer-coordinates,o",
                   po::value< std::vector<double> >(&outer_coordinates)->multitoken()->composing(),
                   "3D coordinates of the outer region in clockwise order")
+      ("variance-file,V", po::value< std::string >(&var_file_)->composing(), "file to store variance values")
+      ("variance-limit,l", po::value< double >(&var_limit_)->composing(),
+          "above this limit the tracker will be considered lost and the pattern will be detected with the flascode")
       ;
   prog_args.add(general);
   prog_args.add(configuration);
@@ -72,6 +75,22 @@ CmdLine:: CmdLine(int argc,char**argv) : should_exit_(false) {
       std::cout << prog_args << std::endl;
       should_exit_ = true;
   }  
+}
+
+double CmdLine:: get_var_limit(){
+  return var_limit_;
+}
+
+bool CmdLine:: using_var_limit(){
+  return vm_.count("variance-limit")>0;
+}
+
+std::string CmdLine:: get_var_file(){
+  return var_file_;
+}
+
+bool CmdLine:: using_var_file(){
+  return vm_.count("variance-file")>0;
 }
 
 bool CmdLine:: dmtx_only(){

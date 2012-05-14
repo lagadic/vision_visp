@@ -15,9 +15,11 @@ class CmdLine{
   std::string video_channel_;
   double inner_ratio_;
   double outer_ratio_;
+  double var_limit_;
   int dmx_timeout_;
   std::string data_dir_;
   std::string pattern_name_;
+  std::string var_file_;
   std::string single_image_name_;
   std::vector<vpPoint> flashcode_points_3D_;
   std::vector<vpPoint> inner_points_3D_;
@@ -54,7 +56,15 @@ class CmdLine{
 
   std::string get_init_file();
 
+  std::string get_var_file();
+
   bool using_single_image();
+
+  bool using_var_file();
+
+  double get_var_limit();
+
+  bool using_var_limit();
 
   std::string get_single_image_path();
 

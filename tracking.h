@@ -17,6 +17,7 @@
 #include <visp/vpDisplayX.h>
 #include <vector>
 #include "states.hpp"
+#include <fstream>
 
 namespace msm = boost::msm;
 namespace mpl = boost::mpl;
@@ -47,6 +48,8 @@ namespace tracking{
     std::vector<vpPoint> points3D_outer;
     std::vector<vpPoint> f;
 
+    std::ofstream varfile_;
+    int iter_;
   public:
     datamatrix::Detector& get_dmx_detector();
     vpMbEdgeTracker& get_mbt();
@@ -79,9 +82,13 @@ namespace tracking{
       //   +-----------------+--------------------+-----------------------+------------------------------+------------------------------+
        _row< WaitingForInput , select_input       , DetectFlashcode                                                                       >,
       //   +-----------------+--------------------+-----------------------+------------------------------+------------------------------+
+       _row< DetectFlashcode , input_ready        , DetectFlashcode                                        /* default behaviour */        >,
+      //   +-----------------+--------------------+-----------------------+------------------------------+------------------------------+
         row< DetectFlashcode , input_ready        , DetectModel           , &Tracker_::find_flashcode_pos,&Tracker_::flashcode_detected   >,
       //   +-----------------+--------------------+-----------------------+------------------------------+------------------------------+
       g_row< DetectModel     , msm::front::none   , TrackModel            ,                               &Tracker_::model_detected       >,
+      //   +-----------------+--------------------+-----------------------+------------------------------+------------------------------+
+       _row< TrackModel      , input_ready        , DetectFlashcode                                        /* default behaviour */        >,
       //   +-----------------+--------------------+-----------------------+------------------------------+------------------------------+
         row< TrackModel      , input_ready        , TrackModel           , &Tracker_::track_model        ,&Tracker_::mbt_success          >
       //   +-----------------+--------------------+-----------------------+------------------------------+------------------------------+

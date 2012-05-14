@@ -44,9 +44,8 @@ namespace tracking{
           std::cout <<"leaving: DetectFlashcode" << std::endl;
           vpDisplay::display(evt.I);
           std::vector<cv::Point>& polygon = fsm.get_dmx_detector().get_polygon();
-          assert(polygon.size()>0);
+          if(polygon.size()==0) return;
 
-          std::cout << polygon.size() << std::endl;
           const vpImagePoint corner0(polygon[0].y,polygon[0].x);
           const vpImagePoint corner1(polygon[1].y,polygon[1].x);
           const vpImagePoint corner2(polygon[2].y,polygon[2].x);
@@ -109,7 +108,7 @@ namespace tracking{
           fsm.get_mbt().getPose(cMo);
           fsm.get_mbt().display(I, cMo, fsm.get_cam(), vpColor::blue, 1);// display the model at the computed pose.
           vpDisplay::flush(I);
-          vpDisplay::getClick(I);
+          //vpDisplay::getClick(I);
         }
     };
 

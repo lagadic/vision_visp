@@ -17,10 +17,13 @@ namespace tracking{
     points3D_outer = cmd.get_outer_points_3D();
     f = cmd.get_flashcode_points_3D();
 
-    tracker.loadConfigFile(cmd.get_xml_file().c_str() ); // Load the configuration of the tracker
-    tracker.loadModel(cmd.get_wrl_file().c_str()); // load the 3d model, to read .wrl model the 3d party library coin is required, if coin is not installed .cao file can be used.
     cam.initPersProjWithDistortion(543.1594454,539.1300717,320.1025306,212.8181022,0.01488495076,-0.01484690262);
+    iter_=0;
 
+    if(cmd.using_var_file()){
+      varfile_.open(cmd.get_var_file().c_str(),std::ios::out);
+      varfile_ << "#These are variances from the model based tracker in gnuplot format" << std::endl;
+    }
   }
 
   datamatrix::Detector& Tracker_:: get_dmx_detector(){
@@ -85,6 +88,9 @@ namespace tracking{
 
   bool Tracker_:: model_detected(msm::front::none const&){
     std::cout << "detect_model" << std::endl;
+    tracker.resetTracker();
+    tracker.loadConfigFile(cmd.get_xml_file().c_str() ); // Load the configuration of the tracker
+    tracker.loadModel(cmd.get_wrl_file().c_str()); // load the 3d model, to read .wrl model the 3d party library coin is required, if coin is not installed .cao file can be used.
     vpImageConvert::convert(*I,Igray);
     vpPose pose;
 
@@ -110,7 +116,9 @@ namespace tracking{
 
     try{
       tracker.initFromPoints(Igray,model_outer_corner,points3D_outer);
+      std::cout << "initFromPoints ok" << std::endl;
       tracker.track(Igray); // track the object on this image
+      std::cout << "track ok" << std::endl;
       tracker.getPose(cMo); // get the pose
       tracker.setCovarianceComputation(true);
 
@@ -120,6 +128,7 @@ namespace tracking{
       }
     }catch(vpTrackingException& e){
       std::cout << "Tracking failed" << std::endl;
+      std::cout << e.getStringMessage() << std::endl;
       return false;
     }
     //vpDisplay::getClick(*I);
@@ -130,7 +139,20 @@ namespace tracking{
     try{
       vpImageConvert::convert(evt.I,Igray);
       tracker.track(Igray); // track the object on this image
+
       vpMatrix mat = tracker.getCovarianceMatrix();
+      if(cmd.using_var_limit())
+        for(int i=0;i<6;i++)
+          if(mat[i][i]>cmd.get_var_limit())
+            return false;
+      if(cmd.using_var_file()){
+        varfile_ << iter_ << "\t";
+        for(int i=0;i<6;i++)
+          varfile_ << mat[i][i] << "\t";
+
+        varfile_ << std::endl;
+        iter_++;
+      }
     }catch(vpTrackingException& e){
       std::cout << "Tracking lost" << std::endl;
       return false;
@@ -142,7 +164,6 @@ namespace tracking{
     I = _I = &(evt.I);
     vpImageConvert::convert(evt.I,Igray);
     tracker.getPose(cMo); // get the pose
-    //vpMatrix mat = tracker.getCovarianceMatrix();
   }
 
   void Tracker_:: track(vpImage<vpRGBa>& I){
