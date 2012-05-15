@@ -16,6 +16,7 @@ class CmdLine{
   double inner_ratio_;
   double outer_ratio_;
   double var_limit_;
+  std::vector<double> hinkley_range_;
   int dmx_timeout_;
   int mbt_convergence_steps_;
   std::string data_dir_;
@@ -27,6 +28,15 @@ class CmdLine{
   std::vector<vpPoint> outer_points_3D_;
  public:
   CmdLine(int argc,char**argv);
+
+  bool show_plot();
+
+  bool using_hinkley();
+
+  double get_hinkley_alpha();
+
+  double get_hinkley_delta();
+
   bool dmtx_only();
 
   bool should_exit();

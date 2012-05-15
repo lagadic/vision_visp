@@ -9,23 +9,24 @@
 #include <visp/vpMeterPixelConversion.h>
 #include <visp/vpTrackingException.h>
 
-
 namespace tracking{
-  Tracker_:: Tracker_(CmdLine& cmd) : cmd(cmd),plot_(1, 700, 700, 100, 200, "Variances"){
+  Tracker_:: Tracker_(CmdLine& cmd) : cmd(cmd),iter_(0){
     std::cout << "starting tracker" << std::endl;
     points3D_inner_ = cmd.get_inner_points_3D();
     points3D_outer_ = cmd.get_outer_points_3D();
     f_ = cmd.get_flashcode_points_3D();
 
-    cam_.initPersProjWithDistortion(543.1594454,539.1300717,320.1025306,212.8181022,0.01488495076,-0.01484690262);
-    iter_=0;
-
-    plot_.initGraph(0,7);
-
+    if(cmd.using_hinkley()){
+      if(cmd.get_verbose())
+        std::cout << "Initialising hinkley with alpha=" << cmd.get_hinkley_alpha() << " and delta=" << cmd.get_hinkley_delta() << std::endl;
+      for(hinkley_array_t::iterator i = hink_.begin();i!=hink_.end();i++)
+        i->init(cmd.get_hinkley_alpha(),cmd.get_hinkley_delta());
+    }
     if(cmd.using_var_file()){
       varfile_.open(cmd.get_var_file().c_str(),std::ios::out);
       varfile_ << "#These are variances from the model based tracker in gnuplot format" << std::endl;
     }
+    cam_.initPersProjWithDistortion(543.1594454,539.1300717,320.1025306,212.8181022,0.01488495076,-0.01484690262);
   }
 
   datamatrix::Detector& Tracker_:: get_dmx_detector(){
@@ -53,6 +54,9 @@ namespace tracking{
     return cam_;
   }
 
+  CmdLine& Tracker_:: get_cmd(){
+    return cmd;
+  }
 
   bool Tracker_:: input_selected(input_ready const& evt){
     return vpDisplay::getClick(evt.I,false);
@@ -146,18 +150,26 @@ namespace tracking{
         varfile_ << iter_ << "\t";
         for(int i=0;i<6;i++)
           varfile_ << mat[i][i] << "\t";
-        varfile_ << std::endl;
-      }
-      iter_++;
 
+      }
       if(cmd.using_var_limit())
-        plot_.plot(0,6,iter_,(double)cmd.get_var_limit());
-      for(int i=0;i<6;i++){
-        plot_.plot(0,i,iter_,mat[i][i]);
-        if(cmd.using_var_limit())
+        for(int i=0;i<6;i++)
           if(mat[i][i]>cmd.get_var_limit())
             return false;
-      }
+      if(cmd.using_hinkley())
+        for(int i=0;i<6;i++){
+          if(hink_[i].testDownUpwardJump(mat[i][i]) != vpHinkley::noJump){
+            varfile_ << mat[i][i] << "\t";
+            if(cmd.get_verbose())
+              std::cout << "Hinkley:detected jump!" << std::endl;
+            return false;
+          }
+        }
+
+      if(cmd.using_var_file())
+        varfile_ << std::endl;
+      iter_++;
+
     }catch(vpTrackingException& e){
       std::cout << "Tracking lost" << std::endl;
       return false;

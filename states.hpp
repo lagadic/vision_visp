@@ -8,16 +8,16 @@
 #include <visp/vpImage.h>
 #include <visp/vpRGBa.h>
 #include <visp/vpMeterPixelConversion.h>
-
+#include <visp/vpPlot.h>
 #include <visp/vpDisplay.h>
 #include <vector>
 #include <cassert>
+#include <fstream>
 
 namespace msm = boost::msm;
 
 namespace tracking{
-  struct WaitingForInput : public msm::front::state<>
-    {
+  struct WaitingForInput : public msm::front::state<>{
         template <class Event, class Fsm>
         void on_entry(Event const&, Fsm& ){
           std::cout <<"entering: WaitingForInput" << std::endl;
@@ -115,21 +115,46 @@ namespace tracking{
         }
     };
 
-    struct TrackModel : public msm::front::state<>
+    class TrackModel : public msm::front::state<>
     {
-        template <class Event, class Fsm>
-        void on_entry(Event const&, Fsm& )
-        {std::cout <<"entering: TrackModel" << std::endl;}
-        template <class Event, class Fsm>
-        void on_exit(Event const& evt, Fsm& fsm)
-        {
-          std::cout <<"leaving: TrackModel" << std::endl;
-          vpHomogeneousMatrix cMo;
-          fsm.get_mbt().getPose(cMo);
-          vpDisplay::display(evt.I);
-          fsm.get_mbt().display(evt.I, cMo, fsm.get_cam(), vpColor::red, 1);// display the model at the computed pose.
-          vpDisplay::flush(evt.I);
+    private:
+      vpPlot* plot_;
+      int iter_;
+    public:
+      ~TrackModel(){
+        delete plot_;
+      }
+
+      TrackModel() : plot_(NULL),iter_(0){}
+
+      template <class Event, class Fsm>
+      void on_entry(Event const& evt, Fsm& fsm)
+      {
+        if(fsm.get_cmd().show_plot() && plot_ == NULL){
+          plot_ = new vpPlot(1, 700, 700, 100, 200, "Variances");
+          plot_->initGraph(0,7);
         }
+      }
+      template <class Event, class Fsm>
+      void on_exit(Event const& evt, Fsm& fsm)
+      {
+        vpHomogeneousMatrix cMo;
+        fsm.get_mbt().getPose(cMo);
+        vpDisplay::display(evt.I);
+        fsm.get_mbt().display(evt.I, cMo, fsm.get_cam(), vpColor::red, 1);// display the model at the computed pose.
+        vpDisplay::flush(evt.I);
+
+        vpMatrix mat = fsm.get_mbt().getCovarianceMatrix();
+        if(fsm.get_cmd().show_plot()){
+          if(fsm.get_cmd().using_var_limit())
+            plot_->plot(0,6,iter_,(double)fsm.get_cmd().get_var_limit());
+          for(int i=0;i<6;i++)
+            plot_->plot(0,i,iter_,mat[i][i]);
+        }
+
+
+        iter_++;
+      }
     };
 }
 #endif /* EVENTS_H_ */

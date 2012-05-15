@@ -19,6 +19,7 @@ CmdLine:: CmdLine(int argc,char**argv) : should_exit_(false) {
       ("verbose,v", "show states of the tracker")
       ("dmx-detector-timeout,T", po::value<int>(&dmx_timeout_)->default_value(1000), "timeout for datamatrix detection in ms")
       ("config-file,c", po::value<std::string>(&config_file)->default_value("./data/config.cfg"), "config file for the program")
+      ("show-plot,p", "show variances graph")
 
       ("help", "produce help message")
       ;
@@ -39,7 +40,9 @@ CmdLine:: CmdLine(int argc,char**argv) : should_exit_(false) {
           "above this limit the tracker will be considered lost and the pattern will be detected with the flascode")
       ("mbt-convergence-steps,S", po::value< int >(&mbt_convergence_steps_)->default_value(100)->composing(),
           "when a new model is found, how many tracking iterations should the tracker perform so the model matches the projection.")
-
+      ("hinkley-range,H",
+                        po::value< std::vector<double> >(&hinkley_range_)->multitoken()->composing(),
+                        "pair of alpha, delta values describing the two hinkley tresholds")
       ;
   prog_args.add(general);
   prog_args.add(configuration);
@@ -78,6 +81,26 @@ CmdLine:: CmdLine(int argc,char**argv) : should_exit_(false) {
       std::cout << prog_args << std::endl;
       should_exit_ = true;
   }  
+}
+
+bool CmdLine:: show_plot(){
+  return vm_.count("show-plot")>0;
+}
+
+bool CmdLine:: using_hinkley(){
+  return vm_.count("hinkley-range")>0 && hinkley_range_.size()==2;
+}
+
+double CmdLine:: get_hinkley_alpha(){
+  if(!using_hinkley())
+    throw std::exception();
+  return hinkley_range_[0];
+}
+
+double CmdLine:: get_hinkley_delta(){
+  if(!using_hinkley())
+      throw std::exception();
+  return hinkley_range_[1];
 }
 
 int CmdLine:: get_mbt_convergence_steps(){

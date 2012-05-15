@@ -5,6 +5,7 @@
 #include <boost/msm/back/state_machine.hpp>
 //front-end
 #include <boost/msm/front/state_machine_def.hpp>
+#include <boost/array.hpp>
 #include <visp/vpImage.h>
 
 #include <visp/vpMbEdgeTracker.h>
@@ -14,7 +15,7 @@
 #include <visp/vpCameraParameters.h>
 #include <visp/vpMbEdgeTracker.h>
 #include <visp/vpDisplay.h>
-#include <visp/vpPlot.h>
+#include <visp/vpHinkley.h>
 #include <vector>
 #include <fstream>
 
@@ -39,21 +40,24 @@ namespace tracking{
   class Tracker_ : public msm::front::state_machine_def<Tracker_>{
   private:
     CmdLine cmd;
+    int iter_;
+    std::ofstream varfile_;
     datamatrix::Detector dmx_detector_;
+    typedef boost::array<vpHinkley,6> hinkley_array_t;
+    hinkley_array_t hink_;
+
     vpMbEdgeTracker tracker_; // Create a model based tracker.
     vpImage<vpRGBa> *I_;
     vpImage<vpRGBa> *_I;
     vpHomogeneousMatrix cMo_; // Pose computed using the tracker.
     vpCameraParameters cam_;
     vpImage<unsigned char> Igray_;
-    vpPlot plot_;
+
 
     std::vector<vpPoint> points3D_inner_;
     std::vector<vpPoint> points3D_outer_;
     std::vector<vpPoint> f_;
 
-    std::ofstream varfile_;
-    int iter_;
   public:
     //getters to access useful members
     datamatrix::Detector& get_dmx_detector();
@@ -63,6 +67,7 @@ namespace tracking{
     std::vector<vpPoint>& get_flashcode();
     vpImage<vpRGBa>& get_I();
     vpCameraParameters& get_cam();
+    CmdLine& get_cmd();
 
     Tracker_(CmdLine& cmd);
 
