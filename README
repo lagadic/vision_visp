@@ -2,6 +2,16 @@ This is a hybrid tracker using two libraries:
 - visp for model-based tracking (http://www.irisa.fr/lagadic/visp/visp.html)
 - libdtmx for flashcode detection (http://www.libdmtx.org/)
 
+This should work on ubuntu but the CMake for this project is not very sophisticated. 
+Therefore, to run this project you'll need to install:
+* v4l2
+* visp 
+* libdtmx
+* opencv
+* boost. More specifically these parts:
+	- program options
+	- msm
+
 The tracker is able to initialize itself without any prior information from this kind of patterns:
 https://github.com/filipnovotny/flashcode_mbt/raw/master/data/pattern-1.png
 
@@ -25,18 +35,38 @@ General options:
                                         timeout for datamatrix detection in ms
   -c [ --config-file ] arg (=./data/config.cfg)
                                         config file for the program
+  -p [ --show-plot ]                    show variances graph
   --help                                produce help message
 
 Configuration:
-  -F [ --flashcode-coordinates ] arg 3D coordinates of the flashcode in 
-                                     clockwise order
-  -i [ --inner-coordinates ] arg     3D coordinates of the inner region in 
-                                     clockwise order
-  -o [ --outer-coordinates ] arg     3D coordinates of the outer region in 
-                                     clockwise order
-  -V [ --variance-file ] arg         file to store variance values
-  -l [ --variance-limit ] arg        above this limit the tracker will be 
-                                     considered lost and the pattern will be 
-                                     detected with the flascode
+  -F [ --flashcode-coordinates ] arg    3D coordinates of the flashcode in 
+                                        clockwise order
+  -i [ --inner-coordinates ] arg        3D coordinates of the inner region in 
+                                        clockwise order
+  -o [ --outer-coordinates ] arg        3D coordinates of the outer region in 
+                                        clockwise order
+  -V [ --variance-file ] arg            file to store variance values
+  -l [ --variance-limit ] arg           above this limit the tracker will be 
+                                        considered lost and the pattern will be
+                                        detected with the flascode
+  -S [ --mbt-convergence-steps ] arg (=100)
+                                        when a new model is found, how many 
+                                        tracking iterations should the tracker 
+                                        perform so the model matches the 
+                                        projection.
+  -H [ --hinkley-range ] arg            pair of alpha, delta values describing 
+                                        the two hinkley tresholds
 
-                                     
+A typical command line is something line:
+- To track from camera:  
+./tracking -c "/path/config.cfg" -v -D ../flashcode_mbt/data/ -p -H 0.2 0.02 -C
+
+- To track from recording in [data path]/images/%08d.jpg:  
+./tracking -c "/path/config.cfg" -v -D ../flashcode_mbt/data/ -p -H 0.2 0.02 -C
+
+- To track a single image in the data directory
+./tracking -c "/path/config.cfg" -v -D ../flashcode_mbt/data/ -p -H 0.2 0.02 -I image.png
+
+This will launch tracking with a graphical plot of variances and tracker recovery using hinkley (alpha=0.2, delta=0.02).
+Some options (like model definition) are specified in the config file (config.cfg).
+You don't need that config file but you'll have to specify everything from command line which can be very exhausting.
