@@ -18,6 +18,7 @@
 
   <export>
     <rosdoc config="rosdoc.yaml" />
+    <nodelet plugin="${prefix}/nodelet_plugins.xml" />
   </export>
 
   <rosdep name="boost"/>
@@ -35,6 +36,7 @@
   <depend package="bullet"/>
   <depend package="visp"/>
   <depend package="resource_retriever"/>
+  <depend package="nodelet"/>
 
   <depend package="rosbag"/> <!-- For tutorial/testing -->
 </package>

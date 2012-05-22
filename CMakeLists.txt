@@ -47,6 +47,15 @@ target_link_libraries(libvisp_tracker visp-2)
 rosbuild_link_boost(libvisp_tracker
   filesystem system signals regex date_time program_options thread)
 
+############
+# Nodelets #
+############
+
+# Tracker
+rosbuild_add_library(trackerNodelet src/nodelets/tracker.cpp)
+target_link_libraries(trackerNodelet libvisp_tracker visp-2)
+
+
 ########
 # Node #
 ########
