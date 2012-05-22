@@ -158,9 +158,10 @@ namespace visp_tracker
   }
 
   void
-  Tracker::updateMovingEdgeSites()
+  Tracker::updateMovingEdgeSites(visp_tracker::MovingEdgeSitesPtr sites)
   {
-    sites_.moving_edge_sites.clear();
+    if (!sites)
+      return;
 
     std::list<vpMbtDistanceLine*> linesList;
     tracker_.getLline(linesList, 0);
@@ -186,7 +187,7 @@ namespace visp_tracker
 		movingEdgeSite.x = sitesIterator->ifloat;
 		movingEdgeSite.y = sitesIterator->jfloat;
 		movingEdgeSite.suppress = sitesIterator->suppress;
-		sites_.moving_edge_sites.push_back (movingEdgeSite);
+		sites->moving_edge_sites.push_back (movingEdgeSite);
 	      }
 	    noVisibleLine = false;
 	  }
@@ -229,7 +230,6 @@ namespace visp_tracker
       movingEdge_(),
       cameraParameters_(),
       tracker_(),
-      sites_(),
       lastTrackedImage_(),
       checkInputs_(nodeHandle_, ros::this_node::getName()),
       cMo_ (),
@@ -487,8 +487,6 @@ namespace visp_tracker
   void Tracker::spin()
   {
     ros::Rate loopRateTracking(100);
-    visp_tracker::TrackingResult result;
-    geometry_msgs::TransformStamped objectPosition;
     tf::Transform transform;
     std_msgs::Header lastHeader;
 
@@ -531,54 +529,60 @@ namespace visp_tracker
 	    if (state_ == TRACKING)
 	      {
 		// Publish position.
-		objectPosition.header = header_;
-		objectPosition.child_frame_id = childFrameId_;
-		vpHomogeneousMatrixToTransform(objectPosition.transform, cMo_);
+		geometry_msgs::TransformStampedPtr objectPosition
+		  (new geometry_msgs::TransformStamped);
+		objectPosition->header = header_;
+		objectPosition->child_frame_id = childFrameId_;
+		vpHomogeneousMatrixToTransform(objectPosition->transform, cMo_);
 		transformationPublisher_.publish(objectPosition);
 
 		// Publish result.
-		result.header = header_;
-		result.is_tracking = true;
-		result.cMo = objectPosition.transform;
+		visp_tracker::TrackingResultPtr result
+		  (new visp_tracker::TrackingResult);
+		result->header = header_;
+		result->is_tracking = true;
+		result->cMo = (*objectPosition).transform;
 		resultPublisher_.publish(result);
 
 		// Publish moving edge sites.
-		updateMovingEdgeSites();
-		sites_.header = header_;
-		movingEdgeSitesPublisher_.publish(sites_);
+		visp_tracker::MovingEdgeSitesPtr sites
+		  (new visp_tracker::MovingEdgeSites);
+		updateMovingEdgeSites(sites);
+		sites->header = header_;
+		movingEdgeSitesPublisher_.publish(sites);
 
 		// Publish to tf.
 		transform.setOrigin
-		  (tf::Vector3(objectPosition.transform.translation.x,
-			       objectPosition.transform.translation.y,
-			       objectPosition.transform.translation.z));
+		  (tf::Vector3(objectPosition->transform.translation.x,
+			       objectPosition->transform.translation.y,
+			       objectPosition->transform.translation.z));
 		transform.setRotation
 		  (tf::Quaternion
-		   (objectPosition.transform.rotation.x,
-		    objectPosition.transform.rotation.y,
-		    objectPosition.transform.rotation.z,
-		    objectPosition.transform.rotation.w));
+		   (objectPosition->transform.rotation.x,
+		    objectPosition->transform.rotation.y,
+		    objectPosition->transform.rotation.z,
+		    objectPosition->transform.rotation.w));
 		transformBroadcaster_.sendTransform
 		  (tf::StampedTransform
 		   (transform,
-		    objectPosition.header.stamp,
-		    objectPosition.header.frame_id,
+		    objectPosition->header.stamp,
+		    objectPosition->header.frame_id,
 		    childFrameId_));
 	      }
 	    else
 	      {
-		result.header = header_;
-		result.is_tracking = false;
-		result.cMo.translation.x = 0.;
-		result.cMo.translation.y = 0.;
-		result.cMo.translation.z = 0.;
+		visp_tracker::TrackingResultPtr result
+		  (new visp_tracker::TrackingResult);
+		result->header = header_;
+		result->is_tracking = false;
+		result->cMo.translation.x = 0.;
+		result->cMo.translation.y = 0.;
+		result->cMo.translation.z = 0.;
 
-		result.cMo.rotation.x = 0.;
-		result.cMo.rotation.y = 0.;
-		result.cMo.rotation.z = 0.;
-		result.cMo.rotation.w = 0.;
-
-		sites_.moving_edge_sites.clear();
+		result->cMo.rotation.x = 0.;
+		result->cMo.rotation.y = 0.;
+		result->cMo.rotation.z = 0.;
+		result->cMo.rotation.w = 0.;
 	      }
 	  }
 	lastHeader = header_;

@@ -59,7 +59,7 @@ namespace visp_tracker
     void
     cameraVelocityCallback(const geometry_msgs::TwistStampedConstPtr& twist);
 
-    void updateMovingEdgeSites();
+    void updateMovingEdgeSites(visp_tracker::MovingEdgeSitesPtr sites);
 
     void checkInputs();
     void waitForImage();
@@ -119,8 +119,6 @@ namespace visp_tracker
     vpMe movingEdge_;
     vpCameraParameters cameraParameters_;
     vpMbEdgeTracker tracker_;
-
-    visp_tracker::MovingEdgeSites sites_;
 
     unsigned lastTrackedImage_;
 
