@@ -1,26 +1,21 @@
 #include <stdexcept>
+
 #include <ros/ros.h>
-#include "tracker-viewer.hh"
+#include <nodelet/loader.h>
+
 
 int main(int argc, char **argv)
 {
-  try
-    {
-      ros::init(argc, argv, "tracker_mbt_viewer");
-      visp_tracker::TrackerViewer viewer(100);
-      if (ros::ok())
-	viewer.spin();
-    }
-  catch (std::exception& e)
-    {
-      std::cerr << "fatal error: " << e.what() << std::endl;
-      ROS_ERROR_STREAM("fatal error: " << e.what());
-      return 1;
-    }
-  catch (...)
-    {
-      ROS_ERROR_STREAM("unexpected error");
-      return 2;
-    }
+  ros::init(argc, argv, "tracker_mbt_viewer");
+
+  nodelet::Loader nodelet;
+  nodelet::M_string remap(ros::names::getRemappings());
+  nodelet::V_string nargv;
+
+  nodelet.load
+    (ros::this_node::getName (), "visp_tracker/TrackerViewer", remap, nargv);
+
+  ros::spin();
+
   return 0;
 }

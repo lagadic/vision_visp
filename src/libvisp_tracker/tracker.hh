@@ -48,7 +48,10 @@ namespace visp_tracker
       };
 
 
-    Tracker(unsigned queueSize = 5u);
+    Tracker (ros::NodeHandle& nh,
+	     ros::NodeHandle& privateNh,
+	     volatile bool& exiting,
+	     unsigned queueSize = 5u);
     void spin();
   protected:
     bool initCallback(visp_tracker::Init::Request& req,
@@ -66,13 +69,27 @@ namespace visp_tracker
 
     std::string velocitiesDebugMessage();
   private:
+    bool exiting ()
+    {
+      return exiting_ || !ros::ok();
+    }
+
+    void spinOnce ()
+    {
+      //callbackQueue_.callAvailable(ros::WallDuration(0));
+      ros::spinOnce ();
+    }
+
     typedef std::pair<double, vpColVector> velocityDuringInterval_t;
     typedef boost::circular_buffer<velocityDuringInterval_t> velocities_t;
     static const velocities_t::size_type MAX_VELOCITY_VALUES = 1000;
 
+    volatile bool& exiting_;
+
     unsigned queueSize_;
 
-    ros::NodeHandle nodeHandle_;
+    ros::NodeHandle& nodeHandle_;
+    ros::NodeHandle& nodeHandlePrivate_;
     image_transport::ImageTransport imageTransport_;
 
     State state_;

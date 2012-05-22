@@ -6,40 +6,39 @@
 #include <nodelet/nodelet.h>
 #include <pluginlib/class_list_macros.h>
 
-#include "tracker.hh"
+#include "tracker-client.hh"
 
 namespace visp_tracker
 {
-  class TrackerNodelet : public nodelet::Nodelet
+  class TrackerClientNodelet : public nodelet::Nodelet
   {
   public:
-    TrackerNodelet ()
+    TrackerClientNodelet ()
       : nodelet::Nodelet (),
 	exiting_ (false),
-	tracker_ (),
+	trackerClient_ (),
 	thread_ ()
     {}
 
-    ~TrackerNodelet ()
+    ~TrackerClientNodelet ()
     {
       exiting_ = true;
       if (thread_)
 	if (!thread_->timed_join (boost::posix_time::seconds (2)))
 	  NODELET_WARN ("failed to join thread but continuing anyway");
       thread_.reset ();
-      tracker_.reset ();
+      trackerClient_.reset ();
     }
 
     void spin ()
     {
-      if (exiting_)
-	return;
-      tracker_ = boost::shared_ptr<visp_tracker::Tracker>
-	(new visp_tracker::Tracker (getMTNodeHandle (),
-				    getMTPrivateNodeHandle (),
-				    exiting_, 5u));
-      while (ros::ok () && !exiting_)
-	tracker_->spin ();
+      trackerClient_ = boost::shared_ptr<visp_tracker::TrackerClient>
+	(new visp_tracker::TrackerClient
+	 (getMTNodeHandle (),
+	  getMTPrivateNodeHandle (),
+	  exiting_, 5u));
+      if (ros::ok () && !exiting_)
+	trackerClient_->spin ();
     }
 
     virtual void onInit ()
@@ -47,16 +46,15 @@ namespace visp_tracker
       NODELET_DEBUG ("Initializing nodelet...");
       exiting_ = false;
       thread_ = boost::make_shared<boost::thread>
-	(boost::bind (&TrackerNodelet::spin, this));
+	(boost::bind (&TrackerClientNodelet::spin, this));
     }
-
   private:
     volatile bool exiting_;
-    boost::shared_ptr<visp_tracker::Tracker> tracker_;
+    boost::shared_ptr<visp_tracker::TrackerClient> trackerClient_;
     boost::shared_ptr<boost::thread> thread_;
   };
 
 } // end of namespace visp_tracker.
 
-PLUGINLIB_DECLARE_CLASS(visp_tracker, Tracker,
-			visp_tracker::TrackerNodelet, nodelet::Nodelet);
+PLUGINLIB_DECLARE_CLASS(visp_tracker, TrackerClient,
+			visp_tracker::TrackerClientNodelet, nodelet::Nodelet);

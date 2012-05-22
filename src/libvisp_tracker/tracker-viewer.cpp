@@ -32,13 +32,18 @@ namespace visp_tracker
     }
   } // end of anonymous namespace.
 
-  TrackerViewer::TrackerViewer(unsigned queueSize)
-    : queueSize_(queueSize),
-      nodeHandle_(),
+  TrackerViewer::TrackerViewer(ros::NodeHandle& nh,
+			       ros::NodeHandle& privateNh,
+			       volatile bool& exiting,
+			       unsigned queueSize)
+    : exiting_ (exiting),
+      queueSize_(queueSize),
+      nodeHandle_(nh),
+      nodeHandlePrivate_(privateNh),
       imageTransport_(nodeHandle_),
       rectifiedImageTopic_(),
       cameraInfoTopic_(),
-      checkInputs_(ros::NodeHandle(), ros::this_node::getName()),
+      checkInputs_(nodeHandle_, ros::this_node::getName()),
       tracker_(),
       cameraParameters_(),
       image_(),
@@ -63,8 +68,7 @@ namespace visp_tracker
     ros::Rate rate (1);
     while (cameraPrefix.empty ())
       {
-	ros::param::get ("camera_prefix", cameraPrefix);
-	if (!ros::param::has ("camera_prefix"))
+	if (!nodeHandle_.getParam ("camera_prefix", cameraPrefix))
 	  {
 	    ROS_WARN
 	      ("the camera_prefix parameter does not exist.\n"
@@ -79,7 +83,7 @@ namespace visp_tracker
 	      ("tracker is not yet initialized, waiting...\n"
 	       "You may want to launch the client to initialize the tracker.");
 	  }
-	if (!ros::ok ())
+	if (this->exiting())
 	  return;
 	rate.sleep ();
       }
@@ -92,9 +96,9 @@ namespace visp_tracker
     boost::filesystem::ofstream modelStream;
     std::string path;
 
-    while (!ros::param::has(visp_tracker::model_description_param))
+    while (!nodeHandle_.hasParam(visp_tracker::model_description_param))
       {
-	if (!ros::param::has(visp_tracker::model_description_param))
+	if (!nodeHandle_.hasParam(visp_tracker::model_description_param))
 	  {
 	    ROS_WARN
 	      ("the model_description parameter does not exist.\n"
@@ -103,7 +107,7 @@ namespace visp_tracker
 	       "- the tracker and viewer are not running in the same namespace."
 	       );
 	  }
-	if (!ros::ok ())
+	if (this->exiting())
 	  return;
 	rate.sleep ();
       }
@@ -115,11 +119,11 @@ namespace visp_tracker
     vrmlPath_ = path;
 
     initializeTracker();
-    if (!ros::ok())
+    if (this->exiting())
       return;
 
     checkInputs();
-    if (!ros::ok())
+    if (this->exiting())
       return;
 
     // Subscribe to camera and tracker synchronously.
@@ -154,7 +158,7 @@ namespace visp_tracker
 
     // Wait for image.
     waitForImage();
-    if (!ros::ok())
+    if (this->exiting())
       return;
     if (!image_.getWidth() || !image_.getHeight())
       throw std::runtime_error("failed to retrieve image");
@@ -185,7 +189,7 @@ namespace visp_tracker
     boost::format fmtCameraTopic("camera topic = %s");
     fmtCameraTopic % rectifiedImageTopic_;
 
-    while (ros::ok())
+    while (!exiting())
       {
 	vpDisplay::display(image_);
 	displayMovingEdgeSites();
@@ -219,7 +223,7 @@ namespace visp_tracker
   TrackerViewer::waitForImage()
   {
     ros::Rate loop_rate(10);
-    while (ros::ok()
+    while (!exiting()
 	   && (!image_.getWidth() || !image_.getHeight()))
       {
 	ROS_INFO_THROTTLE(1, "waiting for a rectified image...");

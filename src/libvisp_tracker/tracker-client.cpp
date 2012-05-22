@@ -37,9 +37,14 @@
 
 namespace visp_tracker
 {
-  TrackerClient::TrackerClient(unsigned queueSize)
-    : queueSize_(queueSize),
-      nodeHandle_(),
+  TrackerClient::TrackerClient(ros::NodeHandle& nh,
+			       ros::NodeHandle& privateNh,
+			       volatile bool& exiting,
+			       unsigned queueSize)
+    : exiting_ (exiting),
+      queueSize_(queueSize),
+      nodeHandle_(nh),
+      nodeHandlePrivate_(privateNh),
       imageTransport_(nodeHandle_),
       image_(),
       modelPath_(),
@@ -50,7 +55,7 @@ namespace visp_tracker
       vrmlPath_(),
       initPath_(),
       cameraSubscriber_(),
-      reconfigureSrv_(),
+      reconfigureSrv_(nodeHandlePrivate_),
       movingEdge_(),
       cameraParameters_(),
       tracker_(),
@@ -61,15 +66,15 @@ namespace visp_tracker
     tracker_.resetTracker();
 
     // Parameters.
-    ros::param::param<std::string>("~model_path", modelPath_,
-				   visp_tracker::default_model_path);
-    ros::param::param<std::string>("~model_name", modelName_, "");
+    nodeHandlePrivate_.param<std::string>("model_path", modelPath_,
+					  visp_tracker::default_model_path);
+    nodeHandlePrivate_.param<std::string>("model_name", modelName_, "");
 
-    ros::param::param<bool>
-      ("~start_from_saved_pose", startFromSavedPose_, false);
+    nodeHandlePrivate_.param<bool>
+      ("start_from_saved_pose", startFromSavedPose_, false);
 
-    ros::param::param<bool>
-      ("~confirm_init", confirmInit_, true);
+    nodeHandlePrivate_.param<bool>
+      ("confirm_init", confirmInit_, true);
 
     if (modelName_.empty ())
       throw std::runtime_error
@@ -83,8 +88,7 @@ namespace visp_tracker
     ros::Rate rate (1);
     while (cameraPrefix_.empty ())
       {
-	ros::param::get ("camera_prefix", cameraPrefix_);
-	if (!ros::param::has ("camera_prefix"))
+	if (!nodeHandle_.getParam ("camera_prefix", cameraPrefix_))
 	  {
 	    ROS_WARN
 	      ("the camera_prefix parameter does not exist.\n"
@@ -99,7 +103,7 @@ namespace visp_tracker
 	      ("tracker is not yet initialized, waiting...\n"
 	       "You may want to launch the client to initialize the tracker.");
 	  }
-	if (!ros::ok ())
+	if (this->exiting())
 	  return;
 	rate.sleep ();
       }
@@ -149,7 +153,7 @@ namespace visp_tracker
 
     // Wait for the image to be initialized.
     waitForImage();
-    if (!ros::ok())
+    if (this->exiting())
       return;
     if (!image_.getWidth() || !image_.getHeight())
       throw std::runtime_error("failed to retrieve image");
@@ -191,7 +195,7 @@ namespace visp_tracker
     bool ok = false;
     vpHomogeneousMatrix cMo;
     vpImagePoint point (10, 10);
-    while (!ok && ros::ok())
+    while (!ok && !exiting())
       {
 	try
 	  {
@@ -231,7 +235,7 @@ namespace visp_tracker
 
 		    ros::spinOnce();
 		    loop_rate_tracking.sleep();
-		    if (!ros::ok())
+		    if (exiting())
 		      return;
 		  }
 		while(!vpDisplay::getClick(image_, ip, button, false));
@@ -281,7 +285,7 @@ namespace visp_tracker
     // Load the model and send it to the parameter server.
     std::string modelDescription = fetchResource
       (getModelFileFromModelName (modelName_, modelPath_));
-    ros::param::set (model_description_param, modelDescription);
+    nodeHandle_.setParam (model_description_param, modelDescription);
 
     vpHomogeneousMatrixToTransform(srv.request.initial_cMo, cMo);
 
@@ -472,7 +476,7 @@ namespace visp_tracker
 	vpDisplay::flush(image_);
 	ros::spinOnce();
 	rate.sleep();
-	if (!ros::ok())
+	if (exiting())
 	  return;
       }
     while(!vpDisplay::getClick(image_, ip, button, false));
@@ -509,7 +513,7 @@ namespace visp_tracker
 	vpDisplay::flush(image_);
 	ros::spinOnce();
 	loop_rate.sleep();
-	if (!ros::ok())
+	if (exiting())
 	  return;
       }
     while(!vpDisplay::getClick(image_, ip, button, false));
@@ -532,7 +536,7 @@ namespace visp_tracker
 	for(unsigned i = 0; i < points.size(); ++i)
 	  {
 	    initPoint(i, points, imagePoints, loop_rate, pose);
-	    if (!ros::ok())
+	    if (exiting())
 	      return;
 	  }
 
@@ -561,7 +565,7 @@ namespace visp_tracker
 	    vpDisplay::flush(image_);
 	    ros::spinOnce();
 	    loop_rate.sleep();
-	    if (!ros::ok())
+	    if (exiting())
 	      return;
 	  }
 	while(!vpDisplay::getClick(image_, ip, button, false));
@@ -582,7 +586,7 @@ namespace visp_tracker
   TrackerClient::waitForImage()
   {
     ros::Rate loop_rate(10);
-    while (ros::ok()
+    while (!exiting()
 	   && (!image_.getWidth() || !image_.getHeight()))
       {
 	ROS_INFO_THROTTLE(1, "waiting for a rectified image...");

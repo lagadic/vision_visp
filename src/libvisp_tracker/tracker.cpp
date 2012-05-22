@@ -202,9 +202,14 @@ namespace visp_tracker
     checkInputs_.start(topics, 60.0);
   }
 
-  Tracker::Tracker(unsigned queueSize)
-    : queueSize_(queueSize),
-      nodeHandle_(),
+  Tracker::Tracker(ros::NodeHandle& nh,
+		   ros::NodeHandle& privateNh,
+		   volatile bool& exiting,
+		   unsigned queueSize)
+    : exiting_ (exiting),
+      queueSize_(queueSize),
+      nodeHandle_(nh),
+      nodeHandlePrivate_(privateNh),
       imageTransport_(nodeHandle_),
       state_(WAITING_FOR_INITIALIZATION),
       image_(),
@@ -213,7 +218,7 @@ namespace visp_tracker
       cameraInfoTopic_(),
       vrmlPath_(),
       cameraSubscriber_(),
-      reconfigureSrv_(),
+      reconfigureSrv_(nodeHandlePrivate_),
       resultPublisher_(),
       transformationPublisher_(),
       movingEdgeSitesPublisher_(),
@@ -226,7 +231,7 @@ namespace visp_tracker
       tracker_(),
       sites_(),
       lastTrackedImage_(),
-      checkInputs_(ros::NodeHandle(), ros::this_node::getName()),
+      checkInputs_(nodeHandle_, ros::this_node::getName()),
       cMo_ (),
       velocities_ (MAX_VELOCITY_VALUES),
       transformBroadcaster_ (),
@@ -236,7 +241,7 @@ namespace visp_tracker
     cMo_.eye();
 
     // Parameters.
-    ros::param::param<std::string>("~camera_prefix", cameraPrefix_, "");
+    nodeHandlePrivate_.param<std::string>("camera_prefix", cameraPrefix_, "");
 
     if (cameraPrefix_.empty ())
       {
@@ -247,9 +252,9 @@ namespace visp_tracker
 	ros::shutdown ();
 	return;
       }
-    ros::param::set("camera_prefix", cameraPrefix_);
+    nodeHandle_.setParam("camera_prefix", cameraPrefix_);
 
-    ros::param::param<std::string>("frame_id", childFrameId_, "object_position");
+    nodeHandle_.param<std::string>("frame_id", childFrameId_, "object_position");
 
     // Compute topic and services names.
     rectifiedImageTopic_ =
@@ -299,7 +304,7 @@ namespace visp_tracker
 
     // Wait for the image to be initialized.
     waitForImage();
-    if (!ros::ok())
+    if (this->exiting())
       return;
     if (!image_.getWidth() || !image_.getHeight())
       throw std::runtime_error("failed to retrieve image");
@@ -487,7 +492,7 @@ namespace visp_tracker
     tf::Transform transform;
     std_msgs::Header lastHeader;
 
-    while (ros::ok())
+    while (!exiting())
       {
 	// When a camera sequence is played several times,
 	// the seq id will decrease, in this case we want to
@@ -580,7 +585,7 @@ namespace visp_tracker
 
 	ROS_DEBUG_STREAM_THROTTLE (5, velocitiesDebugMessage());
 
-	ros::spinOnce();
+	spinOnce();
 	loopRateTracking.sleep();
       }
   }
@@ -591,12 +596,12 @@ namespace visp_tracker
   Tracker::waitForImage()
   {
     ros::Rate loop_rate(10);
-    while (ros::ok()
+    while (!exiting()
 	   && (!image_.getWidth() || !image_.getHeight())
 	   && (!info_ || info_->K[0] == 0.))
       {
 	ROS_INFO_THROTTLE(1, "waiting for a rectified image...");
-	ros::spinOnce();
+	spinOnce();
 	loop_rate.sleep();
       }
   }

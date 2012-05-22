@@ -6,40 +6,39 @@
 #include <nodelet/nodelet.h>
 #include <pluginlib/class_list_macros.h>
 
-#include "tracker.hh"
+#include "tracker-viewer.hh"
 
 namespace visp_tracker
 {
-  class TrackerNodelet : public nodelet::Nodelet
+  class TrackerViewerNodelet : public nodelet::Nodelet
   {
   public:
-    TrackerNodelet ()
+    TrackerViewerNodelet ()
       : nodelet::Nodelet (),
 	exiting_ (false),
-	tracker_ (),
+	trackerViewer_ (),
 	thread_ ()
     {}
 
-    ~TrackerNodelet ()
+    ~TrackerViewerNodelet ()
     {
       exiting_ = true;
       if (thread_)
 	if (!thread_->timed_join (boost::posix_time::seconds (2)))
 	  NODELET_WARN ("failed to join thread but continuing anyway");
       thread_.reset ();
-      tracker_.reset ();
+      trackerViewer_.reset ();
     }
 
     void spin ()
     {
-      if (exiting_)
-	return;
-      tracker_ = boost::shared_ptr<visp_tracker::Tracker>
-	(new visp_tracker::Tracker (getMTNodeHandle (),
-				    getMTPrivateNodeHandle (),
-				    exiting_, 5u));
+      trackerViewer_ = boost::shared_ptr<visp_tracker::TrackerViewer>
+	(new visp_tracker::TrackerViewer
+	 (getMTNodeHandle (),
+	  getMTPrivateNodeHandle (),
+	  exiting_, 5u));
       while (ros::ok () && !exiting_)
-	tracker_->spin ();
+	trackerViewer_->spin ();
     }
 
     virtual void onInit ()
@@ -47,16 +46,15 @@ namespace visp_tracker
       NODELET_DEBUG ("Initializing nodelet...");
       exiting_ = false;
       thread_ = boost::make_shared<boost::thread>
-	(boost::bind (&TrackerNodelet::spin, this));
+	(boost::bind (&TrackerViewerNodelet::spin, this));
     }
-
   private:
     volatile bool exiting_;
-    boost::shared_ptr<visp_tracker::Tracker> tracker_;
+    boost::shared_ptr<visp_tracker::TrackerViewer> trackerViewer_;
     boost::shared_ptr<boost::thread> thread_;
   };
 
 } // end of namespace visp_tracker.
 
-PLUGINLIB_DECLARE_CLASS(visp_tracker, Tracker,
-			visp_tracker::TrackerNodelet, nodelet::Nodelet);
+PLUGINLIB_DECLARE_CLASS(visp_tracker, TrackerViewer,
+			visp_tracker::TrackerViewerNodelet, nodelet::Nodelet);

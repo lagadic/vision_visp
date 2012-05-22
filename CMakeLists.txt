@@ -35,7 +35,7 @@ include_directories("${CMAKE_SOURCE_DIR}/src")
 include_directories("${CMAKE_SOURCE_DIR}/src/libvisp_tracker")
 
 # Library gathering libvisp_tracker used by all nodes.
-rosbuild_add_library(libvisp_tracker
+rosbuild_add_library(visp_tracker
   src/libvisp_tracker/conversion.cpp
   src/libvisp_tracker/callbacks.cpp
   src/libvisp_tracker/file.cpp
@@ -43,35 +43,28 @@ rosbuild_add_library(libvisp_tracker
   src/libvisp_tracker/tracker-client.cpp
   src/libvisp_tracker/tracker-viewer.cpp
   "${CMAKE_BINARY_DIR}/src/libvisp_tracker/names.cpp")
-target_link_libraries(libvisp_tracker visp-2)
-rosbuild_link_boost(libvisp_tracker
+target_link_libraries(visp_tracker visp-2)
+rosbuild_link_boost(visp_tracker
   filesystem system signals regex date_time program_options thread)
 
 ############
 # Nodelets #
 ############
 
-# Tracker
-rosbuild_add_library(trackerNodelet src/nodelets/tracker.cpp)
-target_link_libraries(trackerNodelet libvisp_tracker visp-2)
-
+# Tracker, client, viewer nodelets.
+rosbuild_add_library(trackerNodelet
+  src/nodelets/tracker.cpp
+  src/nodelets/client.cpp
+  src/nodelets/viewer.cpp)
+target_link_libraries(trackerNodelet visp_tracker visp-2)
 
 ########
 # Node #
 ########
 
-# Tracker
 rosbuild_add_executable(tracker src/nodes/tracker.cpp)
-target_link_libraries(tracker libvisp_tracker visp-2)
-
-# Client
 rosbuild_add_executable(client src/nodes/client.cpp)
-target_link_libraries(client libvisp_tracker visp-2)
-
-# Viewer
 rosbuild_add_executable(viewer src/nodes/viewer.cpp)
-target_link_libraries(viewer libvisp_tracker visp-2)
-
 
 #############
 # Bag files #

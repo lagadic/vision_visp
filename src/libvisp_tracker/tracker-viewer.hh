@@ -44,7 +44,10 @@ namespace visp_tracker
       > syncPolicy_t;
 
     /// \brief Constructor.
-    TrackerViewer(unsigned queueSize = 5u);
+    TrackerViewer(ros::NodeHandle& nh,
+		  ros::NodeHandle& privateNh,
+		  volatile bool& exiting,
+		  unsigned queueSize = 5u);
 
     /// \brief Display camera image, tracked object position and moving
     /// edge sites.
@@ -71,11 +74,19 @@ namespace visp_tracker
     void displayMovingEdgeSites();
 
   private:
+    bool exiting ()
+    {
+      return exiting_ || !ros::ok();
+    }
+
+    volatile bool& exiting_;
+
     /// \brief Queue size for all subscribers.
     unsigned queueSize_;
 
-    /// \brief Main node handle.
-    ros::NodeHandle nodeHandle_;
+    ros::NodeHandle& nodeHandle_;
+    ros::NodeHandle& nodeHandlePrivate_;
+
     /// \brief Image transport used to receive images.
     image_transport::ImageTransport imageTransport_;
 

@@ -47,7 +47,10 @@ namespace visp_tracker
     reconfigureCallback_t;
 
 
-    TrackerClient(unsigned queueSize = 5u);
+    TrackerClient(ros::NodeHandle& nh,
+		  ros::NodeHandle& privateNh,
+		  volatile bool& exiting,
+		  unsigned queueSize = 5u);
 
     void spin();
   protected:
@@ -78,9 +81,18 @@ namespace visp_tracker
 		       std::string& fullModelPath);
 
   private:
+    bool exiting ()
+    {
+      return exiting_ || !ros::ok();
+    }
+
+    volatile bool& exiting_;
+
     unsigned queueSize_;
 
-    ros::NodeHandle nodeHandle_;
+    ros::NodeHandle& nodeHandle_;
+    ros::NodeHandle& nodeHandlePrivate_;
+
     image_transport::ImageTransport imageTransport_;
 
     image_t image_;
