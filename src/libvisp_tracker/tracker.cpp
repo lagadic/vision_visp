@@ -182,7 +182,8 @@ namespace visp_tracker
       cameraInfoTopic_(),
       vrmlPath_(),
       cameraSubscriber_(),
-      reconfigureSrv_(nodeHandlePrivate_),
+      mutex_ (),
+      reconfigureSrv_(mutex_, nodeHandlePrivate_),
       resultPublisher_(),
       transformationPublisher_(),
       movingEdgeSitesPublisher_(),
@@ -259,7 +260,8 @@ namespace visp_tracker
     // Dynamic reconfigure.
     reconfigureSrv_t::CallbackType f =
       boost::bind(&reconfigureCallback, boost::ref(tracker_),
-		  boost::ref(image_), boost::ref(movingEdge_), _1, _2);
+		  boost::ref(image_), boost::ref(movingEdge_),
+		  boost::ref(mutex_), _1, _2);
     reconfigureSrv_.setCallback(f);
 
     // Wait for the image to be initialized.

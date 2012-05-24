@@ -52,20 +52,31 @@ bindImageCallback(vpImage<unsigned char>& image,
 void reconfigureCallback(vpMbEdgeTracker& tracker,
 			 vpImage<unsigned char>& I,
 			 vpMe& moving_edge,
+			 boost::recursive_mutex& mutex,
 			 visp_tracker::MovingEdgeConfig& config,
 			 uint32_t level)
 {
-  ROS_INFO("Reconfigure request received.");
-  convertMovingEdgeConfigToVpMe(config, moving_edge, tracker);
+  mutex.lock ();
+  try
+    {
+      ROS_INFO("Reconfigure request received.");
+      convertMovingEdgeConfigToVpMe(config, moving_edge, tracker);
 
-  //FIXME: not sure if this is needed.
-  moving_edge.initMask();
+      //FIXME: not sure if this is needed.
+      moving_edge.initMask();
 
-  vpHomogeneousMatrix cMo;
-  tracker.getPose(cMo);
+      vpHomogeneousMatrix cMo;
+      tracker.getPose(cMo);
 
-  tracker.setMovingEdge(moving_edge);
-  tracker.init(I, cMo);
+      tracker.setMovingEdge(moving_edge);
+      tracker.init(I, cMo);
 
-  moving_edge.print();
+      moving_edge.print();
+    }
+  catch (...)
+    {
+      mutex.unlock ();
+      throw;
+    }
+  mutex.unlock ();
 }

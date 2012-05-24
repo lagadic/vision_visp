@@ -2,6 +2,7 @@
 # define VISP_TRACKER_TRACKER_CLIENT_HH
 # include <boost/filesystem/fstream.hpp>
 # include <boost/filesystem/path.hpp>
+# include <boost/thread/recursive_mutex.hpp>
 
 # include <dynamic_reconfigure/server.h>
 
@@ -109,6 +110,7 @@ namespace visp_tracker
 
     image_transport::CameraSubscriber cameraSubscriber_;
 
+    boost::recursive_mutex mutex_;
     reconfigureSrv_t reconfigureSrv_;
 
     std_msgs::Header header_;

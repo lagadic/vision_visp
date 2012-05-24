@@ -1,5 +1,6 @@
 #ifndef VISP_TRACKER_CALLBACKS_HH
 # define VISP_TRACKER_CALLBACKS_HH
+# include <boost/thread/recursive_mutex.hpp>
 # include <image_transport/image_transport.h>
 # include <sensor_msgs/Image.h>
 # include <std_msgs/Header.h>
@@ -34,6 +35,7 @@ bindImageCallback(vpImage<unsigned char>& image,
 void reconfigureCallback(vpMbEdgeTracker& tracker,
 			 vpImage<unsigned char>& I,
 			 vpMe& moving_edge,
+			 boost::recursive_mutex& mutex,
 			 visp_tracker::MovingEdgeConfig& config,
 			 uint32_t level);
 

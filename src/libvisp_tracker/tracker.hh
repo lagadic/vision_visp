@@ -1,6 +1,7 @@
 #ifndef VISP_TRACKER_TRACKER_HH
 # define VISP_TRACKER_TRACKER_HH
 # include <boost/filesystem/path.hpp>
+# include <boost/thread/recursive_mutex.hpp>
 
 # include <dynamic_reconfigure/server.h>
 
@@ -93,7 +94,9 @@ namespace visp_tracker
 
     image_transport::CameraSubscriber cameraSubscriber_;
 
+    boost::recursive_mutex mutex_;
     reconfigureSrv_t reconfigureSrv_;
+
     ros::Publisher resultPublisher_;
     ros::Publisher transformationPublisher_;
     tf::TransformBroadcaster tfBroadcaster_;
