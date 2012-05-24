@@ -62,6 +62,9 @@ namespace visp_tracker
 
     void checkInputs();
     void waitForImage();
+
+    void objectPositionHintCallback
+    (const geometry_msgs::TransformStampedConstPtr&);
   private:
     bool exiting ()
     {
@@ -124,6 +127,9 @@ namespace visp_tracker
 
     tf::TransformBroadcaster transformBroadcaster_;
     std::string childFrameId_;
+
+    ros::Subscriber objectPositionHintSubscriber_;
+    geometry_msgs::TransformStamped objectPositionHint_;
   };
 } // end of namespace visp_tracker.
 

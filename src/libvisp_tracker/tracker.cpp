@@ -200,7 +200,9 @@ namespace visp_tracker
       worldFrameId_ (),
       compensateRobotMotion_ (false),
       transformBroadcaster_ (),
-      childFrameId_ ()
+      childFrameId_ (),
+      objectPositionHintSubscriber_ (),
+      objectPositionHint_ ()
   {
     // Set cMo to identity.
     cMo_.eye();
@@ -253,6 +255,16 @@ namespace visp_tracker
       (rectifiedImageTopic_, queueSize_,
        bindImageCallback(image_, header_, info_));
 
+    // Object position hint subscriber.
+    typedef boost::function<
+    void (const geometry_msgs::TransformStampedConstPtr&)>
+      objectPositionHintCallback_t;
+    objectPositionHintCallback_t callback =
+      boost::bind (&Tracker::objectPositionHintCallback, this, _1);
+    objectPositionHintSubscriber_ =
+      nodeHandle_.subscribe<geometry_msgs::TransformStamped>
+      ("object_position_hint", queueSize_, callback);
+
     // Initialization.
     movingEdge_.initMask();
     tracker_.setMovingEdge(movingEdge_);
@@ -275,7 +287,6 @@ namespace visp_tracker
     initializeVpCameraFromCameraInfo(cameraParameters_, info_);
 
     // Double check camera parameters.
-
     if (cameraParameters_.get_px () == 0.
 	|| cameraParameters_.get_px () == 1.
 	|| cameraParameters_.get_py () == 0.
@@ -347,6 +358,20 @@ namespace visp_tracker
 	      catch(tf::TransformException& e)
 		{}
 
+	    // If we are lost but an estimation of the object position
+	    // is provided, use it to try to reinitialize the system.
+	    if (state_ == LOST)
+	      {
+		// If the last received message is recent enough,
+		// use it otherwise do nothing.
+		if (ros::Time::now () - objectPositionHint_.header.stamp
+		    < ros::Duration (1.))
+		  transformToVpHomogeneousMatrix
+		    (cMo_, objectPositionHint_.transform);
+	      }
+
+	    // We try to track the image even if we are lost,
+	    // in the case the tracker recovers...
 	    if (state_ == TRACKING || state_ == LOST)
 	      try
 		{
@@ -454,6 +479,13 @@ namespace visp_tracker
 	spinOnce();
 	loop_rate.sleep();
       }
+  }
+
+  void
+  Tracker::objectPositionHintCallback
+  (const geometry_msgs::TransformStampedConstPtr& transform)
+  {
+    objectPositionHint_ = *transform;
   }
 
 } // end of namespace visp_tracker.
