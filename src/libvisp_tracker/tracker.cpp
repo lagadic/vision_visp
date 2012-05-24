@@ -121,43 +121,6 @@ namespace visp_tracker
   }
 
   void
-  Tracker::cameraVelocityCallback(const geometry_msgs::TwistStampedConstPtr&
-				  stampedTwist)
-  {
-    // Consistency checks.
-    if(!velocities_.empty())
-      {
-	const velocityDuringInterval_t& newerVelocity =
-	  velocities_.back();
-	if(newerVelocity.first >= stampedTwist->header.stamp.toSec())
-	  {
-	    ROS_WARN_THROTTLE
-	      (5, "camera velocity estimation timestamp is inconsistent");
-	    return;
-	  }
-      }
-    if(!header_.frame_id.empty()
-       && stampedTwist->header.frame_id != header_.frame_id)
-      {
-	ROS_WARN_THROTTLE
-	  (5, "velocity is not given in the wanted frame");
-	return;
-      }
-
-    vpColVector velocity(6);
-    velocity[0] = stampedTwist->twist.linear.x;
-    velocity[1] = stampedTwist->twist.linear.y;
-    velocity[2] = stampedTwist->twist.linear.z;
-    velocity[3] = stampedTwist->twist.angular.x;
-    velocity[4] = stampedTwist->twist.angular.y;
-    velocity[5] = stampedTwist->twist.angular.z;
-
-    velocities_.push_back(std::make_pair
-			  (stampedTwist->header.stamp.toSec(),
-			   velocity));
-  }
-
-  void
   Tracker::updateMovingEdgeSites(visp_tracker::MovingEdgeSitesPtr sites)
   {
     if (!sites)
@@ -223,7 +186,6 @@ namespace visp_tracker
       resultPublisher_(),
       transformationPublisher_(),
       movingEdgeSitesPublisher_(),
-      cameraVelocitySubscriber_(),
       initService_(),
       header_(),
       info_(),
@@ -233,7 +195,9 @@ namespace visp_tracker
       lastTrackedImage_(),
       checkInputs_(nodeHandle_, ros::this_node::getName()),
       cMo_ (),
-      velocities_ (MAX_VELOCITY_VALUES),
+      listener_ (),
+      worldFrameId_ (),
+      compensateRobotMotion_ (false),
       transformBroadcaster_ (),
       childFrameId_ ()
   {
@@ -256,6 +220,11 @@ namespace visp_tracker
 
     nodeHandle_.param<std::string>("frame_id", childFrameId_, "object_position");
 
+    // Robot motion compensation.
+    nodeHandle_.param<std::string>("world_frame_id", worldFrameId_, "/odom");
+    nodeHandle_.param<bool>
+      ("compensate_robot_motion", compensateRobotMotion_, false);
+
     // Compute topic and services names.
     rectifiedImageTopic_ =
       ros::names::resolve(cameraPrefix_ + "/image_rect");
@@ -276,15 +245,6 @@ namespace visp_tracker
     movingEdgeSitesPublisher_ =
       nodeHandle_.advertise<visp_tracker::MovingEdgeSites>
       (visp_tracker::moving_edge_sites_topic, queueSize_);
-
-    // Camera velocity subscriber.
-    typedef boost::function<
-    void (const geometry_msgs::TwistStampedConstPtr&)>
-      cameraVelocitycallback_t;
-    cameraVelocitycallback_t callback =
-      boost::bind(&Tracker::cameraVelocityCallback, this, _1);
-    cameraVelocitySubscriber_ =
-      nodeHandle_.subscribe(camera_velocity_topic, queueSize_, callback);
 
     // Camera subscriber.
     cameraSubscriber_ =
@@ -346,144 +306,6 @@ namespace visp_tracker
       (visp_tracker::init_service, initCallback);
   }
 
-
-  // lastHeader is the date where the previous image has been acquired,
-  // currentHeader is the date where the current image has been acquired.
-  //
-  // The goal is to compute the camera displacement between these two dates
-  // and update the camera position accordingly by integrating the speed
-  // on the correct interval.
-  //
-  //   ----    ----
-  //  - |  ----    -
-  // -  |  |  |    |------
-  // |  |  |  |    |  | |
-  // t0 t1 s  t2   t3 e t4
-  //
-  // - t_{0..5} are the available velocities.
-  // - v(t_i) the associated velocities
-  // Note: v(t0) is applied from t0 to t1
-  //
-  // - s and e the previous and current image timestamps.
-  //
-  // The goal is to integrate the camera speed between s and e.
-  //
-  // Let cMc_ the new camera position w.r.t. the old one,
-  //     cMo  the object position w.r.t. the camera at s
-  // and c_Mo the object position w.r.t. the camera a e (wanted!).
-  // In this case: cMc_ =   integral_{t_3}^{e} v(t_3) . dt
-  //                      * integral_{t_2}^{t_3} v(t_2) . dt
-  //                      * integral_{s}^{t_2} v(t_1) . dt
-  //
-  // The object motion is opposite: oMo_ = cMc_^{-1}
-  // c_Mo = c_Mc * cMo_ = cMc_.inverse() * cMo
-  //
-  //
-  // In this case, t0 should be removed without being integrated but t2
-  // should be kept and taken into account.
-  void Tracker::integrateCameraVelocity(const std_msgs::Header& lastHeader,
-					const std_msgs::Header& currentHeader)
-  {
-    // If the new image is older than the previous one, do not do anything.
-    if (currentHeader.stamp <= lastHeader.stamp)
-      {
-	ROS_DEBUG_THROTTLE(5, "new image is older than previous one");
-	return;
-      }
-
-    // There is nothing to integrate.
-    if (velocities_.empty())
-      return;
-
-    // The interval on which the camera velocity will be integrated.
-    double start = lastHeader.stamp.toSec();
-    double end = currentHeader.stamp.toSec();
-
-    // First, remove from the vector velocities that have already
-    // been integrated or which are too old.
-    velocities_t::iterator it = velocities_.begin();
-    for(; it != velocities_.end() && it->first < start; ++it)
-      ;
-    // Here the iterator point to the first element which is after start.
-    // We must keep it and the previous value too.
-    //
-    // In the example, we would point on t2 so we must go back on t1
-    // and call erase which will erase [t0,t1).
-
-    if (it != velocities_.begin())
-      {
-	--it;
-	velocities_.erase(velocities_.begin(), it);
-      }
-
-    // There is nothing to integrate.
-    if (velocities_.empty())
-      return;
-
-    // Second, search for velocities we must integrate.
-    // (iterator _must_ be reset after a deletion)
-    it = velocities_.begin();
-
-    vpHomogeneousMatrix cMc_;
-    cMc_.eye();
-
-    for(; it != velocities_.end(); ++it)
-      {
-	velocities_t::iterator current = it;
-	velocities_t::iterator next = it; ++next;
-
-	// If current is after end, there is nothing more to
-	// integrate.
-	if (current->first >= end)
-	  break;
-
-	// Partial interval on which the velocity will be integrated.
-	double s = std::max(start, current->first);
-	double e = 0.;
-
-	if (next == velocities_.end())
-	  e = end;
-	else
-	  e = std::min(end, next->first);
-	double dt = e - s;
-	const vpColVector& velocity = it->second;
-
-	if (dt < 0.)
-	  ROS_DEBUG_THROTTLE(5, "invalid dt");
-	if (velocity.getRows() != 6)
-	  throw std::runtime_error
-	    ("invalid colum size during velocity integration");
-
-
-	cMc_ = vpExponentialMap::direct(velocity, dt) * cMc_;
-      }
-
-    if (it != velocities_.begin())
-      {
-	--it;
-	velocities_.erase(velocities_.begin(), it);
-      }
-
-    ROS_DEBUG_STREAM_THROTTLE
-      (5,
-       "applying control feedback, camera motion estimation is:\n" << cMc_);
-    cMo_ = cMc_.inverse() * cMo_;
-  }
-
-  std::string
-  Tracker::velocitiesDebugMessage()
-  {
-    std::stringstream ss;
-    ss << "velocities_ array size: " << velocities_.size() << "\n";
-    if (!velocities_.empty())
-      ss << "Velocities:\n";
-    for (unsigned i = 0;
-	 i < std::min(velocities_.size(), static_cast<std::size_t> (10u)); ++i)
-      ss << "- t = " << velocities_[i].first
-	 << " / v(t) = \n" << velocities_[i].second << "\n";
-    return ss.str();
-  }
-
   void Tracker::spin()
   {
     ros::Rate loopRateTracking(100);
@@ -502,15 +324,26 @@ namespace visp_tracker
 	  {
 	    lastTrackedImage_ = header_.seq;
 
-	    // Update cMo.
-	    try
-	      {
-		integrateCameraVelocity(lastHeader, header_);
-	      }
-	    catch(std::exception& e)
-	      {
-		ROS_WARN_STREAM_THROTTLE(5, e.what());
-	      }
+	    // If we can estimate the camera displacement using tf,
+	    // we update the cMo to compensate for robot motion.
+	    if (compensateRobotMotion_)
+	      try
+		{
+		  tf::StampedTransform stampedTransform;
+		  listener_.lookupTransform
+		    (header_.frame_id, // camera frame name
+		     header_.stamp,    // current image time
+		     header_.frame_id, // camera frame name
+		     lastHeader.stamp, // last processed image time
+		     worldFrameId_,    // frame attached to the environment
+		     stampedTransform
+		     );
+		  vpHomogeneousMatrix newMold;
+		  transformToVpHomogeneousMatrix (newMold, stampedTransform);
+		  cMo_ = newMold * cMo_;
+		}
+	      catch(tf::TransformException& e)
+		{}
 
 	    if (state_ == TRACKING || state_ == LOST)
 	      try
@@ -528,48 +361,60 @@ namespace visp_tracker
 	    // Publish the tracking result.
 	    if (state_ == TRACKING)
 	      {
+		geometry_msgs::Transform transformMsg;
+		vpHomogeneousMatrixToTransform(transformMsg, cMo_);
+
 		// Publish position.
-		geometry_msgs::TransformStampedPtr objectPosition
-		  (new geometry_msgs::TransformStamped);
-		objectPosition->header = header_;
-		objectPosition->child_frame_id = childFrameId_;
-		vpHomogeneousMatrixToTransform(objectPosition->transform, cMo_);
-		transformationPublisher_.publish(objectPosition);
+		if (transformationPublisher_.getNumSubscribers	() > 0)
+		  {
+		    geometry_msgs::TransformStampedPtr objectPosition
+		      (new geometry_msgs::TransformStamped);
+		    objectPosition->header = header_;
+		    objectPosition->child_frame_id = childFrameId_;
+		    objectPosition->transform = transformMsg;
+		    transformationPublisher_.publish(objectPosition);
+		  }
 
 		// Publish result.
-		visp_tracker::TrackingResultPtr result
-		  (new visp_tracker::TrackingResult);
-		result->header = header_;
-		result->is_tracking = true;
-		result->cMo = (*objectPosition).transform;
-		resultPublisher_.publish(result);
+		if (resultPublisher_.getNumSubscribers	() > 0)
+		  {
+		    visp_tracker::TrackingResultPtr result
+		      (new visp_tracker::TrackingResult);
+		    result->header = header_;
+		    result->is_tracking = true;
+		    result->cMo = transformMsg;
+		    resultPublisher_.publish(result);
+		  }
 
 		// Publish moving edge sites.
-		visp_tracker::MovingEdgeSitesPtr sites
-		  (new visp_tracker::MovingEdgeSites);
-		updateMovingEdgeSites(sites);
-		sites->header = header_;
-		movingEdgeSitesPublisher_.publish(sites);
+		if (movingEdgeSitesPublisher_.getNumSubscribers	() > 0)
+		  {
+		    visp_tracker::MovingEdgeSitesPtr sites
+		      (new visp_tracker::MovingEdgeSites);
+		    updateMovingEdgeSites(sites);
+		    sites->header = header_;
+		    movingEdgeSitesPublisher_.publish(sites);
+		  }
 
 		// Publish to tf.
 		transform.setOrigin
-		  (tf::Vector3(objectPosition->transform.translation.x,
-			       objectPosition->transform.translation.y,
-			       objectPosition->transform.translation.z));
+		  (tf::Vector3(transformMsg.translation.x,
+			       transformMsg.translation.y,
+			       transformMsg.translation.z));
 		transform.setRotation
 		  (tf::Quaternion
-		   (objectPosition->transform.rotation.x,
-		    objectPosition->transform.rotation.y,
-		    objectPosition->transform.rotation.z,
-		    objectPosition->transform.rotation.w));
+		   (transformMsg.rotation.x,
+		    transformMsg.rotation.y,
+		    transformMsg.rotation.z,
+		    transformMsg.rotation.w));
 		transformBroadcaster_.sendTransform
 		  (tf::StampedTransform
 		   (transform,
-		    objectPosition->header.stamp,
-		    objectPosition->header.frame_id,
+		    header_.stamp,
+		    header_.frame_id,
 		    childFrameId_));
 	      }
-	    else
+	    else if (resultPublisher_.getNumSubscribers	() > 0)
 	      {
 		visp_tracker::TrackingResultPtr result
 		  (new visp_tracker::TrackingResult);
@@ -583,11 +428,10 @@ namespace visp_tracker
 		result->cMo.rotation.y = 0.;
 		result->cMo.rotation.z = 0.;
 		result->cMo.rotation.w = 0.;
+		resultPublisher_.publish(result);
 	      }
 	  }
 	lastHeader = header_;
-
-	ROS_DEBUG_STREAM_THROTTLE (5, velocitiesDebugMessage());
 
 	spinOnce();
 	loopRateTracking.sleep();

@@ -1,6 +1,5 @@
 #ifndef VISP_TRACKER_TRACKER_HH
 # define VISP_TRACKER_TRACKER_HH
-# include <boost/circular_buffer.hpp>
 # include <boost/filesystem/path.hpp>
 
 # include <dynamic_reconfigure/server.h>
@@ -15,6 +14,7 @@
 # include <sensor_msgs/CameraInfo.h>
 
 # include <tf/transform_broadcaster.h>
+# include <tf/transform_listener.h>
 
 # include <visp_tracker/Init.h>
 # include <visp_tracker/MovingEdgeConfig.h>
@@ -56,18 +56,11 @@ namespace visp_tracker
   protected:
     bool initCallback(visp_tracker::Init::Request& req,
 		      visp_tracker::Init::Response& res);
-    void
-    cameraVelocityCallback(const geometry_msgs::TwistStampedConstPtr& twist);
 
     void updateMovingEdgeSites(visp_tracker::MovingEdgeSitesPtr sites);
 
     void checkInputs();
     void waitForImage();
-
-    void integrateCameraVelocity(const std_msgs::Header& lastHeader,
-				 const std_msgs::Header& currentHeader);
-
-    std::string velocitiesDebugMessage();
   private:
     bool exiting ()
     {
@@ -79,10 +72,6 @@ namespace visp_tracker
       //callbackQueue_.callAvailable(ros::WallDuration(0));
       ros::spinOnce ();
     }
-
-    typedef std::pair<double, vpColVector> velocityDuringInterval_t;
-    typedef boost::circular_buffer<velocityDuringInterval_t> velocities_t;
-    static const velocities_t::size_type MAX_VELOCITY_VALUES = 1000;
 
     volatile bool& exiting_;
 
@@ -109,7 +98,6 @@ namespace visp_tracker
     ros::Publisher transformationPublisher_;
     tf::TransformBroadcaster tfBroadcaster_;
     ros::Publisher movingEdgeSitesPublisher_;
-    ros::Subscriber cameraVelocitySubscriber_;
 
     ros::ServiceServer initService_;
 
@@ -127,7 +115,9 @@ namespace visp_tracker
 
     vpHomogeneousMatrix cMo_;
 
-    velocities_t velocities_;
+    tf::TransformListener listener_;
+    std::string worldFrameId_;
+    bool compensateRobotMotion_;
 
     tf::TransformBroadcaster transformBroadcaster_;
     std::string childFrameId_;

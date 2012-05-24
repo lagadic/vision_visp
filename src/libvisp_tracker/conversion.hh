@@ -7,6 +7,7 @@
 # include <geometry_msgs/Transform.h>
 # include <sensor_msgs/Image.h>
 # include <sensor_msgs/CameraInfo.h>
+# include <tf/transform_datatypes.h>
 
 # include <visp/vpHomogeneousMatrix.h>
 # include <visp/vpCameraParameters.h>
@@ -48,6 +49,9 @@ void vpHomogeneousMatrixToTransform(geometry_msgs::Transform& dst,
 
 void transformToVpHomogeneousMatrix(vpHomogeneousMatrix& dst,
 				    const geometry_msgs::Transform& src);
+
+void transformToVpHomogeneousMatrix(vpHomogeneousMatrix& dst,
+				    const tf::Transform& src);
 
 void convertMovingEdgeConfigToVpMe(const visp_tracker::MovingEdgeConfig& config,
 				   vpMe& moving_edge,
