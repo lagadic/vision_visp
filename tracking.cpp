@@ -8,9 +8,10 @@
 #include <visp/vpPose.h>
 #include <visp/vpMeterPixelConversion.h>
 #include <visp/vpTrackingException.h>
+#include <visp/vpImageIo.h>
 
 namespace tracking{
-  Tracker_:: Tracker_(CmdLine& cmd) : cmd(cmd),iter_(0){
+  Tracker_:: Tracker_(CmdLine& cmd) : cmd(cmd),iter_(0),flashcode_center_(640/2,480/2){
     std::cout << "starting tracker" << std::endl;
     points3D_inner_ = cmd.get_inner_points_3D();
     points3D_outer_ = cmd.get_outer_points_3D();
@@ -70,7 +71,28 @@ namespace tracking{
   bool Tracker_:: flashcode_detected(input_ready const& evt){
     cv::Mat cvI;
     vpImageConvert::convert(evt.I,cvI);
+
     return dmx_detector_.detect(cvI,cmd.get_dmx_timeout());
+  }
+
+  /*
+   * Detect flashcode in region delimited by the outer points of the model
+   */
+  bool Tracker_:: flashcode_redetected(input_ready const& evt){
+    cv::Mat cvI;
+    std::vector<cv::Point> points;
+    for(int i=0;i<points3D_outer_.size();i++){
+      double u=0.,v=0.;
+      vpMeterPixelConversion::convertPoint(cam_,points3D_outer_[i].get_x(),points3D_outer_[i].get_y(),u,v);
+      points.push_back(cv::Point(u,v));
+    }
+    cv::Rect rect = cv::boundingRect(points);
+
+    vpImageConvert::convert(evt.I,cvI);
+    cv::Mat subImage = cv::Mat(cvI,rect).clone();
+
+    double timeout = cmd.get_dmx_timeout()*(double)(rect.width*rect.height)/(double)(cvI.cols*cvI.rows);
+    return dmx_detector_.detect(subImage,(unsigned int)timeout,rect.x,rect.y);
   }
 
   void Tracker_:: find_flashcode_pos(input_ready const& evt){
@@ -79,6 +101,7 @@ namespace tracking{
     std::vector<cv::Point> polygon = dmx_detector_.get_polygon();
     double centerX = (double)(polygon[0].x+polygon[1].x+polygon[2].x+polygon[3].x)/4.;
     double centerY = (double)(polygon[0].y+polygon[1].y+polygon[2].y+polygon[3].y)/4.;
+    vpPixelMeterConversion::convertPoint(cam_, flashcode_center_, centerX, centerY);
 
     for(int i=0;i<f_.size();i++){
       double x=0, y=0;
@@ -182,6 +205,10 @@ namespace tracking{
     I_ = _I = &(evt.I);
     vpImageConvert::convert(evt.I,Igray_);
     tracker_.getPose(cMo_); // get the pose
+    for(int i=0;i<4;i++){
+      points3D_outer_[i].project(cMo_);
+      points3D_inner_[i].project(cMo_);
+    }
   }
 
 }

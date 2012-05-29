@@ -30,8 +30,9 @@ namespace tracking{
         }
     };
 
-    struct DetectFlashcode : public msm::front::state<>
+    struct DetectFlashcodeGeneric : public msm::front::state<>
     {
+        virtual vpColor getColor() = 0;
         template <class Event, class Fsm>
         void on_entry(Event const&, Fsm&)
         {
@@ -59,7 +60,7 @@ namespace tracking{
               i!=lines.end();
               i++
           ){
-            vpDisplay::displayLine(evt.I,vpImagePoint(i->first.y,i->first.x),vpImagePoint(i->second.y,i->second.x),vpColor::green,2);
+            vpDisplay::displayLine(evt.I,vpImagePoint(i->first.y,i->first.x),vpImagePoint(i->second.y,i->second.x),getColor(),2);
           }
           vpDisplay::displayCharString(evt.I,corner0,"1",vpColor::blue);
           vpDisplay::displayCharString(evt.I,corner1,"2",vpColor::yellow);
@@ -67,6 +68,13 @@ namespace tracking{
           vpDisplay::displayCharString(evt.I,corner3,"4",vpColor::darkRed);
           vpDisplay::flush(evt.I);
         }
+    };
+
+    struct DetectFlashcode: public DetectFlashcodeGeneric {
+      vpColor getColor(){ return vpColor::green; }
+    };
+    struct ReDetectFlashcode: public DetectFlashcodeGeneric {
+      vpColor getColor(){ return vpColor::orange; }
     };
 
     struct DetectModel : public msm::front::state<>

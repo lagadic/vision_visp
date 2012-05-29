@@ -13,7 +13,7 @@ namespace datamatrix{
     std::string message_;
   public:
     Detector();
-    bool detect(cv::Mat& image, int timeout=1000);
+    bool detect(cv::Mat& image, int timeout=1000, unsigned int offsetx = 0, unsigned int offsety = 0);
     std::vector<std::pair<cv::Point,cv::Point> >& get_lines();
     std::string& get_message();
     std::vector<cv::Point>& get_polygon();

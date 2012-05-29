@@ -5,7 +5,7 @@ namespace datamatrix{
   Detector::Detector(){
   }
 
-  bool Detector::detect(cv::Mat& image, int timeout){
+  bool Detector::detect(cv::Mat& image, int timeout, unsigned int offsetx, unsigned int offsety){
     bool detected = false;
     lines_.clear();
     message_.clear();
@@ -41,33 +41,33 @@ namespace datamatrix{
       dmtxMatrix3VMultiplyBy(&p10, reg->fit2raw);
       dmtxMatrix3VMultiplyBy(&p11, reg->fit2raw);
       dmtxMatrix3VMultiplyBy(&p01, reg->fit2raw);
-      polygon_.push_back(cv::Point(p00.X,image.rows-p00.Y));
-      polygon_.push_back(cv::Point(p10.X,image.rows-p10.Y));
-      polygon_.push_back(cv::Point(p11.X,image.rows-p11.Y));
-      polygon_.push_back(cv::Point(p01.X,image.rows-p01.Y));
+      polygon_.push_back(cv::Point(p00.X + offsetx,image.rows-p00.Y + offsety));
+      polygon_.push_back(cv::Point(p10.X + offsetx,image.rows-p10.Y + offsety));
+      polygon_.push_back(cv::Point(p11.X + offsetx,image.rows-p11.Y + offsety));
+      polygon_.push_back(cv::Point(p01.X + offsetx,image.rows-p01.Y + offsety));
 
       lines_.push_back(
 		       std::pair<cv::Point,cv::Point>(
-						      cv::Point(p00.X,image.rows-p00.Y),
-						      cv::Point(p10.X,image.rows-p10.Y)
+						      cv::Point(p00.X + offsetx,image.rows-p00.Y + offsety),
+						      cv::Point(p10.X + offsetx,image.rows-p10.Y + offsety)
 						      )
 		       );
       lines_.push_back(
                              std::pair<cv::Point,cv::Point>(
-                                                            cv::Point(p10.X,image.rows-p10.Y),
-                                                            cv::Point(p11.X,image.rows-p11.Y)
+                                                            cv::Point(p10.X + offsetx,image.rows-p10.Y + offsety),
+                                                            cv::Point(p11.X + offsetx,image.rows-p11.Y + offsety)
                                                             )
                              );
       lines_.push_back(
                              std::pair<cv::Point,cv::Point>(
-                                                            cv::Point(p11.X,image.rows-p11.Y),
-                                                            cv::Point(p01.X,image.rows-p01.Y)
+                                                            cv::Point(p11.X + offsetx,image.rows-p11.Y + offsety),
+                                                            cv::Point(p01.X + offsetx,image.rows-p01.Y + offsety)
                                                             )
                              );
       lines_.push_back(
                              std::pair<cv::Point,cv::Point>(
-                                                            cv::Point(p01.X,image.rows-p01.Y),
-                                                            cv::Point(p00.X,image.rows-p00.Y)
+                                                            cv::Point(p01.X + offsetx,image.rows-p01.Y + offsety),
+                                                            cv::Point(p00.X + offsetx,image.rows-p00.Y + offsety)
                                                             )
                              );
       detected = true;
@@ -81,7 +81,7 @@ namespace datamatrix{
       
     dmtxDecodeDestroy(&dec);
     dmtxImageDestroy(&img);
-
+    std::cout << "Detected:" << detected << std::endl;
     return detected;
   }
 
