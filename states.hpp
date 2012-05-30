@@ -9,10 +9,12 @@
 #include <visp/vpRGBa.h>
 #include <visp/vpMeterPixelConversion.h>
 #include <visp/vpPlot.h>
+#include <visp/vpRect.h>
 #include <visp/vpDisplay.h>
 #include <vector>
 #include <cassert>
 #include <fstream>
+
 
 namespace msm = boost::msm;
 
@@ -44,6 +46,7 @@ namespace tracking{
         {
           std::cout <<"leaving: DetectFlashcode" << std::endl;
           vpDisplay::display(evt.I);
+          vpDisplay::displayRectangle(evt.I,fsm.template get_tracking_box< vpRect > (),getColor(),false,2);
           std::vector<cv::Point>& polygon = fsm.get_dmx_detector().get_polygon();
           if(polygon.size()==0){
             vpDisplay::displayCharString(evt.I,vpImagePoint(0,0),"TRACKING LOST",vpColor::red);
@@ -66,6 +69,7 @@ namespace tracking{
           vpDisplay::displayCharString(evt.I,corner1,"2",vpColor::yellow);
           vpDisplay::displayCharString(evt.I,corner2,"3",vpColor::cyan);
           vpDisplay::displayCharString(evt.I,corner3,"4",vpColor::darkRed);
+
           vpDisplay::flush(evt.I);
         }
     };

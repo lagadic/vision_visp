@@ -9,6 +9,7 @@
 #include <visp/vpMeterPixelConversion.h>
 #include <visp/vpTrackingException.h>
 #include <visp/vpImageIo.h>
+#include <visp/vpRect.h>
 
 namespace tracking{
   Tracker_:: Tracker_(CmdLine& cmd) : cmd(cmd),iter_(0),flashcode_center_(640/2,480/2){
@@ -33,12 +34,15 @@ namespace tracking{
   datamatrix::Detector& Tracker_:: get_dmx_detector(){
     return dmx_detector_;
   }
+
   vpMbEdgeTracker& Tracker_:: get_mbt(){
     return tracker_;
   }
+
   std::vector<vpPoint>& Tracker_:: get_points3D_inner(){
     return points3D_inner_;
   }
+
   std::vector<vpPoint>& Tracker_:: get_points3D_outer(){
     return points3D_outer_;
 
@@ -59,6 +63,16 @@ namespace tracking{
     return cmd;
   }
 
+  template<>
+  const cv::Rect& Tracker_:: get_tracking_box<cv::Rect>(){
+    return cvTrackingBox_;
+  }
+
+  template<>
+  const vpRect& Tracker_:: get_tracking_box<vpRect>(){
+    return vpTrackingBox_;
+  }
+
   bool Tracker_:: input_selected(input_ready const& evt){
     return vpDisplay::getClick(evt.I,false);
   }
@@ -77,22 +91,16 @@ namespace tracking{
 
   /*
    * Detect flashcode in region delimited by the outer points of the model
+   * The timeout is the default timeout times the surface ratio
    */
   bool Tracker_:: flashcode_redetected(input_ready const& evt){
     cv::Mat cvI;
-    std::vector<cv::Point> points;
-    for(int i=0;i<points3D_outer_.size();i++){
-      double u=0.,v=0.;
-      vpMeterPixelConversion::convertPoint(cam_,points3D_outer_[i].get_x(),points3D_outer_[i].get_y(),u,v);
-      points.push_back(cv::Point(u,v));
-    }
-    cv::Rect rect = cv::boundingRect(points);
 
     vpImageConvert::convert(evt.I,cvI);
-    cv::Mat subImage = cv::Mat(cvI,rect).clone();
+    cv::Mat subImage = cv::Mat(cvI,get_tracking_box<cv::Rect>()).clone();
 
-    double timeout = cmd.get_dmx_timeout()*(double)(rect.width*rect.height)/(double)(cvI.cols*cvI.rows);
-    return dmx_detector_.detect(subImage,(unsigned int)timeout,rect.x,rect.y);
+    double timeout = cmd.get_dmx_timeout()*(double)(get_tracking_box<cv::Rect>().width*get_tracking_box<cv::Rect>().height)/(double)(cvI.cols*cvI.rows);
+    return dmx_detector_.detect(subImage,(unsigned int)timeout,get_tracking_box<cv::Rect>().x,get_tracking_box<cv::Rect>().y);
   }
 
   void Tracker_:: find_flashcode_pos(input_ready const& evt){
@@ -176,11 +184,11 @@ namespace tracking{
 
       }
       if(cmd.using_var_limit())
-        for(int i=0;i<6;i++)
+        for(int i=0; i<6; i++)
           if(mat[i][i]>cmd.get_var_limit())
             return false;
       if(cmd.using_hinkley())
-        for(int i=0;i<6;i++){
+        for(int i=0; i<6; i++){
           if(hink_[i].testDownUpwardJump(mat[i][i]) != vpHinkley::noJump){
             varfile_ << mat[i][i] << "\t";
             if(cmd.get_verbose())
@@ -201,14 +209,20 @@ namespace tracking{
   }
 
   void Tracker_:: track_model(input_ready const& evt){
-
+    std::vector<cv::Point> points;
     I_ = _I = &(evt.I);
     vpImageConvert::convert(evt.I,Igray_);
     tracker_.getPose(cMo_); // get the pose
     for(int i=0;i<4;i++){
       points3D_outer_[i].project(cMo_);
       points3D_inner_[i].project(cMo_);
+
+      double u=0.,v=0.;
+      vpMeterPixelConversion::convertPoint(cam_,points3D_outer_[i].get_x(),points3D_outer_[i].get_y(),u,v);
+      points.push_back(cv::Point(u,v));
     }
+    cvTrackingBox_ = cv::boundingRect(points);
+    vpTrackingBox_.setRect(cvTrackingBox_.x,cvTrackingBox_.y,cvTrackingBox_.width,cvTrackingBox_.height);
   }
 
 }

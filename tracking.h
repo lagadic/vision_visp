@@ -57,6 +57,8 @@ namespace tracking{
     std::vector<vpPoint> points3D_inner_;
     std::vector<vpPoint> points3D_outer_;
     std::vector<vpPoint> f_;
+    vpRect vpTrackingBox_;
+    cv::Rect cvTrackingBox_;
 
   public:
     //getters to access useful members
@@ -65,6 +67,8 @@ namespace tracking{
     std::vector<vpPoint>& get_points3D_inner();
     std::vector<vpPoint>& get_points3D_outer();
     std::vector<vpPoint>& get_flashcode();
+    template<class T>
+    const T& get_tracking_box();
     vpImage<vpRGBa>& get_I();
     vpCameraParameters& get_cam();
     CmdLine& get_cmd();
