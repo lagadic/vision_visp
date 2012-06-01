@@ -159,6 +159,7 @@ namespace tracking{
         fsm.get_mbt().getPose(cMo);
         vpDisplay::display(evt.I);
         fsm.get_mbt().display(evt.I, cMo, fsm.get_cam(), vpColor::red, 1);// display the model at the computed pose.
+        vpDisplay::displayFrame(evt.I,cMo,fsm.get_cam(),.3,vpColor::none,2);
         vpDisplay::flush(evt.I);
 
         vpMatrix mat = fsm.get_mbt().getCovarianceMatrix();

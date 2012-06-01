@@ -29,7 +29,9 @@ General options:
   -I [ --single-image ] arg             load this single image (relative to 
                                         data dir)
   -P [ --pattern-name ] arg (=pattern)  name of xml,init and wrl files
-  -f [ --showfps ]                      show framerate
+  -r [ --detector-type ] arg (=dtmx)    Type of your detector that will be used
+                                        for initialisation/recovery. zbar for 
+                                        QRcodes and more, dtmx for flashcodes.
   -v [ --verbose ]                      show states of the tracker
   -T [ --dmx-detector-timeout ] arg (=1000)
                                         timeout for datamatrix detection in ms
@@ -56,6 +58,7 @@ Configuration:
                                         projection.
   -H [ --hinkley-range ] arg            pair of alpha, delta values describing 
                                         the two hinkley tresholds
+
 
 A typical command line is something line:
 - To track from camera:  
