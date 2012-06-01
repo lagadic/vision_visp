@@ -27,6 +27,10 @@ class CmdLine{
   std::vector<vpPoint> inner_points_3D_;
   std::vector<vpPoint> outer_points_3D_;
  public:
+  enum DETECTOR_TYPE{
+    DTMX, ZBAR
+  };
+
   CmdLine(int argc,char**argv);
 
   bool show_plot();
@@ -84,5 +88,7 @@ class CmdLine{
   std::vector<vpPoint>& get_flashcode_points_3D();
   std::vector<vpPoint>& get_inner_points_3D();
   std::vector<vpPoint>& get_outer_points_3D();
+
+  DETECTOR_TYPE get_detector_type();
 };
 #endif

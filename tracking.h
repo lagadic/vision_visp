@@ -42,7 +42,7 @@ namespace tracking{
     CmdLine cmd;
     int iter_;
     std::ofstream varfile_;
-    detectors::DetectorBase* dmx_detector_;
+    detectors::DetectorBase* detector_;
     typedef boost::array<vpHinkley,6> hinkley_array_t;
     hinkley_array_t hink_;
 
@@ -62,7 +62,7 @@ namespace tracking{
 
   public:
     //getters to access useful members
-    detectors::DetectorBase& get_dmx_detector();
+    detectors::DetectorBase& get_detector();
     vpMbEdgeTracker& get_mbt();
     std::vector<vpPoint>& get_points3D_inner();
     std::vector<vpPoint>& get_points3D_outer();

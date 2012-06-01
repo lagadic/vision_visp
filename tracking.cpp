@@ -12,11 +12,12 @@
 #include <visp/vpRect.h>
 
 namespace tracking{
+
   Tracker_:: Tracker_(CmdLine& cmd, detectors::DetectorBase* detector) :
       cmd(cmd),
       iter_(0),
       flashcode_center_(640/2,480/2),
-      dmx_detector_(detector){
+      detector_(detector){
     std::cout << "starting tracker" << std::endl;
     points3D_inner_ = cmd.get_inner_points_3D();
     points3D_outer_ = cmd.get_outer_points_3D();
@@ -35,8 +36,8 @@ namespace tracking{
     cam_.initPersProjWithDistortion(543.1594454,539.1300717,320.1025306,212.8181022,0.01488495076,-0.01484690262);
   }
 
-  detectors::DetectorBase& Tracker_:: get_dmx_detector(){
-    return *dmx_detector_;
+  detectors::DetectorBase& Tracker_:: get_detector(){
+    return *detector_;
   }
 
   vpMbEdgeTracker& Tracker_:: get_mbt(){
@@ -90,7 +91,7 @@ namespace tracking{
     cv::Mat cvI;
     vpImageConvert::convert(evt.I,cvI);
 
-    return dmx_detector_->detect(cvI,cmd.get_dmx_timeout(),0,0);
+    return detector_->detect(cvI,cmd.get_dmx_timeout(),0,0);
   }
 
   /*
@@ -104,11 +105,11 @@ namespace tracking{
     cv::Mat subImage = cv::Mat(cvI,get_tracking_box<cv::Rect>()).clone();
 
     double timeout = cmd.get_dmx_timeout()*(double)(get_tracking_box<cv::Rect>().width*get_tracking_box<cv::Rect>().height)/(double)(cvI.cols*cvI.rows);
-    return dmx_detector_->detect(subImage,(unsigned int)timeout,get_tracking_box<cv::Rect>().x,get_tracking_box<cv::Rect>().y);
+    return detector_->detect(subImage,(unsigned int)timeout,get_tracking_box<cv::Rect>().x,get_tracking_box<cv::Rect>().y);
   }
 
   void Tracker_:: find_flashcode_pos(input_ready const& evt){
-    std::vector<cv::Point> polygon = dmx_detector_->get_polygon();
+    std::vector<cv::Point> polygon = detector_->get_polygon();
     double centerX = (double)(polygon[0].x+polygon[1].x+polygon[2].x+polygon[3].x)/4.;
     double centerY = (double)(polygon[0].y+polygon[1].y+polygon[2].y+polygon[3].y)/4.;
     vpPixelMeterConversion::convertPoint(cam_, flashcode_center_, centerX, centerY);

@@ -14,8 +14,7 @@ namespace qrcode{
     polygon_.clear();
 
     scanner_.set_config(zbar::ZBAR_NONE, zbar::ZBAR_CFG_ENABLE, 1);
-        // obtain image data
-    int width = image.cols;   // extract dimensions
+    int width = image.cols;
     int height = image.rows;
 
     cv::Mat gray_image;

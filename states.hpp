@@ -47,7 +47,7 @@ namespace tracking{
           std::cout <<"leaving: DetectFlashcode" << std::endl;
           vpDisplay::display(evt.I);
           vpDisplay::displayRectangle(evt.I,fsm.template get_tracking_box< vpRect > (),getColor(),false,2);
-          std::vector<cv::Point>& polygon = fsm.get_dmx_detector().get_polygon();
+          std::vector<cv::Point>& polygon = fsm.get_detector().get_polygon();
           if(polygon.size()==0){
             vpDisplay::displayCharString(evt.I,vpImagePoint(0,0),"TRACKING LOST",vpColor::red);
             return;
@@ -58,7 +58,7 @@ namespace tracking{
           const vpImagePoint corner2(polygon[2].y,polygon[2].x);
           const vpImagePoint corner3(polygon[3].y,polygon[3].x);
 
-          std::vector<std::pair<cv::Point,cv::Point> >& lines = fsm.get_dmx_detector().get_lines();
+          std::vector<std::pair<cv::Point,cv::Point> >& lines = fsm.get_detector().get_lines();
           for(std::vector<std::pair<cv::Point,cv::Point> >::iterator i = lines.begin();
               i!=lines.end();
               i++

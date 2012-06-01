@@ -82,7 +82,6 @@ namespace datamatrix{
       
     dmtxDecodeDestroy(&dec);
     dmtxImageDestroy(&img);
-    std::cout << "Detected:" << detected << std::endl;
     return detected;
   }
 }

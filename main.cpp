@@ -62,7 +62,11 @@ int main(int argc, char**argv)
   vpDisplayX* d = new vpDisplayX();
   d->init(I);
   //init hybrid tracker
-  detectors::qrcode::Detector* detector = new detectors::qrcode::Detector;
+  detectors::DetectorBase* detector = NULL;
+  if (cmd.get_detector_type() == CmdLine::ZBAR)
+    detector = new detectors::qrcode::Detector;
+  else if(cmd.get_detector_type() == CmdLine::DTMX)
+    detector = new detectors::datamatrix::Detector;
   tracking::Tracker t(cmd,detector);
 
   t.start(); //start state machine

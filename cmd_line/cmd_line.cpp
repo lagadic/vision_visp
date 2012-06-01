@@ -15,7 +15,8 @@ CmdLine:: CmdLine(int argc,char**argv) : should_exit_(false) {
       ("data-directory,D", po::value<std::string>(&data_dir_)->default_value("./data"),"directory from which to load images")
       ("single-image,I", po::value<std::string>(&single_image_name_),"load this single image (relative to data dir)")
       ("pattern-name,P", po::value<std::string>(&pattern_name_)->default_value("pattern"),"name of xml,init and wrl files")
-      ("showfps,f", "show framerate")
+      /*("showfps,f", "show framerate")*/
+      ("detector-type,r", po::value<std::string>()->default_value("dtmx"),"Type of your detector that will be used for initialisation/recovery. zbar for QRcodes and more, dtmx for flashcodes.")
       ("verbose,v", "show states of the tracker")
       ("dmx-detector-timeout,T", po::value<int>(&dmx_timeout_)->default_value(1000), "timeout for datamatrix detection in ms")
       ("config-file,c", po::value<std::string>(&config_file)->default_value("./data/config.cfg"), "config file for the program")
@@ -201,4 +202,11 @@ std::vector<vpPoint>& CmdLine:: get_inner_points_3D(){
 
 std::vector<vpPoint>& CmdLine:: get_outer_points_3D(){
   return outer_points_3D_;
+}
+
+CmdLine::DETECTOR_TYPE CmdLine:: get_detector_type(){
+  if(vm_["detector-type"].as<std::string>()=="zbar")
+    return CmdLine::ZBAR;
+  else
+    return CmdLine::DTMX;
 }
