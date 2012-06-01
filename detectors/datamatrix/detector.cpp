@@ -1,6 +1,7 @@
 #include "detector.h"
 #include <dmtx.h>
 
+namespace detectors{
 namespace datamatrix{
   Detector::Detector(){
   }
@@ -47,11 +48,11 @@ namespace datamatrix{
       polygon_.push_back(cv::Point(p01.X + offsetx,image.rows-p01.Y + offsety));
 
       lines_.push_back(
-		       std::pair<cv::Point,cv::Point>(
-						      cv::Point(p00.X + offsetx,image.rows-p00.Y + offsety),
-						      cv::Point(p10.X + offsetx,image.rows-p10.Y + offsety)
-						      )
-		       );
+                       std::pair<cv::Point,cv::Point>(
+                                                      cv::Point(p00.X + offsetx,image.rows-p00.Y + offsety),
+                                                      cv::Point(p10.X + offsetx,image.rows-p10.Y + offsety)
+                                                      )
+                       );
       lines_.push_back(
                              std::pair<cv::Point,cv::Point>(
                                                             cv::Point(p10.X + offsetx,image.rows-p10.Y + offsety),
@@ -74,7 +75,7 @@ namespace datamatrix{
       msg = dmtxDecodeMatrixRegion(dec, reg, DmtxUndefined);
       if(msg != NULL) {
         message_ = (const char*)msg->output;
-	dmtxMessageDestroy(&msg);
+        dmtxMessageDestroy(&msg);
       }
       dmtxRegionDestroy(&reg);
     }
@@ -84,17 +85,5 @@ namespace datamatrix{
     std::cout << "Detected:" << detected << std::endl;
     return detected;
   }
-
-  std::vector<std::pair<cv::Point,cv::Point> >& Detector:: get_lines(){
-    return lines_;
-  }
-
-  std::string& Detector:: get_message(){
-    return message_;
-  }
-
-  std::vector<cv::Point>& Detector:: get_polygon(){
-    return polygon_;
-  }
-
+}
 }

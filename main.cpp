@@ -10,7 +10,6 @@
 #include <iostream>
 #include <vector>
 #include "cmd_line/cmd_line.h"
-#include "datamatrix/detector.h"
 #include <visp/vpImageConvert.h>
 #include <visp/vpImagePoint.h>
 #include <visp/vpImageTools.h>
@@ -20,6 +19,8 @@
 #include <visp/vpMeterPixelConversion.h>
 #include "tracking.h"
 #include <visp/vpDisplayX.h>
+#include "detectors/datamatrix/detector.h"
+#include "detectors/qrcode/detector.h"
 
 int main(int argc, char**argv)
 {
@@ -61,7 +62,8 @@ int main(int argc, char**argv)
   vpDisplayX* d = new vpDisplayX();
   d->init(I);
   //init hybrid tracker
-  tracking::Tracker t(cmd);
+  detectors::qrcode::Detector* detector = new detectors::qrcode::Detector;
+  tracking::Tracker t(cmd,detector);
 
   t.start(); //start state machine
 

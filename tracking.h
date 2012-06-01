@@ -20,7 +20,7 @@
 #include <fstream>
 
 #include "cmd_line/cmd_line.h"
-#include "datamatrix/detector.h"
+#include "detectors/detector_base.h"
 #include "states.hpp"
 
 namespace msm = boost::msm;
@@ -42,7 +42,7 @@ namespace tracking{
     CmdLine cmd;
     int iter_;
     std::ofstream varfile_;
-    datamatrix::Detector dmx_detector_;
+    detectors::DetectorBase* dmx_detector_;
     typedef boost::array<vpHinkley,6> hinkley_array_t;
     hinkley_array_t hink_;
 
@@ -62,7 +62,7 @@ namespace tracking{
 
   public:
     //getters to access useful members
-    datamatrix::Detector& get_dmx_detector();
+    detectors::DetectorBase& get_dmx_detector();
     vpMbEdgeTracker& get_mbt();
     std::vector<vpPoint>& get_points3D_inner();
     std::vector<vpPoint>& get_points3D_outer();
@@ -73,7 +73,7 @@ namespace tracking{
     vpCameraParameters& get_cam();
     CmdLine& get_cmd();
 
-    Tracker_(CmdLine& cmd);
+    Tracker_(CmdLine& cmd, detectors::DetectorBase* detector);
 
     typedef WaitingForInput initial_state;      //initial state of our state machine tracker
     //Guards

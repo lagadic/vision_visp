@@ -78,6 +78,12 @@ namespace tracking{
       vpColor getColor(){ return vpColor::green; }
     };
     struct ReDetectFlashcode: public DetectFlashcodeGeneric {
+      template <class Event, class Fsm>
+      void on_entry(Event const&, Fsm&)
+      {
+        std::cout <<"entering: ReDetectFlashcode" << std::endl;
+
+      }
       vpColor getColor(){ return vpColor::orange; }
     };
 
@@ -123,7 +129,6 @@ namespace tracking{
           fsm.get_mbt().getPose(cMo);
           fsm.get_mbt().display(I, cMo, fsm.get_cam(), vpColor::blue, 1);// display the model at the computed pose.
           vpDisplay::flush(I);
-          //vpDisplay::getClick(I);
         }
     };
 
