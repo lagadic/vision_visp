@@ -1,26 +1,17 @@
-#include "cv.h"
-#include "highgui.h"
-#include <visp/vpMbEdgeTracker.h>
-#include <visp/vpImage.h>
-#include <visp/vpHomogeneousMatrix.h>
-#include <visp/vpCameraParameters.h>
 #include <visp/vpImageIo.h>
 #include <visp/vpVideoReader.h>
 #include <visp/vpV4l2Grabber.h>
 #include <iostream>
 #include <vector>
 #include "cmd_line/cmd_line.h"
-#include <visp/vpImageConvert.h>
-#include <visp/vpImagePoint.h>
-#include <visp/vpImageTools.h>
-#include <visp/vpTrackingException.h>
-#include <visp/vpPose.h>
-#include <visp/vpPixelMeterConversion.h>
-#include <visp/vpMeterPixelConversion.h>
 #include "tracking.h"
 #include <visp/vpDisplayX.h>
 #include "detectors/datamatrix/detector.h"
 #include "detectors/qrcode/detector.h"
+#include <boost/thread/thread.hpp>
+#include "threading.h"
+
+
 
 int main(int argc, char**argv)
 {
@@ -68,8 +59,8 @@ int main(int argc, char**argv)
   else if(cmd.get_detector_type() == CmdLine::DTMX)
     detector = new detectors::datamatrix::Detector;
   tracking::Tracker t(cmd,detector);
-
-  t.start(); //start state machine
+  TrackerThread tt(t);
+  boost::thread bt(tt);
 
   //when we're using a camera, we can have a meaningless video feed
   //until the user selects the first meaningful image
@@ -80,8 +71,11 @@ int main(int argc, char**argv)
     t.process_event(tracking::select_input(I));
 
   while(true){
-    if(cmd.using_video_camera())
+    if(cmd.using_video_camera()){
       video_reader.acquire(I);
+      vpDisplay::display(I);
+      vpDisplay::flush(I);
+    }
     else if(!cmd.using_single_image())
       reader.acquire(I);
     t.process_event(tracking::input_ready(I));

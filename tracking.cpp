@@ -10,6 +10,7 @@
 #include <visp/vpTrackingException.h>
 #include <visp/vpImageIo.h>
 #include <visp/vpRect.h>
+#include <time.h>
 
 namespace tracking{
 
@@ -88,6 +89,7 @@ namespace tracking{
   }
 
   bool Tracker_:: flashcode_detected(input_ready const& evt){
+    clock_t t = clock();
     cv::Mat cvI;
     vpImageConvert::convert(evt.I,cvI);
 
@@ -99,6 +101,7 @@ namespace tracking{
    * The timeout is the default timeout times the surface ratio
    */
   bool Tracker_:: flashcode_redetected(input_ready const& evt){
+    clock_t t = clock();
     cv::Mat cvI;
 
     vpImageConvert::convert(evt.I,cvI);

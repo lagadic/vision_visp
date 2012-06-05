@@ -14,6 +14,8 @@
 #include <vector>
 #include <cassert>
 #include <fstream>
+#include <boost/thread.hpp>
+
 
 
 namespace msm = boost::msm;
@@ -50,6 +52,7 @@ namespace tracking{
           std::vector<cv::Point>& polygon = fsm.get_detector().get_polygon();
           if(polygon.size()==0){
             vpDisplay::displayCharString(evt.I,vpImagePoint(0,0),"TRACKING LOST",vpColor::red);
+            vpDisplay::flush(evt.I);
             return;
           }
 
