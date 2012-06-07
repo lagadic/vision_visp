@@ -19,6 +19,7 @@ class CmdLine{
   std::vector<double> hinkley_range_;
   int dmx_timeout_;
   int mbt_convergence_steps_;
+  int mbt_dynamic_range_;
   std::string data_dir_;
   std::string pattern_name_;
   std::string var_file_;
@@ -50,6 +51,10 @@ class CmdLine{
   int show_fps();
 
   int get_mbt_convergence_steps();
+
+  int get_mbt_dynamic_range();
+
+  bool using_mbt_dynamic_range();
 
   int get_verbose();
 

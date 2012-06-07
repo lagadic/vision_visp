@@ -10,7 +10,7 @@
 #include "detectors/qrcode/detector.h"
 #include <boost/thread/thread.hpp>
 #include "threading.h"
-
+#include "events.h"
 
 
 int main(int argc, char**argv)
@@ -62,6 +62,7 @@ int main(int argc, char**argv)
   TrackerThread tt(t);
   boost::thread bt(tt);
 
+
   //when we're using a camera, we can have a meaningless video feed
   //until the user selects the first meaningful image
   //The first meaningful frame is selected with a click
@@ -70,7 +71,13 @@ int main(int argc, char**argv)
   if(!cmd.using_video_camera())
     t.process_event(tracking::select_input(I));
 
-  while(true){
+
+  for(int iter=0;
+      cmd.using_video_camera() ||
+      cmd.using_single_image() ||
+      (iter<reader.getLastFrameIndex()-1);
+      iter++
+      ){
     if(cmd.using_video_camera()){
       video_reader.acquire(I);
       vpDisplay::display(I);
@@ -80,4 +87,7 @@ int main(int argc, char**argv)
       reader.acquire(I);
     t.process_event(tracking::input_ready(I));
   }
+
+  t.process_event(tracking::finished());
+
 }

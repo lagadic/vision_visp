@@ -1,5 +1,10 @@
 #ifndef __TRACKING_H__
 #define __TRACKING_H__
+#include <boost/accumulators/accumulators.hpp>
+#include <boost/accumulators/statistics.hpp>
+#include <boost/accumulators/statistics/median.hpp>
+#include <boost/accumulators/statistics/p_square_quantile.hpp>
+
 #include <iostream>
 // back-end
 #include <boost/msm/back/state_machine.hpp>
@@ -16,28 +21,33 @@
 #include <visp/vpMbEdgeTracker.h>
 #include <visp/vpDisplay.h>
 #include <visp/vpHinkley.h>
+#include <visp/vpMe.h>
 #include <vector>
 #include <fstream>
 
 #include "cmd_line/cmd_line.h"
 #include "detectors/detector_base.h"
 #include "states.hpp"
+#include "events.h"
 
+using namespace boost::accumulators;
 namespace msm = boost::msm;
 namespace mpl = boost::mpl;
 namespace tracking{
 
-  struct input_ready{
-    input_ready(vpImage<vpRGBa>& I) : I(I){}
-    vpImage<vpRGBa>& I;
-  };
-  struct select_input{
-    select_input(vpImage<vpRGBa>& I) : I(I){}
-    vpImage<vpRGBa>& I;
-  };
-
-
   class Tracker_ : public msm::front::state_machine_def<Tracker_>{
+  public:
+    typedef struct {
+      boost::accumulators::accumulator_set<
+        double,
+        boost::accumulators::stats<
+          boost::accumulators::tag::median(boost::accumulators::with_p_square_quantile),
+          boost::accumulators::tag::max,
+          boost::accumulators::tag::mean
+        >
+      > var,var_x,var_y,var_z,var_wx,var_wy,var_wz;
+
+    } statistics_t;
   private:
     CmdLine cmd;
     int iter_;
@@ -47,6 +57,7 @@ namespace tracking{
     hinkley_array_t hink_;
 
     vpMbEdgeTracker tracker_; // Create a model based tracker.
+    vpMe tracker_me_config_;
     vpImage<vpRGBa> *I_;
     vpImage<vpRGBa> *_I;
     vpHomogeneousMatrix cMo_; // Pose computed using the tracker.
@@ -59,6 +70,9 @@ namespace tracking{
     std::vector<vpPoint> f_;
     vpRect vpTrackingBox_;
     cv::Rect cvTrackingBox_;
+
+
+    statistics_t statistics;
 
   public:
     //getters to access useful members
@@ -76,6 +90,7 @@ namespace tracking{
     Tracker_(CmdLine& cmd, detectors::DetectorBase* detector);
 
     typedef WaitingForInput initial_state;      //initial state of our state machine tracker
+
     //Guards
     bool input_selected(input_ready const& evt);
     bool no_input_selected(input_ready const& evt);
@@ -87,9 +102,10 @@ namespace tracking{
     //actions
     void find_flashcode_pos(input_ready const& evt);
     void track_model(input_ready const& evt);
+    statistics_t& get_statistics();
 
     struct transition_table : mpl::vector<
-      //    Start               Event              Target                  Action                         Guard
+      //    Start               Event              Target                       Action                         Guard
       //   +------------------+--------------------+-----------------------+------------------------------+------------------------------+
       g_row< WaitingForInput  , input_ready        , WaitingForInput       ,                               &Tracker_::no_input_selected    >,
       //   +------------------+--------------------+-----------------------+------------------------------+------------------------------+
@@ -111,7 +127,15 @@ namespace tracking{
       //   +------------------+--------------------+-----------------------+------------------------------+------------------------------+
        _row< ReDetectFlashcode, input_ready        , DetectFlashcode                                        /* default behaviour */        >,
       //   +------------------+--------------------+-----------------------+------------------------------+------------------------------+
-        row< ReDetectFlashcode, input_ready        , DetectModel           , &Tracker_::find_flashcode_pos,&Tracker_::flashcode_redetected >
+        row< ReDetectFlashcode, input_ready        , DetectModel           , &Tracker_::find_flashcode_pos,&Tracker_::flashcode_redetected >,
+      //   +------------------+--------------------+-----------------------+------------------------------+------------------------------+
+       _row< TrackModel       , finished           , Finished                                                                              >,
+      //   +------------------+--------------------+-----------------------+------------------------------+------------------------------+
+       _row< DetectModel      , finished           , Finished                                                                              >,
+      //   +------------------+--------------------+-----------------------+------------------------------+------------------------------+
+       _row< DetectFlashcode  , finished           , Finished                                                                              >,
+      //   +------------------+--------------------+-----------------------+------------------------------+------------------------------+
+       _row< ReDetectFlashcode, finished           , Finished                                                                              >
       //   +------------------+--------------------+-----------------------+------------------------------+------------------------------+
       > {};
 

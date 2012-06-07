@@ -44,6 +44,8 @@ CmdLine:: CmdLine(int argc,char**argv) : should_exit_(false) {
       ("hinkley-range,H",
                         po::value< std::vector<double> >(&hinkley_range_)->multitoken()->composing(),
                         "pair of alpha, delta values describing the two hinkley tresholds")
+      ("mbt-dynamic-range,R", po::value< int >(&mbt_dynamic_range_)->composing(),
+                "Adapt mbt range to depth. The mbt range reference value will be that specified. Reference is taken at Z=0.65m")
       ;
   prog_args.add(general);
   prog_args.add(configuration);
@@ -106,6 +108,14 @@ double CmdLine:: get_hinkley_delta(){
 
 int CmdLine:: get_mbt_convergence_steps(){
   return mbt_convergence_steps_;
+}
+
+int CmdLine:: get_mbt_dynamic_range(){
+  return mbt_dynamic_range_;
+}
+
+bool CmdLine:: using_mbt_dynamic_range(){
+  return vm_.count("mbt-dynamic-range")>0;
 }
 
 double CmdLine:: get_var_limit(){

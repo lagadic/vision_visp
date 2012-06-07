@@ -10,7 +10,6 @@
 #include <visp/vpTrackingException.h>
 #include <visp/vpImageIo.h>
 #include <visp/vpRect.h>
-#include <time.h>
 
 namespace tracking{
 
@@ -24,17 +23,26 @@ namespace tracking{
     points3D_outer_ = cmd.get_outer_points_3D();
     f_ = cmd.get_flashcode_points_3D();
 
+
+    if(cmd.using_var_file()){
+      varfile_.open(cmd.get_var_file().c_str(),std::ios::out);
+      varfile_ << "#These are variances from the model based tracker in gnuplot format" << std::endl;
+      if(cmd.using_hinkley())
+        varfile_ << "iteration\tvar_x\var_y\tvar_z\tvar_wx\tvar_wy\var_wz";
+      if(cmd.using_mbt_dynamic_range())
+        varfile_ << "\tmbt_range";
+      varfile_ << std::endl;
+    }
+
     if(cmd.using_hinkley()){
       if(cmd.get_verbose())
         std::cout << "Initialising hinkley with alpha=" << cmd.get_hinkley_alpha() << " and delta=" << cmd.get_hinkley_delta() << std::endl;
       for(hinkley_array_t::iterator i = hink_.begin();i!=hink_.end();i++)
         i->init(cmd.get_hinkley_alpha(),cmd.get_hinkley_delta());
     }
-    if(cmd.using_var_file()){
-      varfile_.open(cmd.get_var_file().c_str(),std::ios::out);
-      varfile_ << "#These are variances from the model based tracker in gnuplot format" << std::endl;
-    }
+
     cam_.initPersProjWithDistortion(543.1594454,539.1300717,320.1025306,212.8181022,0.01488495076,-0.01484690262);
+    tracker_.getMovingEdge(tracker_me_config_);
   }
 
   detectors::DetectorBase& Tracker_:: get_detector(){
@@ -130,7 +138,6 @@ namespace tracking{
 
 
   bool Tracker_:: model_detected(msm::front::none const&){
-    std::cout << "detect_model" << std::endl;
     tracker_.resetTracker();
     tracker_.loadConfigFile(cmd.get_xml_file().c_str() ); // Load the configuration of the tracker
     tracker_.loadModel(cmd.get_wrl_file().c_str()); // load the 3d model, to read .wrl model the 3d party library coin is required, if coin is not installed .cao file can be used.
@@ -203,9 +210,22 @@ namespace tracking{
           }
         }
 
+      if(cmd.using_var_file() && cmd.using_mbt_dynamic_range())
+        varfile_ << tracker_me_config_.getRange() << "\t";
+
       if(cmd.using_var_file())
         varfile_ << std::endl;
       iter_++;
+
+      for(int i=0;i<6;i++)
+        statistics.var(mat[i][i]);
+
+      statistics.var_x(mat[0][0]);
+      statistics.var_y(mat[1][1]);
+      statistics.var_z(mat[2][2]);
+      statistics.var_wx(mat[3][3]);
+      statistics.var_wy(mat[4][4]);
+      statistics.var_wz(mat[5][5]);
 
     }catch(vpTrackingException& e){
       std::cout << "Tracking lost" << std::endl;
@@ -219,14 +239,26 @@ namespace tracking{
     I_ = _I = &(evt.I);
     vpImageConvert::convert(evt.I,Igray_);
     tracker_.getPose(cMo_); // get the pose
-    for(int i=0;i<4;i++){
+    double avgZ = 0.;
+    for(int i=0;i<points3D_outer_.size();i++){
       points3D_outer_[i].project(cMo_);
       points3D_inner_[i].project(cMo_);
 
       double u=0.,v=0.;
       vpMeterPixelConversion::convertPoint(cam_,points3D_outer_[i].get_x(),points3D_outer_[i].get_y(),u,v);
       points.push_back(cv::Point(u,v));
+
+      avgZ += points3D_outer_[i].get_Z();
     }
+
+    if(cmd.using_mbt_dynamic_range()){
+      avgZ/=points3D_outer_.size();
+      int range = (const unsigned int)((.65*2. - avgZ)*cmd.get_mbt_dynamic_range()/.65);//((.65/avgZ)*cmd.get_mbt_dynamic_range());
+      tracker_.getMovingEdge(tracker_me_config_);
+      tracker_me_config_.setRange(range);
+      tracker_.setMovingEdge(tracker_me_config_);
+    }
+
     cvTrackingBox_ = cv::boundingRect(points);
     int s_x = cvTrackingBox_.x,
         s_y = cvTrackingBox_.y,
@@ -241,6 +273,10 @@ namespace tracking{
     cvTrackingBox_.width = d_x - s_x;
     cvTrackingBox_.height = d_y - s_y;
     vpTrackingBox_.setRect(cvTrackingBox_.x,cvTrackingBox_.y,cvTrackingBox_.width,cvTrackingBox_.height);
+  }
+
+  Tracker_::statistics_t& Tracker_:: get_statistics(){
+    return statistics;
   }
 
 }
