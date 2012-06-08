@@ -67,6 +67,7 @@ namespace tracking{
 
     std::vector<vpPoint> points3D_inner_;
     std::vector<vpPoint> points3D_outer_;
+    std::vector<vpPoint> points3D_middle_;
     std::vector<vpPoint> f_;
     vpRect vpTrackingBox_;
     cv::Rect cvTrackingBox_;
@@ -80,6 +81,7 @@ namespace tracking{
     vpMbEdgeTracker& get_mbt();
     std::vector<vpPoint>& get_points3D_inner();
     std::vector<vpPoint>& get_points3D_outer();
+    std::vector<vpPoint>& get_points3D_middle();
     std::vector<vpPoint>& get_flashcode();
     template<class T>
     const T& get_tracking_box();

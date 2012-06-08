@@ -46,6 +46,8 @@ CmdLine:: CmdLine(int argc,char**argv) : should_exit_(false) {
                         "pair of alpha, delta values describing the two hinkley tresholds")
       ("mbt-dynamic-range,R", po::value< int >(&mbt_dynamic_range_)->composing(),
                 "Adapt mbt range to depth. The mbt range reference value will be that specified. Reference is taken at Z=0.65m")
+      ("ad-hoc-recovery-ratio,y", po::value< double >(&adhoc_recovery_ratio_)->composing(),
+          "use ad-hoc recovery based on the model. The tracker will look for black pixels at ratio*[pattern size] from the center")
       ;
   prog_args.add(general);
   prog_args.add(configuration);
@@ -219,4 +221,12 @@ CmdLine::DETECTOR_TYPE CmdLine:: get_detector_type(){
     return CmdLine::ZBAR;
   else
     return CmdLine::DTMX;
+}
+
+double CmdLine:: get_adhoc_recovery_ratio(){
+  return adhoc_recovery_ratio_;
+}
+
+bool CmdLine:: using_adhoc_recovery_ratio(){
+  return vm_.count("ad-hoc-recovery-ratio")>0;
 }

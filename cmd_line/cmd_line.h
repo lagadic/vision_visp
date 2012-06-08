@@ -16,6 +16,7 @@ class CmdLine{
   double inner_ratio_;
   double outer_ratio_;
   double var_limit_;
+  double adhoc_recovery_ratio_;
   std::vector<double> hinkley_range_;
   int dmx_timeout_;
   int mbt_convergence_steps_;
@@ -85,6 +86,10 @@ class CmdLine{
   bool using_var_file();
 
   double get_var_limit();
+
+  double get_adhoc_recovery_ratio();
+
+  bool using_adhoc_recovery_ratio();
 
   bool using_var_limit();
 
