@@ -45,7 +45,7 @@ namespace tracking{
           boost::accumulators::tag::max,
           boost::accumulators::tag::mean
         >
-      > var,var_x,var_y,var_z,var_wx,var_wy,var_wz;
+      > var,var_x,var_y,var_z,var_wx,var_wy,var_wz,checkpoints;
 
     } statistics_t;
   private:

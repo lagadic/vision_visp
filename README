@@ -58,6 +58,25 @@ Configuration:
                                         projection.
   -H [ --hinkley-range ] arg            pair of alpha, delta values describing 
                                         the two hinkley tresholds
+  -R [ --mbt-dynamic-range ] arg        Adapt mbt range to symbol size. The 
+                                        width of the outer black corner is 
+                                        multiplied by this value to get the mbt
+                                        range. Try 0.2
+  -W [ --ad-hoc-recovery ]              use ad-hoc recovery
+  -y [ --ad-hoc-recovery-ratio ] arg (=0.5)
+                                        use ad-hoc recovery based on the model.
+                                        The tracker will look for black pixels 
+                                        at ratio*[pattern size] from the center
+  -w [ --ad-hoc-recovery-size ] arg (=0.5)
+                                        fraction of the black outer band size. 
+                                        The control points (those that should 
+                                        be black and in that way check tracking
+                                        is still there).
+  -Y [ --ad-hoc-recovery-threshold ] arg (=100)
+                                        Treshold over which the point is 
+                                        considered out of the black area of the
+                                        object
+  -g [ --log-checkpoints ]              log checkpoints in the log file
 
 
 A typical command line is something line:

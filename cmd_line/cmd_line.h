@@ -17,10 +17,12 @@ class CmdLine{
   double outer_ratio_;
   double var_limit_;
   double adhoc_recovery_ratio_;
+  unsigned int adhoc_recovery_treshold_;
   std::vector<double> hinkley_range_;
   int dmx_timeout_;
   int mbt_convergence_steps_;
-  int mbt_dynamic_range_;
+  double mbt_dynamic_range_;
+  double adhoc_recovery_size_;
   std::string data_dir_;
   std::string pattern_name_;
   std::string var_file_;
@@ -53,7 +55,11 @@ class CmdLine{
 
   int get_mbt_convergence_steps();
 
-  int get_mbt_dynamic_range();
+  double get_mbt_dynamic_range();
+
+  double get_adhoc_recovery_size();
+
+  bool log_checkpoints();
 
   bool using_mbt_dynamic_range();
 
@@ -89,7 +95,9 @@ class CmdLine{
 
   double get_adhoc_recovery_ratio();
 
-  bool using_adhoc_recovery_ratio();
+  unsigned int get_adhoc_recovery_treshold();
+
+  bool using_adhoc_recovery();
 
   bool using_var_limit();
 

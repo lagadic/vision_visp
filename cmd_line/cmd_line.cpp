@@ -44,10 +44,16 @@ CmdLine:: CmdLine(int argc,char**argv) : should_exit_(false) {
       ("hinkley-range,H",
                         po::value< std::vector<double> >(&hinkley_range_)->multitoken()->composing(),
                         "pair of alpha, delta values describing the two hinkley tresholds")
-      ("mbt-dynamic-range,R", po::value< int >(&mbt_dynamic_range_)->composing(),
-                "Adapt mbt range to depth. The mbt range reference value will be that specified. Reference is taken at Z=0.65m")
-      ("ad-hoc-recovery-ratio,y", po::value< double >(&adhoc_recovery_ratio_)->composing(),
+      ("mbt-dynamic-range,R", po::value< double >(&mbt_dynamic_range_)->composing(),
+                "Adapt mbt range to symbol size. The width of the outer black corner is multiplied by this value to get the mbt range. Try 0.2")
+      ("ad-hoc-recovery,W", "use ad-hoc recovery")
+      ("ad-hoc-recovery-ratio,y", po::value< double >(&adhoc_recovery_ratio_)->default_value(0.5)->composing(),
           "use ad-hoc recovery based on the model. The tracker will look for black pixels at ratio*[pattern size] from the center")
+      ("ad-hoc-recovery-size,w", po::value< double >(&adhoc_recovery_size_)->default_value(0.5)->composing(),
+                "fraction of the black outer band size. The control points (those that should be black and in that way check tracking is still there).")
+      ("ad-hoc-recovery-threshold,Y", po::value< unsigned int >(&adhoc_recovery_treshold_)->default_value(100)->composing(),
+          "Treshold over which the point is considered out of the black area of the object")
+      ("log-checkpoints,g","log checkpoints in the log file")
       ;
   prog_args.add(general);
   prog_args.add(configuration);
@@ -112,7 +118,7 @@ int CmdLine:: get_mbt_convergence_steps(){
   return mbt_convergence_steps_;
 }
 
-int CmdLine:: get_mbt_dynamic_range(){
+double CmdLine:: get_mbt_dynamic_range(){
   return mbt_dynamic_range_;
 }
 
@@ -223,10 +229,22 @@ CmdLine::DETECTOR_TYPE CmdLine:: get_detector_type(){
     return CmdLine::DTMX;
 }
 
+double CmdLine:: get_adhoc_recovery_size(){
+  return adhoc_recovery_size_;
+}
+
 double CmdLine:: get_adhoc_recovery_ratio(){
   return adhoc_recovery_ratio_;
 }
 
-bool CmdLine:: using_adhoc_recovery_ratio(){
-  return vm_.count("ad-hoc-recovery-ratio")>0;
+unsigned int CmdLine:: get_adhoc_recovery_treshold(){
+  return adhoc_recovery_treshold_;
+}
+
+bool CmdLine:: using_adhoc_recovery(){
+  return vm_.count("ad-hoc-recovery")>0;
+}
+
+bool CmdLine:: log_checkpoints(){
+  return vm_.count("log-checkpoints")>0;
 }

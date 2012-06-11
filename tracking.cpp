@@ -10,6 +10,7 @@
 #include <visp/vpTrackingException.h>
 #include <visp/vpImageIo.h>
 #include <visp/vpRect.h>
+#include "logfilewriter.hpp"
 
 namespace tracking{
 
@@ -21,7 +22,7 @@ namespace tracking{
     std::cout << "starting tracker" << std::endl;
     points3D_inner_ = cmd.get_inner_points_3D();
     points3D_outer_ = cmd.get_outer_points_3D();
-    if(cmd.using_adhoc_recovery_ratio()){
+    if(cmd.using_adhoc_recovery() || cmd.log_checkpoints()){
       for(int i=0;i<points3D_outer_.size();i++){
         vpPoint p;
         p.setWorldCoordinates(
@@ -42,6 +43,8 @@ namespace tracking{
         varfile_ << "iteration\tvar_x\var_y\tvar_z\tvar_wx\tvar_wy\var_wz";
       if(cmd.using_mbt_dynamic_range())
         varfile_ << "\tmbt_range";
+      if(cmd.log_checkpoints())
+        varfile_ << "\tcheckpoint_variance";
       varfile_ << std::endl;
     }
 
@@ -172,7 +175,7 @@ namespace tracking{
     for(int i=0;i<4;i++){
       points3D_outer_[i].project(cMo_);
       points3D_inner_[i].project(cMo_);
-      if(cmd.using_adhoc_recovery_ratio())
+      if(cmd.using_adhoc_recovery() || cmd.log_checkpoints())
         points3D_middle_[i].project(cMo_);
       vpMeterPixelConversion::convertPoint(cam_,points3D_outer_[i].get_x(),points3D_outer_[i].get_y(),model_outer_corner[i]);
       vpMeterPixelConversion::convertPoint(cam_,points3D_inner_[i].get_x(),points3D_inner_[i].get_y(),model_inner_corner[i]);
@@ -202,17 +205,18 @@ namespace tracking{
   }
 
   bool Tracker_:: mbt_success(input_ready const& evt){
+    iter_ = evt.frame;
     try{
+      LogFileWriter writer(varfile_); //the destructor of this class will act as a finally statement
       vpImageConvert::convert(evt.I,Igray_);
       tracker_.track(Igray_); // track the object on this image
-
+      tracker_.getPose(cMo_);
       vpMatrix mat = tracker_.getCovarianceMatrix();
 
       if(cmd.using_var_file()){
-        varfile_ << iter_ << "\t";
+        writer.write(iter_);
         for(int i=0;i<6;i++)
-          varfile_ << mat[i][i] << "\t";
-
+          writer.write(mat[i][i]);
       }
       if(cmd.using_var_limit())
         for(int i=0; i<6; i++)
@@ -221,7 +225,7 @@ namespace tracking{
       if(cmd.using_hinkley())
         for(int i=0; i<6; i++){
           if(hink_[i].testDownUpwardJump(mat[i][i]) != vpHinkley::noJump){
-            varfile_ << mat[i][i] << "\t";
+            writer.write(mat[i][i]);
             if(cmd.get_verbose())
               std::cout << "Hinkley:detected jump!" << std::endl;
             return false;
@@ -229,11 +233,10 @@ namespace tracking{
         }
 
       if(cmd.using_var_file() && cmd.using_mbt_dynamic_range())
-        varfile_ << tracker_me_config_.getRange() << "\t";
+        writer.write(tracker_me_config_.getRange());
 
-      if(cmd.using_var_file())
-        varfile_ << std::endl;
-      iter_++;
+
+
 
       for(int i=0;i<6;i++)
         statistics.var(mat[i][i]);
@@ -245,21 +248,24 @@ namespace tracking{
       statistics.var_wy(mat[4][4]);
       statistics.var_wz(mat[5][5]);
 
-      if(cmd.using_adhoc_recovery_ratio()){
-        for(std::vector<vpPoint>::iterator point3D = points3D_middle_.begin();
-            point3D != points3D_middle_.end();
-            point3D++
-            ){
-          double _u=0.,_v=0.;
-          vpMeterPixelConversion::convertPoint(cam_,point3D->get_x(),point3D->get_y(),_u,_v);
+      if(cmd.using_adhoc_recovery() || cmd.log_checkpoints()){
+        for(int p=0;p<points3D_middle_.size();p++){
+          vpPoint& point3D = points3D_middle_[p];
+
+          double _u=0.,_v=0.,_u_inner=0.,_v_inner=0.;
+          point3D.project(cMo_);
+          vpMeterPixelConversion::convertPoint(cam_,point3D.get_x(),point3D.get_y(),_u,_v);
+          vpMeterPixelConversion::convertPoint(cam_,points3D_inner_[p].get_x(),points3D_inner_[p].get_y(),_u_inner,_v_inner);
+
           boost::accumulators::accumulator_set<
                   unsigned char,
                   boost::accumulators::stats<
                     boost::accumulators::tag::median(boost::accumulators::with_p_square_quantile)
                   >
                 > acc;
-          int region_width=5;
-          int region_height=5;
+
+          int region_width= std::max((int)(std::abs(_u-_u_inner)*cmd.get_adhoc_recovery_size()),1);
+          int region_height=std::max((int)(std::abs(_v-_v_inner)*cmd.get_adhoc_recovery_size()),1);
           int u=(int)_u;
           int v=(int)_v;
           for(int i=std::max(u-region_width,0);
@@ -269,11 +275,17 @@ namespace tracking{
                 j<std::min(v+region_height,(int)evt.I.getHeight());
                 j++){
               acc(Igray_[j][i]);
+              statistics.checkpoints(Igray_[j][i]);
             }
           }
-          if(boost::accumulators::median(acc)>100)
+          double checkpoints_median = boost::accumulators::median(acc);
+          if(cmd.using_var_file() && cmd.log_checkpoints())
+            writer.write(checkpoints_median);
+          if( cmd.using_adhoc_recovery() && (unsigned int)checkpoints_median>cmd.get_adhoc_recovery_treshold() )
             return false;
         }
+
+
       }
     }catch(vpTrackingException& e){
       std::cout << "Tracking lost" << std::endl;
@@ -286,24 +298,27 @@ namespace tracking{
     std::vector<cv::Point> points;
     I_ = _I = &(evt.I);
     vpImageConvert::convert(evt.I,Igray_);
-    tracker_.getPose(cMo_); // get the pose
-    double avgZ = 0.;
+    boost::accumulators::accumulator_set<
+                      double,
+                      boost::accumulators::stats<
+                        boost::accumulators::tag::mean
+                      >
+                    > acc;
     for(int i=0;i<points3D_outer_.size();i++){
       points3D_outer_[i].project(cMo_);
       points3D_inner_[i].project(cMo_);
-      if(cmd.using_adhoc_recovery_ratio())
-        points3D_middle_[i].project(cMo_);
 
-      double u=0.,v=0.;
+      double u=0.,v=0.,u_inner=0.,v_inner=0;
       vpMeterPixelConversion::convertPoint(cam_,points3D_outer_[i].get_x(),points3D_outer_[i].get_y(),u,v);
+      vpMeterPixelConversion::convertPoint(cam_,points3D_inner_[i].get_x(),points3D_inner_[i].get_y(),u_inner,v_inner);
       points.push_back(cv::Point(u,v));
 
-      avgZ += points3D_outer_[i].get_Z();
+      acc(std::abs(u-u_inner));
+      acc(std::abs(v-v_inner));
     }
 
     if(cmd.using_mbt_dynamic_range()){
-      avgZ/=points3D_outer_.size();
-      int range = (const unsigned int)/*((.65*2. - avgZ)*cmd.get_mbt_dynamic_range()/.65);*/((.65/avgZ)*cmd.get_mbt_dynamic_range());
+      int range = (const unsigned int)(boost::accumulators::mean(acc)*cmd.get_mbt_dynamic_range());
       tracker_.getMovingEdge(tracker_me_config_);
       tracker_me_config_.setRange(range);
       tracker_.setMovingEdge(tracker_me_config_);

@@ -85,7 +85,7 @@ int main(int argc, char**argv)
     }
     else if(!cmd.using_single_image())
       reader.acquire(I);
-    t.process_event(tracking::input_ready(I));
+    t.process_event(tracking::input_ready(I,iter));
   }
 
   t.process_event(tracking::finished());

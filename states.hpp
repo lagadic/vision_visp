@@ -224,28 +224,32 @@ namespace tracking{
       vpDisplay::display(evt.I);
       fsm.get_mbt().display(evt.I, cMo, fsm.get_cam(), vpColor::red, 1);// display the model at the computed pose.
       vpDisplay::displayFrame(evt.I,cMo,fsm.get_cam(),.3,vpColor::none,2);
-      if(fsm.get_cmd().using_adhoc_recovery_ratio()){
-        for(std::vector<vpPoint>::iterator point3D = fsm.get_points3D_middle().begin();
-            point3D != fsm.get_points3D_middle().end();
-            point3D++
-            ){
-          double _u=0.,_v=0.;
-          vpMeterPixelConversion::convertPoint(fsm.get_cam(),point3D->get_x(),point3D->get_y(),_u,_v);
+      if(fsm.get_cmd().using_adhoc_recovery()){
+        for(int p=0;p<fsm.get_points3D_middle().size();p++){
+          vpPoint& point3D = fsm.get_points3D_middle()[p];
+          vpPoint& point3D_inner = fsm.get_points3D_inner()[p];
+          double _u=0.,_v=0.,_u_inner=0.,_v_inner=0.;
 
-          int region_width=5;
-          int region_height=5;
+          vpMeterPixelConversion::convertPoint(fsm.get_cam(),point3D.get_x(),point3D.get_y(),_u,_v);
+          vpMeterPixelConversion::convertPoint(fsm.get_cam(),point3D_inner.get_x(),point3D_inner.get_y(),_u_inner,_v_inner);
+          int region_width= std::max((int)(std::abs(_u-_u_inner)*fsm.get_cmd().get_adhoc_recovery_size()),1);
+          int region_height=std::max((int)(std::abs(_v-_v_inner)*fsm.get_cmd().get_adhoc_recovery_size()),1);
+
           int u=(int)_u;
           int v=(int)_v;
-          for(int i=std::max(u-region_width,0);
-              i<std::min(u+region_width,(int)evt.I.getWidth());
-              i++){
-            for(int j=std::max(v-region_height,0);
-                j<std::min(v+region_height,(int)evt.I.getHeight());
-                j++){
-              vpDisplay::displayPoint(evt.I,j,i,vpColor::cyan);
-            }
-          }
-          //std::cout << "median:" << boost::accumulators::median(acc) << std::endl;
+          vpDisplay::displayRectangle(
+              evt.I,
+              vpImagePoint(
+                  std::max(v-region_height,0),
+                  std::max(u-region_width,0)
+              ),
+              vpImagePoint(
+                  std::min(v+region_height,(int)evt.I.getHeight()),
+                  std::min(u+region_width,(int)evt.I.getWidth())
+              ),
+              vpColor::cyan,
+              true
+              );
         }
       }
       vpDisplay::flush(evt.I);
