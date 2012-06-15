@@ -1,3 +1,47 @@
+unchanged:
+--- ./src/tools/io/vpParallelPort.cpp	2012-06-15 14:12:11.489662035 -0700
++++ ./src/tools/io/vpParallelPort.cpp	2012-06-15 14:15:37.697535714 -0700
+@@ -47,6 +47,7 @@
+ #  include <sys/types.h>
+ #  include <sys/stat.h>
+ #  include <fcntl.h>
++#  include <unistd.h>
+ #  include <sys/ioctl.h>
+ 
+ #  include <visp/vpParallelPort.h>
+unchanged:
+--- ./src/tracking/klt/vpKltOpencv.h	2012-06-15 14:12:11.489662035 -0700
++++ ./src/tracking/klt/vpKltOpencv.h	2012-06-15 14:15:37.697535714 -0700
+@@ -62,6 +62,7 @@
+ #if (VISP_HAVE_OPENCV_VERSION >= 0x020101) // Require opencv >= 2.1.1
+ #  include <opencv2/imgproc/imgproc.hpp>
+ #  include <opencv2/video/tracking.hpp>
++#  include <opencv2/legacy/legacy.hpp>
+ #else
+ #  ifndef _EiC
+ #    include "cv.h"
+unchanged:
+--- ./src/robot/real-robot/afma4/vpServolens.cpp	2012-06-15 14:12:07.170125512 -0700
++++ ./src/robot/real-robot/afma4/vpServolens.cpp	2012-06-15 14:13:00.284426422 -0700
+@@ -58,6 +58,7 @@
+ #include <fcntl.h>
+ #include <stdlib.h>
+ #include <string.h>
++#include <unistd.h>
+ 
+ #include <visp/vpServolens.h>
+ #include <visp/vpRobotException.h>
+unchanged:
+--- ./src/tracking/klt/vpKltOpencv.h	2012-06-15 14:12:10.769739280 -0700
++++ ./src/tracking/klt/vpKltOpencv.h	2012-06-15 14:16:01.065028275 -0700
+@@ -61,6 +61,7 @@
+ 
+ #if (VISP_HAVE_OPENCV_VERSION >= 0x020101) // Require opencv >= 2.1.1
+ #  include <opencv2/imgproc/imgproc.hpp>
++#  include <opencv2/legacy/legacy.hpp>
+ #  include <opencv2/video/tracking.hpp>
+ #else
+ #  ifndef _EiC
 diff -r -u ./src/key-point/vpFernClassifier.h ./src/key-point/vpFernClassifier.h
 --- ./src/key-point/vpFernClassifier.h	2011-09-20 16:15:14.000000000 +0200
 +++ ./src/key-point/vpFernClassifier.h	2012-06-01 11:30:38.597237236 +0200
