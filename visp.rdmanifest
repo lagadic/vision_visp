@@ -1,4 +1,4 @@
-uri: 'http://gforge.inria.fr/frs/download.php/29283/ViSP-2.6.1.tar.gz'
+uri: 'https://gforge.inria.fr/frs/download.php/31104/ViSP-2.6.2.tar.gz'
 md5sum: 430b9978d0997d20433667dc8b909a41
 install-script: |
   #!/bin/bash
