@@ -1,12 +1,11 @@
 all: visp
 
-VERSION     = 2.6.1
+VERSION     = 2.6.2
 TARBALL     = build/ViSP-$(VERSION).tar.gz
 TARBALL_URL = \
-http://gforge.inria.fr/frs/download.php/29283/ViSP-$(VERSION).tar.gz
+https://gforge.inria.fr/frs/download.php/31248/ViSP-$(VERSION).tar.gz
 UNPACK_CMD  = tar xfz
 SOURCE_DIR  = build/ViSP-$(VERSION)
-TARBALL_PATCH = patches/visp-fuerte.patch
 MD5SUM_FILE = ViSP-$(VERSION).tar.gz.md5sum
 
 INSTALL_DIR = install
