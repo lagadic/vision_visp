@@ -26,11 +26,6 @@ add_definitions(-DBOOST_FILESYSTEM_VERSION=2)
 # Libraries #
 #############
 
-# Generate names.cpp.
-configure_file(
-  "${CMAKE_SOURCE_DIR}/src/libvisp_tracker/names.cpp.in"
-  "${CMAKE_BINARY_DIR}/src/libvisp_tracker/names.cpp"
-  @ONLY)
 include_directories("${CMAKE_SOURCE_DIR}/src")
 include_directories("${CMAKE_SOURCE_DIR}/src/libvisp_tracker")
 
@@ -42,7 +37,7 @@ rosbuild_add_library(visp_tracker
   src/libvisp_tracker/tracker.cpp
   src/libvisp_tracker/tracker-client.cpp
   src/libvisp_tracker/tracker-viewer.cpp
-  "${CMAKE_BINARY_DIR}/src/libvisp_tracker/names.cpp")
+  src/libvisp_tracker/names.cpp)
 target_link_libraries(visp_tracker visp-2)
 rosbuild_link_boost(visp_tracker
   filesystem system signals regex date_time program_options thread)

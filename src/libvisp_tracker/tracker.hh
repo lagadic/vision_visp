@@ -20,7 +20,6 @@
 # include <visp_tracker/Init.h>
 # include <visp_tracker/MovingEdgeConfig.h>
 # include <visp_tracker/MovingEdgeSites.h>
-# include <visp_tracker/TrackingResult.h>
 
 # include <visp/vpCameraParameters.h>
 # include <visp/vpHomogeneousMatrix.h>

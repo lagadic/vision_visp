@@ -132,7 +132,8 @@ namespace visp_tracker
     cameraInfoSubscriber_.subscribe
       (nodeHandle_, cameraInfoTopic_, queueSize_);
     trackingResultSubscriber_.subscribe
-      (nodeHandle_, visp_tracker::result_topic, queueSize_);
+      (nodeHandle_, visp_tracker::object_position_covariance_topic,
+       queueSize_);
     movingEdgeSitesSubscriber_.subscribe
       (nodeHandle_, visp_tracker::moving_edge_sites_topic, queueSize_);
 
@@ -195,7 +196,7 @@ namespace visp_tracker
 	displayMovingEdgeSites();
 	if (cMo_)
 	  {
-	    tracker_.init(image_, *cMo_);
+	    tracker_.initFromPose(image_, *cMo_);
 	    tracker_.display(image_, *cMo_, cameraParameters_, vpColor::red);
 
 	    ROS_DEBUG_STREAM_THROTTLE(10, "cMo:\n" << *cMo_);
@@ -264,7 +265,7 @@ namespace visp_tracker
   TrackerViewer::callback
   (const sensor_msgs::ImageConstPtr& image,
    const sensor_msgs::CameraInfoConstPtr& info,
-   const visp_tracker::TrackingResult::ConstPtr& trackingResult,
+   const geometry_msgs::PoseWithCovarianceStamped::ConstPtr& trackingResult,
    const visp_tracker::MovingEdgeSites::ConstPtr& sites)
   {
     // Copy image.
@@ -282,13 +283,8 @@ namespace visp_tracker
     sites_ = sites;
 
     // Copy cMo.
-    if (trackingResult->is_tracking)
-      {
-	cMo_ = vpHomogeneousMatrix();
-	transformToVpHomogeneousMatrix(*cMo_, trackingResult->cMo);
-      }
-    else
-      cMo_ = boost::none;
+    cMo_ = vpHomogeneousMatrix();
+    transformToVpHomogeneousMatrix(*cMo_, trackingResult->pose.pose);
   }
 
   void

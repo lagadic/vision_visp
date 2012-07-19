@@ -120,6 +120,25 @@ void transformToVpHomogeneousMatrix(vpHomogeneousMatrix& dst,
 }
 
 void transformToVpHomogeneousMatrix(vpHomogeneousMatrix& dst,
+				    const geometry_msgs::Pose& src)
+{
+  btQuaternion quaternion
+    (src.orientation.x, src.orientation.y, src.orientation.z,
+     src.orientation.w);
+  btMatrix3x3 rotation(quaternion);
+
+  // Copy the rotation component.
+  for(unsigned i = 0; i < 3; ++i)
+    for(unsigned j = 0; j < 3; ++j)
+      dst[i][j] = rotation[i][j];
+
+  // Copy the translation component.
+  dst[0][3] = src.position.x;
+  dst[1][3] = src.position.y;
+  dst[2][3] = src.position.z;
+}
+
+void transformToVpHomogeneousMatrix(vpHomogeneousMatrix& dst,
 				    const tf::Transform& src)
 {
   // Copy the rotation component.

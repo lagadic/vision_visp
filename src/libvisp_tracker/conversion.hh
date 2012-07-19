@@ -53,6 +53,9 @@ void transformToVpHomogeneousMatrix(vpHomogeneousMatrix& dst,
 void transformToVpHomogeneousMatrix(vpHomogeneousMatrix& dst,
 				    const tf::Transform& src);
 
+void transformToVpHomogeneousMatrix(vpHomogeneousMatrix& dst,
+				    const geometry_msgs::Pose& src);
+
 void convertMovingEdgeConfigToVpMe(const visp_tracker::MovingEdgeConfig& config,
 				   vpMe& moving_edge,
 				   vpMbEdgeTracker& tracker);

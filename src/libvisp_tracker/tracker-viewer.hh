@@ -3,6 +3,8 @@
 # include <boost/filesystem/path.hpp>
 # include <boost/optional.hpp>
 
+# include <geometry_msgs/PoseWithCovarianceStamped.h>
+
 # include <image_proc/advertisement_checker.h>
 
 # include <image_transport/image_transport.h>
@@ -16,7 +18,6 @@
 # include <sensor_msgs/CameraInfo.h>
 
 # include <visp_tracker/MovingEdgeSites.h>
-# include <visp_tracker/TrackingResult.h>
 
 # include <visp/vpCameraParameters.h>
 # include <visp/vpImage.h>
@@ -40,7 +41,8 @@ namespace visp_tracker
     /// which are not critical as this is only a viewer.
     typedef message_filters::sync_policies::ApproximateTime<
       sensor_msgs::Image, sensor_msgs::CameraInfo,
-      visp_tracker::TrackingResult, visp_tracker::MovingEdgeSites
+      geometry_msgs::PoseWithCovarianceStamped,
+      visp_tracker::MovingEdgeSites
       > syncPolicy_t;
 
     /// \brief Constructor.
@@ -63,10 +65,12 @@ namespace visp_tracker
     void waitForImage();
 
     /// \brief Callback used to received synchronized data.
-    void callback(const sensor_msgs::ImageConstPtr& imageConst,
-		  const sensor_msgs::CameraInfoConstPtr& infoConst,
-		  const visp_tracker::TrackingResult::ConstPtr& trackingResult,
-		  const visp_tracker::MovingEdgeSites::ConstPtr& sitesConst);
+    void
+    callback
+    (const sensor_msgs::ImageConstPtr& imageConst,
+     const sensor_msgs::CameraInfoConstPtr& infoConst,
+     const geometry_msgs::PoseWithCovarianceStamped::ConstPtr& trackingResult,
+     const visp_tracker::MovingEdgeSites::ConstPtr& sitesConst);
 
     void timerCallback();
 
@@ -129,7 +133,7 @@ namespace visp_tracker
     /// \brief Subscriber to camera information topic.
     message_filters::Subscriber<sensor_msgs::CameraInfo> cameraInfoSubscriber_;
     /// \brief Subscriber to tracking result topic.
-    message_filters::Subscriber<visp_tracker::TrackingResult>
+    message_filters::Subscriber<geometry_msgs::PoseWithCovarianceStamped>
     trackingResultSubscriber_;
     /// \brief Subscriber to moving edge sites topics..
     message_filters::Subscriber<visp_tracker::MovingEdgeSites>

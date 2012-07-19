@@ -6,6 +6,7 @@
 #include <boost/version.hpp>
 
 #include <dynamic_reconfigure/server.h>
+#include <geometry_msgs/PoseWithCovarianceStamped.h>
 #include <image_proc/advertisement_checker.h>
 #include <image_transport/image_transport.h>
 #include <ros/param.h>
@@ -100,11 +101,14 @@ namespace visp_tracker
     // Load the initial cMo.
     transformToVpHomogeneousMatrix(cMo_, req.initial_cMo);
 
+    // Enable covariance matrix.
+    tracker_.setCovarianceComputation(true);
+
     // Try to initialize the tracker.
     ROS_INFO_STREAM("Initializing tracker with cMo:\n" << cMo_);
     try
       {
-	tracker_.init(image_, cMo_);
+	tracker_.initFromPose(image_, cMo_);
 	ROS_INFO("Tracker successfully initialized.");
 
 	movingEdge.print();
@@ -237,8 +241,8 @@ namespace visp_tracker
 
     // Result publisher.
     resultPublisher_ =
-      nodeHandle_.advertise<visp_tracker::TrackingResult>
-      (visp_tracker::result_topic, queueSize_);
+      nodeHandle_.advertise<geometry_msgs::PoseWithCovarianceStamped>
+      (visp_tracker::object_position_covariance_topic, queueSize_);
 
     transformationPublisher_ =
       nodeHandle_.advertise<geometry_msgs::TransformStamped>
@@ -375,7 +379,7 @@ namespace visp_tracker
 	    if (state_ == TRACKING || state_ == LOST)
 	      try
 		{
-		  tracker_.init(image_, cMo_);
+		  tracker_.initFromPose(image_, cMo_);
 		  tracker_.track(image_);
 		  tracker_.getPose(cMo_);
 		}
@@ -405,11 +409,34 @@ namespace visp_tracker
 		// Publish result.
 		if (resultPublisher_.getNumSubscribers	() > 0)
 		  {
-		    visp_tracker::TrackingResultPtr result
-		      (new visp_tracker::TrackingResult);
+		    geometry_msgs::PoseWithCovarianceStampedPtr result
+		      (new geometry_msgs::PoseWithCovarianceStamped);
 		    result->header = header_;
-		    result->is_tracking = true;
-		    result->cMo = transformMsg;
+		    result->pose.pose.position.x =
+		      transformMsg.translation.x;
+		    result->pose.pose.position.y =
+		      transformMsg.translation.y;
+		    result->pose.pose.position.z =
+		      transformMsg.translation.z;
+
+		    result->pose.pose.orientation.x =
+		      transformMsg.rotation.x;
+		    result->pose.pose.orientation.y =
+		      transformMsg.rotation.y;
+		    result->pose.pose.orientation.z =
+		      transformMsg.rotation.z;
+		    result->pose.pose.orientation.w =
+		      transformMsg.rotation.w;
+		    const vpMatrix& covariance =
+		      tracker_.getCovarianceMatrix();
+		    for (unsigned i = 0; i < covariance.getRows(); ++i)
+		      for (unsigned j = 0; j < covariance.getCols(); ++j)
+			{
+			  unsigned idx = i * covariance.getCols() + j;
+			  if (idx >= 36)
+			    continue;
+			  result->pose.covariance[idx] = covariance[i][j];
+			}
 		    resultPublisher_.publish(result);
 		  }
 
@@ -440,22 +467,6 @@ namespace visp_tracker
 		    header_.stamp,
 		    header_.frame_id,
 		    childFrameId_));
-	      }
-	    else if (resultPublisher_.getNumSubscribers	() > 0)
-	      {
-		visp_tracker::TrackingResultPtr result
-		  (new visp_tracker::TrackingResult);
-		result->header = header_;
-		result->is_tracking = false;
-		result->cMo.translation.x = 0.;
-		result->cMo.translation.y = 0.;
-		result->cMo.translation.z = 0.;
-
-		result->cMo.rotation.x = 0.;
-		result->cMo.rotation.y = 0.;
-		result->cMo.rotation.z = 0.;
-		result->cMo.rotation.w = 0.;
-		resultPublisher_.publish(result);
 	      }
 	  }
 	lastHeader = header_;

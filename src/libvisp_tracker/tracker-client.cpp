@@ -12,6 +12,7 @@
 #include <ros/ros.h>
 #include <ros/param.h>
 #include <dynamic_reconfigure/server.h>
+#include <geometry_msgs/PoseWithCovarianceStamped.h>
 #include <image_proc/advertisement_checker.h>
 #include <image_transport/image_transport.h>
 #include <visp_tracker/Init.h>
@@ -210,7 +211,7 @@ namespace visp_tracker
 	      {
 		cMo = loadInitialPose();
 		startFromSavedPose_ = false;
-		tracker_.init(image_, cMo);
+		tracker_.initFromPose(image_, cMo);
 	      }
 	    tracker_.getPose(cMo);
 
@@ -528,7 +529,7 @@ namespace visp_tracker
       if(validatePose(cMo))
         done = true;
     }
-    tracker_.init(image_, cMo);
+    tracker_.initFromPose(image_, cMo);
     saveInitialPose(cMo);
   }
 

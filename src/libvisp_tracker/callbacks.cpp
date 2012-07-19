@@ -69,7 +69,7 @@ void reconfigureCallback(vpMbEdgeTracker& tracker,
       tracker.getPose(cMo);
 
       tracker.setMovingEdge(moving_edge);
-      tracker.init(I, cMo);
+      tracker.initFromPose(I, cMo);
 
       moving_edge.print();
     }
