@@ -66,7 +66,6 @@ namespace visp_tracker
     points_t loadInitializationPoints();
 
     void init();
-    void initClick();
     void initPoint(unsigned& i,
 		   points_t& points,
 		   imagePoints_t& imagePoints,

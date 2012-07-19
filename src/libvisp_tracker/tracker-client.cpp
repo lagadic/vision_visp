@@ -455,7 +455,7 @@ namespace visp_tracker
     ros::Rate loop_rate(200);
     vpImagePoint ip;
     vpMouseButton::vpMouseButtonType button = vpMouseButton::button1;
-    
+
     vpDisplay::display(image_);
     tracker_.display(image_, cMo, cameraParameters_, vpColor::green);
     vpDisplay::displayFrame(image_, cMo, cameraParameters_,0.05, vpColor::green);
@@ -463,7 +463,7 @@ namespace visp_tracker
         "left click to validate, right click to modify initial pose",
         vpColor::red);
     vpDisplay::flush(image_);
-      
+
     do
     {
       ros::spinOnce();
@@ -472,10 +472,10 @@ namespace visp_tracker
         return false;
     }
     while(ros::ok() && !vpDisplay::getClick(image_, ip, button, false));
-    
+
     if(button == vpMouseButton::button1)
       return true;
-    
+
     return false;
   }
 
@@ -497,15 +497,15 @@ namespace visp_tracker
       tracker_.initFromPose(image_, cMo);
       return;
     }
-    
+
     points_t points = loadInitializationPoints();
     imagePoints_t imagePoints;
-    
+
     bool done = false;
     while(!done){
       vpDisplay::display(image_);
       vpDisplay::flush(image_);
-    
+
       imagePoints.clear();
       for(unsigned i = 0; i < points.size(); ++i)
       {
@@ -517,12 +517,12 @@ namespace visp_tracker
             return;
         }
         while(ros::ok() && !vpDisplay::getClick(image_, ip, button, false));
-        
+
         imagePoints.push_back(ip);
         vpDisplay::displayCross(image_, imagePoints.back(), 5, vpColor::green);
         vpDisplay::flush(image_);
       }
-      
+
       tracker_.initFromPoints(image_,imagePoints,points);
       tracker_.getPose(cMo);
       if(validatePose(cMo))
@@ -531,7 +531,7 @@ namespace visp_tracker
     tracker_.init(image_, cMo);
     saveInitialPose(cMo);
   }
-  
+
   void
   TrackerClient::initPoint(unsigned& i,
 			   points_t& points,
@@ -570,100 +570,6 @@ namespace visp_tracker
     points[i].set_x(x);
     points[i].set_y(y);
     pose.addPoint(points[i]);
-  }
-
-  void
-  TrackerClient::initClick()
-  {
-    ros::Rate loop_rate(200);
-    vpHomogeneousMatrix cMo;
-    vpImagePoint point (10, 10);
-
-    cMo = loadInitialPose();
-
-    // Show last cMo.
-    vpImagePoint ip;
-    vpMouseButton::vpMouseButtonType button = vpMouseButton::button1;
-    do
-      {
-	vpDisplay::display(image_);
-	tracker_.display(image_, cMo, cameraParameters_, vpColor::green);
-	vpDisplay::displayFrame(image_, cMo, cameraParameters_,
-				0.05, vpColor::green);
-	vpDisplay::displayCharString
-	  (image_, 15, 10,
-	   "left click to validate, right click to modify initial pose",
-	   vpColor::red);
-	vpDisplay::flush(image_);
-	ros::spinOnce();
-	loop_rate.sleep();
-	if (exiting())
-	  return;
-      }
-    while(!vpDisplay::getClick(image_, ip, button, false));
-
-    if(button == vpMouseButton::button1)
-      {
-	tracker_.init(image_, cMo);
-	return;
-      }
-
-    points_t points = loadInitializationPoints();
-    imagePoints_t imagePoints;
-
-    vpPose pose;
-    pose.clearPoint();
-    bool done = false;
-    while (!done)
-      {
-	// Initialize points.
-	for(unsigned i = 0; i < points.size(); ++i)
-	  {
-	    initPoint(i, points, imagePoints, loop_rate, pose);
-	    if (exiting())
-	      return;
-	  }
-
-	// Compute initial pose.
-	vpHomogeneousMatrix cMo1, cMo2;
-	pose.computePose(vpPose::LAGRANGE, cMo1);
-	double d1 = pose.computeResidual(cMo1);
-	pose.computePose(vpPose::DEMENTHON, cMo2);
-	double d2 = pose.computeResidual(cMo2);
-
-	if(d1 < d2)
-	  cMo = cMo1;
-	else
-	  cMo = cMo2;
-	pose.computePose(vpPose::VIRTUAL_VS, cMo);
-
-	// Confirm result.
-	do
-	  {
-	    vpDisplay::display(image_);
-	    tracker_.display(image_, cMo, cameraParameters_, vpColor::green);
-	    vpDisplay::displayCharString
-	      (image_, 15, 10,
-	       "left click to validate, right click to re initialize object",
-	       vpColor::red);
-	    vpDisplay::flush(image_);
-	    ros::spinOnce();
-	    loop_rate.sleep();
-	    if (exiting())
-	      return;
-	  }
-	while(!vpDisplay::getClick(image_, ip, button, false));
-
-	if(button != vpMouseButton::button1)
-	  {
-	    pose.clearPoint();
-	    imagePoints.clear();
-	  }
-	else
-	  done = true;
-      }
-    tracker_.init(image_, cMo);
-    saveInitialPose(cMo);
   }
 
   void
