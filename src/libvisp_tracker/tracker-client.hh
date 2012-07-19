@@ -60,10 +60,12 @@ namespace visp_tracker
 
     void loadModel();
 
+    bool validatePose(const vpHomogeneousMatrix& cMo);
     vpHomogeneousMatrix loadInitialPose();
     void saveInitialPose(const vpHomogeneousMatrix& cMo);
     points_t loadInitializationPoints();
 
+    void init();
     void initClick();
     void initPoint(unsigned& i,
 		   points_t& points,
