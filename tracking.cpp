@@ -117,8 +117,20 @@ namespace tracking{
 
   bool Tracker_:: flashcode_detected(input_ready const& evt){
     clock_t t = clock();
-    cv::Mat cvI;
-    vpImageConvert::convert(evt.I,cvI);
+    cv::Mat cvI;//(evt.I.getRows(),evt.I.getCols(),CV_8UC3);
+
+    cv::Mat vpToMat((int)evt.I.getRows(), (int)evt.I.getCols(), CV_8UC4, (void*)evt.I.bitmap);
+
+    cvI = cv::Mat((int)evt.I.getRows(), (int)evt.I.getCols(), CV_8UC3);
+    cv::Mat alpha((int)evt.I.getRows(), (int)evt.I.getCols(), CV_8UC1);
+
+    cv::Mat out[] = {cvI, alpha};
+    int from_to[] = { 0,2,  1,1,  2,0,  3,3 };
+    cv::mixChannels(&vpToMat, 1, out, 2, from_to, 4);
+
+    //vpImageConvert::convert(evt.I,cvI);
+
+
 
     return detector_->detect(cvI,cmd.get_dmx_timeout(),0,0);
   }
@@ -131,7 +143,15 @@ namespace tracking{
     clock_t t = clock();
     cv::Mat cvI;
 
-    vpImageConvert::convert(evt.I,cvI);
+    //vpImageConvert::convert(evt.I,cvI);
+    cv::Mat vpToMat((int)evt.I.getRows(), (int)evt.I.getCols(), CV_8UC4, (void*)evt.I.bitmap);
+
+    cvI = cv::Mat((int)evt.I.getRows(), (int)evt.I.getCols(), CV_8UC3);
+    cv::Mat alpha((int)evt.I.getRows(), (int)evt.I.getCols(), CV_8UC1);
+
+    cv::Mat out[] = {cvI, alpha};
+    int from_to[] = { 0,2,  1,1,  2,0,  3,3 };
+    cv::mixChannels(&vpToMat, 1, out, 2, from_to, 4);
     cv::Mat subImage = cv::Mat(cvI,get_tracking_box<cv::Rect>()).clone();
 
     double timeout = cmd.get_dmx_timeout()*(double)(get_tracking_box<cv::Rect>().width*get_tracking_box<cv::Rect>().height)/(double)(cvI.cols*cvI.rows);

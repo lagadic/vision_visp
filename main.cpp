@@ -1,5 +1,6 @@
 #include <visp/vpImageIo.h>
 #include <visp/vpVideoReader.h>
+#include <visp/vpVideoWriter.h>
 #include <visp/vpV4l2Grabber.h>
 #include <iostream>
 #include <vector>
@@ -24,6 +25,12 @@ int main(int argc, char**argv)
   vpImage<vpRGBa> I;
   vpVideoReader reader;
   vpV4l2Grabber video_reader;
+  vpVideoWriter writer;
+  vpImage<vpRGBa> logI;
+
+  writer.setFileName((cmd.get_data_dir() + std::string("/log/%08d.jpg")).c_str());
+
+  writer.open(logI);
 
   if(cmd.using_single_image()){
     if(cmd.get_verbose())
@@ -86,8 +93,10 @@ int main(int argc, char**argv)
     else if(!cmd.using_single_image())
       reader.acquire(I);
     t.process_event(tracking::input_ready(I,iter));
+    d->getImage(logI);
+    writer.saveFrame(logI);
   }
 
   t.process_event(tracking::finished());
-
+  writer.close();
 }
