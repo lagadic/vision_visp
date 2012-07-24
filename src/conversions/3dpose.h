@@ -49,6 +49,7 @@
 
 
 #include "geometry_msgs/Transform.h"
+#include "geometry_msgs/Pose.h"
 #include "visp/vpHomogeneousMatrix.h"
 
 #ifndef _VISP_BRIDGE_3DPOSE_H_
@@ -62,6 +63,13 @@ namespace visp_bridge{
     \return: transformation in ViSP format.
   */
   vpHomogeneousMatrix toVispHomogeneousMatrix(const geometry_msgs::Transform& trans);
+
+  /*!
+      \brief Converts a geometry_msgs::Transform to a ViSP homogeneous matrix (vpHomogeneousMatrix).
+      \param pose: transformation in ROS/geometry_msgs format.
+      \return: transformation in ViSP format.
+    */
+  vpHomogeneousMatrix toVispHomogeneousMatrix(const geometry_msgs::Pose& pose);
   /*!
     \brief Converts a ViSP homogeneous matrix (vpHomogeneousMatrix) to a geometry_msgs::Transform.
     \param mat: transformation in ViSP format.

@@ -71,5 +71,6 @@ namespace visp_bridge{
     \return: image in ViSP format.
   */
   vpImage<unsigned char> toVispImage(const sensor_msgs::Image& src);
+  vpImage<vpRGBa> toVispImageRGBa(const sensor_msgs::Image& src);
 }
 #endif /* IMAGE_H_ */

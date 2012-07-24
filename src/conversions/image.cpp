@@ -98,6 +98,37 @@ vpImage<unsigned char> toVispImage(const sensor_msgs::Image& src)
   return dst;
 }
 
+vpImage<vpRGBa> toVispImageRGBa(const sensor_msgs::Image& src)
+{
+  using sensor_msgs::image_encodings::MONO8;
+  using sensor_msgs::image_encodings::RGB8;
+  using sensor_msgs::image_encodings::RGBA8;
+  using sensor_msgs::image_encodings::BGR8;
+  using sensor_msgs::image_encodings::BGRA8;
+
+
+  vpImage<vpRGBa> dst(src.height, src.width);
+
+  if (src.encoding == MONO8)
+    for (unsigned i = 0; i < dst.getWidth(); ++i){
+      for (unsigned j = 0; j < dst.getHeight(); ++j){
+        int acc = 0;
+
+        dst[j][i] = vpRGBa(src.data[j * src.step + i],src.data[j * src.step + i],src.data[j * src.step + i]);
+      }
+    }
+  else if (src.encoding == RGB8 || src.encoding == RGBA8 || src.encoding == BGR8 || src.encoding == BGRA8){
+    unsigned nc = sensor_msgs::image_encodings::numChannels(src.encoding);
+
+    for (unsigned i = 0; i < dst.getWidth(); ++i){
+      for (unsigned j = 0; j < dst.getHeight(); ++j){
+        dst[j][i] = vpRGBa(src.data[j * src.step + i * nc + 0],src.data[j * src.step + i * nc + 1],src.data[j * src.step + i * nc + 2]);
+      }
+    }
+  }
+  return dst;
+}
+
 sensor_msgs::Image toSensorMsgsImage(const vpImage<vpRGBa>& src){
   sensor_msgs::Image dst;
   dst.width = src.getWidth();
