@@ -74,9 +74,12 @@ namespace tracking{
 
 
     statistics_t statistics;
+    bool flush_display_;
 
   public:
     //getters to access useful members
+    void set_flush_display(bool val);
+    bool get_flush_display();
     detectors::DetectorBase& get_detector();
     vpMbEdgeTracker& get_mbt();
     std::vector<vpPoint>& get_points3D_inner();

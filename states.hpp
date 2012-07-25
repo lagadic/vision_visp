@@ -31,7 +31,7 @@ namespace tracking{
       void on_exit(Event const& evt, Fsm& fsm){
         std::cout <<"leaving: WaitingForInput" << std::endl;
         vpDisplay::display(evt.I);
-        vpDisplay::flush(evt.I);
+        if(fsm.get_flush_display()) vpDisplay::flush(evt.I);
       }
   };
 
@@ -101,7 +101,7 @@ namespace tracking{
         std::vector<cv::Point>& polygon = fsm.get_detector().get_polygon();
         if(polygon.size()==0){
           vpDisplay::displayCharString(evt.I,vpImagePoint(0,0),"TRACKING LOST",vpColor::red);
-          vpDisplay::flush(evt.I);
+          if(fsm.get_flush_display()) vpDisplay::flush(evt.I);
           return;
         }
 
@@ -122,7 +122,7 @@ namespace tracking{
         vpDisplay::displayCharString(evt.I,corner2,"3",vpColor::cyan);
         vpDisplay::displayCharString(evt.I,corner3,"4",vpColor::darkRed);
 
-        vpDisplay::flush(evt.I);
+        if(fsm.get_flush_display()) vpDisplay::flush(evt.I);
       }
   };
 
@@ -186,7 +186,7 @@ namespace tracking{
         vpHomogeneousMatrix cMo;
         fsm.get_mbt().getPose(cMo);
         fsm.get_mbt().display(I, cMo, fsm.get_cam(), vpColor::blue, 1);// display the model at the computed pose.
-        vpDisplay::flush(I);
+        if(fsm.get_flush_display()) vpDisplay::flush(I);
       }
   };
 
@@ -252,7 +252,7 @@ namespace tracking{
               );
         }
       }
-      vpDisplay::flush(evt.I);
+      if(fsm.get_flush_display()) vpDisplay::flush(evt.I);
 
       vpMatrix mat = fsm.get_mbt().getCovarianceMatrix();
       if(fsm.get_cmd().show_plot()){

@@ -1,12 +1,11 @@
 #include "cmd_line.h"
 #include <iostream>
 #include <fstream>
-#include <ros/ros.h>
 
 void CmdLine::common(){
-  po::options_description* general = new po::options_description("General options");
+  po::options_description general("General options");
 
-      general->add_options()
+      general.add_options()
           ("dmtxonly,d", "only detect the datamatrix")
           ("video-camera,C", "video from camera")
           ("video-source,s", po::value<std::string>(&video_channel_)->default_value("/dev/video1"),"video source. For example /dev/video1")
@@ -23,8 +22,8 @@ void CmdLine::common(){
           ("help", "produce help message")
           ;
 
-      po::options_description* configuration = new po::options_description("Configuration");
-      configuration->add_options()
+      po::options_description configuration("Configuration");
+      configuration.add_options()
           ("flashcode-coordinates,F",
           po::value< std::vector<double> >(&flashcode_coordinates)->multitoken()->composing(),
           "3D coordinates of the flashcode in clockwise order")
@@ -53,11 +52,10 @@ void CmdLine::common(){
               "Treshold over which the point is considered out of the black area of the object")
           ("log-checkpoints,g","log checkpoints in the log file")
           ;
-      prog_args.add(*general);
-      prog_args.add(*configuration);
+      prog_args.add(general);
+      prog_args.add(configuration);
 }
 void CmdLine::loadConfig(std::string& config_file){
-  ROS_INFO(config_file.c_str());
   std::ifstream in( config_file.c_str() );
   po::store(po::parse_config_file(in,prog_args,false), vm_);
   po::notify(vm_);

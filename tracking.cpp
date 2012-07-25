@@ -364,4 +364,12 @@ namespace tracking{
     return statistics;
   }
 
+  void Tracker_:: set_flush_display(bool val){
+    flush_display_ = val;
+  }
+
+  bool Tracker_:: get_flush_display(){
+    return flush_display_;
+  }
 }
+
