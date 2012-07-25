@@ -7,7 +7,7 @@
 #include <exception>
 #include <string>
 #include <visp/vpPoint.h>
-
+namespace po = boost::program_options;
 class CmdLine{
  private:
   boost::program_options::variables_map vm_;
@@ -30,12 +30,18 @@ class CmdLine{
   std::vector<vpPoint> flashcode_points_3D_;
   std::vector<vpPoint> inner_points_3D_;
   std::vector<vpPoint> outer_points_3D_;
+  po::options_description prog_args;
+  std::vector<double> flashcode_coordinates,inner_coordinates,outer_coordinates;
+  std::string config_file;
+  void loadConfig(std::string& config_file);
+  void common();
  public:
   enum DETECTOR_TYPE{
     DTMX, ZBAR
   };
 
   CmdLine(int argc,char**argv);
+  CmdLine(std::string& config_file);
 
   bool show_plot();
 

@@ -1,67 +1,63 @@
 #include "cmd_line.h"
 #include <iostream>
 #include <fstream>
+#include <ros/ros.h>
 
-namespace po = boost::program_options;
-CmdLine:: CmdLine(int argc,char**argv) : should_exit_(false) {
-  std::string config_file;
-  po::options_description prog_args;
-  po::options_description general("General options");
-  std::vector<double> flashcode_coordinates,inner_coordinates,outer_coordinates;
-  general.add_options()
-      ("dmtxonly,d", "only detect the datamatrix")
-      ("video-camera,C", "video from camera")
-      ("video-source,s", po::value<std::string>(&video_channel_)->default_value("/dev/video1"),"video source. For example /dev/video1")
-      ("data-directory,D", po::value<std::string>(&data_dir_)->default_value("./data"),"directory from which to load images")
-      ("single-image,I", po::value<std::string>(&single_image_name_),"load this single image (relative to data dir)")
-      ("pattern-name,P", po::value<std::string>(&pattern_name_)->default_value("pattern"),"name of xml,init and wrl files")
-      /*("showfps,f", "show framerate")*/
-      ("detector-type,r", po::value<std::string>()->default_value("dtmx"),"Type of your detector that will be used for initialisation/recovery. zbar for QRcodes and more, dtmx for flashcodes.")
-      ("verbose,v", "show states of the tracker")
-      ("dmx-detector-timeout,T", po::value<int>(&dmx_timeout_)->default_value(1000), "timeout for datamatrix detection in ms")
-      ("config-file,c", po::value<std::string>(&config_file)->default_value("./data/config.cfg"), "config file for the program")
-      ("show-plot,p", "show variances graph")
+void CmdLine::common(){
+  po::options_description* general = new po::options_description("General options");
 
-      ("help", "produce help message")
-      ;
-  
-  po::options_description configuration("Configuration");
-  configuration.add_options()
-      ("flashcode-coordinates,F",
-      po::value< std::vector<double> >(&flashcode_coordinates)->multitoken()->composing(),
-      "3D coordinates of the flashcode in clockwise order")
-      ("inner-coordinates,i",
-            po::value< std::vector<double> >(&inner_coordinates)->multitoken()->composing(),
-            "3D coordinates of the inner region in clockwise order")
-      ("outer-coordinates,o",
-                  po::value< std::vector<double> >(&outer_coordinates)->multitoken()->composing(),
-                  "3D coordinates of the outer region in clockwise order")
-      ("variance-file,V", po::value< std::string >(&var_file_)->composing(), "file to store variance values")
-      ("variance-limit,l", po::value< double >(&var_limit_)->composing(),
-          "above this limit the tracker will be considered lost and the pattern will be detected with the flascode")
-      ("mbt-convergence-steps,S", po::value< int >(&mbt_convergence_steps_)->default_value(100)->composing(),
-          "when a new model is found, how many tracking iterations should the tracker perform so the model matches the projection.")
-      ("hinkley-range,H",
-                        po::value< std::vector<double> >(&hinkley_range_)->multitoken()->composing(),
-                        "pair of alpha, delta values describing the two hinkley tresholds")
-      ("mbt-dynamic-range,R", po::value< double >(&mbt_dynamic_range_)->composing(),
-                "Adapt mbt range to symbol size. The width of the outer black corner is multiplied by this value to get the mbt range. Try 0.2")
-      ("ad-hoc-recovery,W", "use ad-hoc recovery")
-      ("ad-hoc-recovery-ratio,y", po::value< double >(&adhoc_recovery_ratio_)->default_value(0.5)->composing(),
-          "use ad-hoc recovery based on the model. The tracker will look for black pixels at ratio*[pattern size] from the center")
-      ("ad-hoc-recovery-size,w", po::value< double >(&adhoc_recovery_size_)->default_value(0.5)->composing(),
-                "fraction of the black outer band size. The control points (those that should be black and in that way check tracking is still there).")
-      ("ad-hoc-recovery-threshold,Y", po::value< unsigned int >(&adhoc_recovery_treshold_)->default_value(100)->composing(),
-          "Treshold over which the point is considered out of the black area of the object")
-      ("log-checkpoints,g","log checkpoints in the log file")
-      ;
-  prog_args.add(general);
-  prog_args.add(configuration);
-  po::store(po::parse_command_line(argc, argv, prog_args), vm_);
-  po::notify(vm_);
-  if(get_verbose())
-    std::cout << "Loading config from:" << config_file.c_str() << std::endl;
+      general->add_options()
+          ("dmtxonly,d", "only detect the datamatrix")
+          ("video-camera,C", "video from camera")
+          ("video-source,s", po::value<std::string>(&video_channel_)->default_value("/dev/video1"),"video source. For example /dev/video1")
+          ("data-directory,D", po::value<std::string>(&data_dir_)->default_value("./data/"),"directory from which to load images")
+          ("single-image,I", po::value<std::string>(&single_image_name_),"load this single image (relative to data dir)")
+          ("pattern-name,P", po::value<std::string>(&pattern_name_)->default_value("pattern"),"name of xml,init and wrl files")
+          /*("showfps,f", "show framerate")*/
+          ("detector-type,r", po::value<std::string>()->default_value("zbar"),"Type of your detector that will be used for initialisation/recovery. zbar for QRcodes and more, dtmx for flashcodes.")
+          ("verbose,v", "show states of the tracker")
+          ("dmx-detector-timeout,T", po::value<int>(&dmx_timeout_)->default_value(1000), "timeout for datamatrix detection in ms")
+          ("config-file,c", po::value<std::string>(&config_file)->default_value("./data/config.cfg"), "config file for the program")
+          ("show-plot,p", "show variances graph")
 
+          ("help", "produce help message")
+          ;
+
+      po::options_description* configuration = new po::options_description("Configuration");
+      configuration->add_options()
+          ("flashcode-coordinates,F",
+          po::value< std::vector<double> >(&flashcode_coordinates)->multitoken()->composing(),
+          "3D coordinates of the flashcode in clockwise order")
+          ("inner-coordinates,i",
+                po::value< std::vector<double> >(&inner_coordinates)->multitoken()->composing(),
+                "3D coordinates of the inner region in clockwise order")
+          ("outer-coordinates,o",
+                      po::value< std::vector<double> >(&outer_coordinates)->multitoken()->composing(),
+                      "3D coordinates of the outer region in clockwise order")
+          ("variance-file,V", po::value< std::string >(&var_file_)->composing(), "file to store variance values")
+          ("variance-limit,l", po::value< double >(&var_limit_)->composing(),
+              "above this limit the tracker will be considered lost and the pattern will be detected with the flascode")
+          ("mbt-convergence-steps,S", po::value< int >(&mbt_convergence_steps_)->default_value(100)->composing(),
+              "when a new model is found, how many tracking iterations should the tracker perform so the model matches the projection.")
+          ("hinkley-range,H",
+                            po::value< std::vector<double> >(&hinkley_range_)->multitoken()->composing(),
+                            "pair of alpha, delta values describing the two hinkley tresholds")
+          ("mbt-dynamic-range,R", po::value< double >(&mbt_dynamic_range_)->composing(),
+                    "Adapt mbt range to symbol size. The width of the outer black corner is multiplied by this value to get the mbt range. Try 0.2")
+          ("ad-hoc-recovery,W", "use ad-hoc recovery")
+          ("ad-hoc-recovery-ratio,y", po::value< double >(&adhoc_recovery_ratio_)->default_value(0.5)->composing(),
+              "use ad-hoc recovery based on the model. The tracker will look for black pixels at ratio*[pattern size] from the center")
+          ("ad-hoc-recovery-size,w", po::value< double >(&adhoc_recovery_size_)->default_value(0.5)->composing(),
+                    "fraction of the black outer band size. The control points (those that should be black and in that way check tracking is still there).")
+          ("ad-hoc-recovery-threshold,Y", po::value< unsigned int >(&adhoc_recovery_treshold_)->default_value(100)->composing(),
+              "Treshold over which the point is considered out of the black area of the object")
+          ("log-checkpoints,g","log checkpoints in the log file")
+          ;
+      prog_args.add(*general);
+      prog_args.add(*configuration);
+}
+void CmdLine::loadConfig(std::string& config_file){
+  ROS_INFO(config_file.c_str());
   std::ifstream in( config_file.c_str() );
   po::store(po::parse_config_file(in,prog_args,false), vm_);
   po::notify(vm_);
@@ -91,7 +87,25 @@ CmdLine:: CmdLine(int argc,char**argv) : should_exit_(false) {
   if (vm_.count("help")) {
       std::cout << prog_args << std::endl;
       should_exit_ = true;
-  }  
+  }
+}
+CmdLine:: CmdLine(std::string& config_file) : should_exit_(false) {
+  this->config_file = config_file;
+  common();
+  loadConfig(config_file);
+}
+
+CmdLine:: CmdLine(int argc,char**argv) : should_exit_(false) {
+  common();
+
+
+  po::store(po::parse_command_line(argc, argv, prog_args), vm_);
+  po::notify(vm_);
+  if(get_verbose())
+    std::cout << "Loading config from:" << config_file.c_str() << std::endl;
+
+  loadConfig(config_file);
+
 }
 
 bool CmdLine:: show_plot(){
