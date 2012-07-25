@@ -14,11 +14,12 @@
 
 namespace tracking{
 
-  Tracker_:: Tracker_(CmdLine& cmd, detectors::DetectorBase* detector) :
+  Tracker_:: Tracker_(CmdLine& cmd, detectors::DetectorBase* detector,bool flush_display = true) :
       cmd(cmd),
       iter_(0),
       flashcode_center_(640/2,480/2),
-      detector_(detector){
+      detector_(detector),
+      flush_display_(flush_display){
     std::cout << "starting tracker" << std::endl;
     points3D_inner_ = cmd.get_inner_points_3D();
     points3D_outer_ = cmd.get_outer_points_3D();
