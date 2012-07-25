@@ -14,7 +14,7 @@
 
 namespace tracking{
 
-  Tracker_:: Tracker_(CmdLine& cmd, detectors::DetectorBase* detector,bool flush_display = true) :
+  Tracker_:: Tracker_(CmdLine& cmd, detectors::DetectorBase* detector,bool flush_display) :
       cmd(cmd),
       iter_(0),
       flashcode_center_(640/2,480/2),
@@ -56,7 +56,6 @@ namespace tracking{
         i->init(cmd.get_hinkley_alpha(),cmd.get_hinkley_delta());
     }
 
-    cam_.initPersProjWithDistortion(543.1594454,539.1300717,320.1025306,212.8181022,0.01488495076,-0.01484690262);
     tracker_.getMovingEdge(tracker_me_config_);
   }
 
@@ -117,6 +116,7 @@ namespace tracking{
   }
 
   bool Tracker_:: flashcode_detected(input_ready const& evt){
+    this->cam_ = evt.cam_;
     clock_t t = clock();
     cv::Mat cvI;//(evt.I.getRows(),evt.I.getCols(),CV_8UC3);
 
@@ -141,6 +141,7 @@ namespace tracking{
    * The timeout is the default timeout times the surface ratio
    */
   bool Tracker_:: flashcode_redetected(input_ready const& evt){
+    this->cam_ = evt.cam_;
     clock_t t = clock();
     cv::Mat cvI;
 
@@ -316,6 +317,7 @@ namespace tracking{
   }
 
   void Tracker_:: track_model(input_ready const& evt){
+    this->cam_ = evt.cam_;
     std::vector<cv::Point> points;
     I_ = _I = &(evt.I);
     vpImageConvert::convert(evt.I,Igray_);

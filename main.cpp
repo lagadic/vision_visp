@@ -28,6 +28,8 @@ int main(int argc, char**argv)
   vpVideoWriter writer;
   vpImage<vpRGBa> logI;
 
+  vpCameraParameters cam;
+  cam.initPersProjWithDistortion(543.1594454,539.1300717,320.1025306,212.8181022,0.01488495076,-0.01484690262);
   writer.setFileName((cmd.get_data_dir() + std::string("/log/%08d.jpg")).c_str());
 
   writer.open(logI);
@@ -92,7 +94,7 @@ int main(int argc, char**argv)
     }
     else if(!cmd.using_single_image())
       reader.acquire(I);
-    t.process_event(tracking::input_ready(I,iter));
+    t.process_event(tracking::input_ready(I,cam,iter));
     d->getImage(logI);
     writer.saveFrame(logI);
   }

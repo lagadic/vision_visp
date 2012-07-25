@@ -92,7 +92,7 @@ namespace tracking{
     vpCameraParameters& get_cam();
     CmdLine& get_cmd();
 
-    Tracker_(CmdLine& cmd, detectors::DetectorBase* detector);
+    Tracker_(CmdLine& cmd, detectors::DetectorBase* detector,bool flush_display = true);
 
     typedef WaitingForInput initial_state;      //initial state of our state machine tracker
 
