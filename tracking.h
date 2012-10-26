@@ -13,12 +13,12 @@
 #include <boost/array.hpp>
 #include <visp/vpImage.h>
 
-#include <visp/vpMbEdgeTracker.h>
+
 #include <visp/vpImage.h>
 #include <visp/vpRGBa.h>
 #include <visp/vpHomogeneousMatrix.h>
 #include <visp/vpCameraParameters.h>
-#include <visp/vpMbEdgeTracker.h>
+
 #include <visp/vpDisplay.h>
 #include <visp/vpHinkley.h>
 #include <visp/vpMe.h>
@@ -27,6 +27,7 @@
 
 #include "cmd_line/cmd_line.h"
 #include "detectors/detector_base.h"
+#include <visp/vpMbEdgeKltTracker.h>
 #include "states.hpp"
 #include "events.h"
 
@@ -56,7 +57,7 @@ namespace tracking{
     typedef boost::array<vpHinkley,6> hinkley_array_t;
     hinkley_array_t hink_;
 
-    vpMbEdgeTracker tracker_; // Create a model based tracker.
+    vpMbEdgeKltTracker tracker_; // Create a model based tracker.
     vpMe tracker_me_config_;
     vpImage<vpRGBa> *I_;
     vpImage<vpRGBa> *_I;
@@ -81,7 +82,7 @@ namespace tracking{
     void set_flush_display(bool val);
     bool get_flush_display();
     detectors::DetectorBase& get_detector();
-    vpMbEdgeTracker& get_mbt();
+    vpMbEdgeKltTracker& get_mbt();
     std::vector<vpPoint>& get_points3D_inner();
     std::vector<vpPoint>& get_points3D_outer();
     std::vector<vpPoint>& get_points3D_middle();

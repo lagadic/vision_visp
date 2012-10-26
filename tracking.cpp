@@ -57,13 +57,16 @@ namespace tracking{
     }
 
     tracker_.getMovingEdge(tracker_me_config_);
+
+    tracker_.loadConfigFile(cmd.get_xml_file().c_str() ); // Load the configuration of the tracker
+    tracker_.loadModel(cmd.get_wrl_file().c_str()); // load the 3d model, to read .wrl model the 3d party library coin is required, if coin is not installed .cao file can be used.
   }
 
   detectors::DetectorBase& Tracker_:: get_detector(){
     return *detector_;
   }
 
-  vpMbEdgeTracker& Tracker_:: get_mbt(){
+  vpMbEdgeKltTracker& Tracker_:: get_mbt(){
     return tracker_;
   }
 
@@ -179,9 +182,8 @@ namespace tracking{
 
 
   bool Tracker_:: model_detected(msm::front::none const&){
-    tracker_.resetTracker();
-    tracker_.loadConfigFile(cmd.get_xml_file().c_str() ); // Load the configuration of the tracker
-    tracker_.loadModel(cmd.get_wrl_file().c_str()); // load the 3d model, to read .wrl model the 3d party library coin is required, if coin is not installed .cao file can be used.
+    //tracker_.resetTracker();
+
     vpImageConvert::convert(*I_,Igray_);
     vpPose pose;
 
@@ -234,10 +236,9 @@ namespace tracking{
       tracker_.track(Igray_); // track the object on this image
       tracker_.getPose(cMo_);
       vpMatrix mat = tracker_.getCovarianceMatrix();
-
       if(cmd.using_var_file()){
         writer.write(iter_);
-        for(int i=0;i<6;i++)
+        for(int i=0;i<mat.getRows();i++)
           writer.write(mat[i][i]);
       }
       if(cmd.using_var_limit())
@@ -253,22 +254,22 @@ namespace tracking{
             return false;
           }
         }
-
       if(cmd.using_var_file() && cmd.using_mbt_dynamic_range())
         writer.write(tracker_me_config_.getRange());
 
 
 
-
-      for(int i=0;i<6;i++)
+      for(int i=0;i<mat.getRows();i++)
         statistics.var(mat[i][i]);
 
-      statistics.var_x(mat[0][0]);
-      statistics.var_y(mat[1][1]);
-      statistics.var_z(mat[2][2]);
-      statistics.var_wx(mat[3][3]);
-      statistics.var_wy(mat[4][4]);
-      statistics.var_wz(mat[5][5]);
+      if(mat.getRows() == 6){ //if the covariance matrix is set
+        statistics.var_x(mat[0][0]);
+        statistics.var_y(mat[1][1]);
+        statistics.var_z(mat[2][2]);
+        statistics.var_wx(mat[3][3]);
+        statistics.var_wy(mat[4][4]);
+        statistics.var_wz(mat[5][5]);
+      }
 
       if(cmd.using_adhoc_recovery() || cmd.log_checkpoints()){
         for(int p=0;p<points3D_middle_.size();p++){
