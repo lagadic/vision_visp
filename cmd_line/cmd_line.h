@@ -32,6 +32,7 @@ class CmdLine{
   std::vector<vpPoint> outer_points_3D_;
   po::options_description prog_args;
   std::vector<double> flashcode_coordinates,inner_coordinates,outer_coordinates;
+  std::string log_file_pattern_,input_file_pattern_;
   std::string config_file;
   void loadConfig(std::string& config_file);
   void common();
@@ -47,6 +48,8 @@ class CmdLine{
 
   bool using_hinkley();
 
+  vpCameraParameters get_cam_calib_params();
+
   double get_hinkley_alpha();
 
   double get_hinkley_delta();
@@ -54,6 +57,10 @@ class CmdLine{
   bool dmtx_only();
 
   bool should_exit();
+
+  std::string get_log_file_pattern();
+
+  std::string get_input_file_pattern();
 
   std::string get_video_channel();
 

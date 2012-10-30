@@ -28,9 +28,12 @@ int main(int argc, char**argv)
   vpVideoWriter writer;
   vpImage<vpRGBa> logI;
 
-  vpCameraParameters cam;
-  cam.initPersProjWithDistortion(543.1594454,539.1300717,320.1025306,212.8181022,0.01488495076,-0.01484690262);
-  writer.setFileName((cmd.get_data_dir() + std::string("/log/%08d.jpg")).c_str());
+  vpCameraParameters cam = cmd.get_cam_calib_params();
+  if(cmd.get_verbose())
+    std::cout << "loaded camera parameters:" << cam << std::endl;
+
+  //cam.initPersProjWithDistortion(543.1594454,539.1300717,320.1025306,212.8181022,0.01488495076,-0.01484690262);
+  writer.setFileName((cmd.get_data_dir() + cmd.get_log_file_pattern()).c_str());
 
   writer.open(logI);
 
@@ -49,7 +52,7 @@ int main(int argc, char**argv)
     video_reader.setNBuffers(3); // 3 ring buffers to ensure real-time acquisition
     video_reader.open(I);        // Open the grabber
   }else{
-    std::string filenames((cmd.get_data_dir() + std::string("/images/%08d.jpg")));
+    std::string filenames((cmd.get_data_dir() + cmd.get_input_file_pattern()));
     if(cmd.get_verbose())
       std::cout << "Loading: " << filenames << std::endl;
     reader.setFileName( filenames.c_str() );
