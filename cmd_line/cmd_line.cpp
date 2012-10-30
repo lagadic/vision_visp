@@ -1,6 +1,7 @@
 #include "cmd_line.h"
 #include <iostream>
 #include <fstream>
+#include <visp/vpMbEdgeTracker.h>
 
 void CmdLine::common(){
   po::options_description general("General options");
@@ -10,6 +11,8 @@ void CmdLine::common(){
           ("video-camera,C", "video from camera")
           ("video-source,s", po::value<std::string>(&video_channel_)->default_value("/dev/video1"),"video source. For example /dev/video1")
           ("data-directory,D", po::value<std::string>(&data_dir_)->default_value("./data/"),"directory from which to load images")
+          ("video-input-path,J", po::value<std::string>(&input_file_pattern_)->default_value("/images/%08d.jpg"),"input video file path relative to the data directory")
+          ("video-output-path,L", po::value<std::string>(&log_file_pattern_)->default_value("/log/%08d.jpg"),"output video file path relative to the data directory")
           ("single-image,I", po::value<std::string>(&single_image_name_),"load this single image (relative to data dir)")
           ("pattern-name,P", po::value<std::string>(&pattern_name_)->default_value("pattern"),"name of xml,init and wrl files")
           /*("showfps,f", "show framerate")*/
@@ -104,6 +107,22 @@ CmdLine:: CmdLine(int argc,char**argv) : should_exit_(false) {
 
   loadConfig(config_file);
 
+}
+
+vpCameraParameters CmdLine::get_cam_calib_params(){
+  vpCameraParameters cam;
+  vpMbEdgeTracker tmptrack;
+  tmptrack.loadConfigFile(get_xml_file().c_str() ); // Load the configuration of the tracker
+  tmptrack.getCameraParameters(cam);
+  return cam;
+}
+
+std::string CmdLine::get_log_file_pattern(){
+  return log_file_pattern_;
+}
+
+std::string CmdLine::get_input_file_pattern(){
+  return input_file_pattern_;
 }
 
 bool CmdLine:: show_plot(){
