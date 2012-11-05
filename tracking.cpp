@@ -23,6 +23,7 @@ namespace tracking{
     std::cout << "starting tracker" << std::endl;
     points3D_inner_ = cmd.get_inner_points_3D();
     points3D_outer_ = cmd.get_outer_points_3D();
+    outer_points_3D_bcp_ = cmd.get_outer_points_3D();
     if(cmd.using_adhoc_recovery() || cmd.log_checkpoints()){
       for(int i=0;i<points3D_outer_.size();i++){
         vpPoint p;
@@ -192,6 +193,7 @@ namespace tracking{
 
     pose.computePose(vpPose::LAGRANGE,cMo_);
     pose.computePose(vpPose::VIRTUAL_VS,cMo_);
+    std::cout << "pose=" << vpPoseVector(cMo_).t() << std::endl;
     vpDisplay::displayFrame(*I_,cMo_,cam_,0.01,vpColor::none,2);
 
     std::vector<vpImagePoint> model_inner_corner(4);
@@ -210,15 +212,15 @@ namespace tracking{
     }
 
     try{
-      tracker_.initFromPoints(Igray_,model_outer_corner,points3D_outer_);
+      tracker_.initFromPose(Igray_,cMo_);
       tracker_.track(Igray_); // track the object on this image
       tracker_.getPose(cMo_); // get the pose
       tracker_.setCovarianceComputation(true);
-
       for(int i=0;i<cmd.get_mbt_convergence_steps();i++){
         tracker_.track(Igray_); // track the object on this image
         tracker_.getPose(cMo_); // get the pose
       }
+      std::cout << "done..." << std::endl;
     }catch(vpTrackingException& e){
       std::cout << "Tracking failed" << std::endl;
       std::cout << e.getStringMessage() << std::endl;

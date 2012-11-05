@@ -65,7 +65,7 @@ namespace tracking{
     vpCameraParameters cam_;
     vpImage<unsigned char> Igray_;
     vpImagePoint flashcode_center_;
-
+    std::vector<vpPoint> outer_points_3D_bcp_;
     std::vector<vpPoint> points3D_inner_;
     std::vector<vpPoint> points3D_outer_;
     std::vector<vpPoint> points3D_middle_;
@@ -134,6 +134,8 @@ namespace tracking{
        _row< ReDetectFlashcode, input_ready        , DetectFlashcode                                        /* default behaviour */        >,
       //   +------------------+--------------------+-----------------------+------------------------------+------------------------------+
         row< ReDetectFlashcode, input_ready        , DetectModel           , &Tracker_::find_flashcode_pos,&Tracker_::flashcode_redetected >,
+      //   +------------------+--------------------+-----------------------+------------------------------+------------------------------+
+        row< ReDetectFlashcode, input_ready        , TrackModel            , &Tracker_::track_model       ,&Tracker_::mbt_success          >,
       //   +------------------+--------------------+-----------------------+------------------------------+------------------------------+
        _row< TrackModel       , finished           , Finished                                                                              >,
       //   +------------------+--------------------+-----------------------+------------------------------+------------------------------+

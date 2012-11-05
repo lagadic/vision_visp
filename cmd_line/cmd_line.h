@@ -30,6 +30,7 @@ class CmdLine{
   std::vector<vpPoint> flashcode_points_3D_;
   std::vector<vpPoint> inner_points_3D_;
   std::vector<vpPoint> outer_points_3D_;
+
   po::options_description prog_args;
   std::vector<double> flashcode_coordinates,inner_coordinates,outer_coordinates;
   std::string log_file_pattern_,input_file_pattern_;
