@@ -45,8 +45,11 @@ namespace tracking{
         varfile_ << "iteration\tvar_x\var_y\tvar_z\tvar_wx\tvar_wy\var_wz";
       if(cmd.using_mbt_dynamic_range())
         varfile_ << "\tmbt_range";
+      if(cmd.log_pose())
+        varfile_ << "\tpose_tx\tpose_ty\tpose_tz\tpose_rx\tpose_ry\tpose_rz";
       if(cmd.log_checkpoints())
         varfile_ << "\tcheckpoint_variance";
+
       varfile_ << std::endl;
     }
 
@@ -273,6 +276,12 @@ namespace tracking{
         statistics.var_wz(mat[5][5]);
       }
 
+      if(cmd.using_var_file() && cmd.log_pose()){
+        vpPoseVector p(cMo_);
+        for(int i=0;i<p.getRows();i++)
+          writer.write(p[i]);
+      }
+
       if(cmd.using_adhoc_recovery() || cmd.log_checkpoints()){
         for(int p=0;p<points3D_middle_.size();p++){
           vpPoint& point3D = points3D_middle_[p];
@@ -312,6 +321,7 @@ namespace tracking{
 
 
       }
+
     }catch(vpTrackingException& e){
       std::cout << "Tracking lost" << std::endl;
       return false;

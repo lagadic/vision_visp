@@ -75,6 +75,8 @@ class CmdLine{
 
   bool log_checkpoints();
 
+  bool log_pose();
+
   bool using_mbt_dynamic_range();
 
   int get_verbose();

@@ -19,17 +19,22 @@ First, it finds the flashcode and deduces the model from it.
 Afterwards, the model is tracked.
 The whole state machine is defined in tracking.h. 
 This is also the most interesting file to look at to understand the code.  
-
-General options:
   -d [ --dmtxonly ]                     only detect the datamatrix
   -C [ --video-camera ]                 video from camera
   -s [ --video-source ] arg (=/dev/video1)
                                         video source. For example /dev/video1
-  -D [ --data-directory ] arg (=./data) directory from which to load images
+  -D [ --data-directory ] arg (=./data/)
+                                        directory from which to load images
+  -J [ --video-input-path ] arg (=/images/%08d.jpg)
+                                        input video file path relative to the 
+                                        data directory
+  -L [ --video-output-path ] arg (=/log/%08d.jpg)
+                                        output video file path relative to the 
+                                        data directory
   -I [ --single-image ] arg             load this single image (relative to 
                                         data dir)
   -P [ --pattern-name ] arg (=pattern)  name of xml,init and wrl files
-  -r [ --detector-type ] arg (=dtmx)    Type of your detector that will be used
+  -r [ --detector-type ] arg (=zbar)    Type of your detector that will be used
                                         for initialisation/recovery. zbar for 
                                         QRcodes and more, dtmx for flashcodes.
   -v [ --verbose ]                      show states of the tracker
@@ -77,6 +82,7 @@ Configuration:
                                         considered out of the black area of the
                                         object
   -g [ --log-checkpoints ]              log checkpoints in the log file
+  -q [ --log-pose ]                     log pose in the log file
 
 
 A typical command line is something line:

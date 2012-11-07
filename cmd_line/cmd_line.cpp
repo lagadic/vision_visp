@@ -54,6 +54,7 @@ void CmdLine::common(){
           ("ad-hoc-recovery-threshold,Y", po::value< unsigned int >(&adhoc_recovery_treshold_)->default_value(100)->composing(),
               "Treshold over which the point is considered out of the black area of the object")
           ("log-checkpoints,g","log checkpoints in the log file")
+          ("log-pose,q","log pose in the log file")
           ;
       prog_args.add(general);
       prog_args.add(configuration);
@@ -85,9 +86,12 @@ void CmdLine::loadConfig(std::string& config_file){
   if(get_verbose())
       std::cout << "Loaded " << flashcode_points_3D_.size() << " flashcode extremity points, " << inner_points_3D_.size() << " inner contour points and " << outer_points_3D_.size() << " outer contour points." << std::endl;
 
+  if(using_var_file())
+    std::cout << "Using variance file:" << get_var_file() << std::endl;
   if (vm_.count("help")) {
       std::cout << prog_args << std::endl;
       should_exit_ = true;
+
   }
 }
 CmdLine:: CmdLine(std::string& config_file) : should_exit_(false) {
@@ -278,4 +282,8 @@ bool CmdLine:: using_adhoc_recovery(){
 
 bool CmdLine:: log_checkpoints(){
   return vm_.count("log-checkpoints")>0;
+}
+
+bool CmdLine:: log_pose(){
+  return vm_.count("log-pose")>0;
 }
