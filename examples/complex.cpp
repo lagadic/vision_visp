@@ -1,21 +1,24 @@
+//command line parameters
+#include "cmd_line/cmd_line.h"
+
+//detectors
+#include "detectors/datamatrix/detector.h"
+#include "detectors/qrcode/detector.h"
+
+//tracking
+#include "libauto_tracker/tracking.h"
+#include "libauto_tracker/threading.h"
+#include "libauto_tracker/events.h"
+
+//visp includes
 #include <visp/vpImageIo.h>
 #include <visp/vpVideoReader.h>
 #include <visp/vpVideoWriter.h>
 #include <visp/vpV4l2Grabber.h>
-#include <iostream>
-#include <vector>
-#include "cmd_line/cmd_line.h"
-#include "tracking.h"
-#include <visp/vpDisplayX.h>
-#include "detectors/datamatrix/detector.h"
-#include "detectors/qrcode/detector.h"
 #include <visp/vpMbEdgeKltTracker.h>
 #include <visp/vpMbKltTracker.h>
 #include <visp/vpMbEdgeTracker.h>
-#include <boost/thread/thread.hpp>
-#include "threading.h"
-#include "events.h"
-
+#include <visp/vpDisplayX.h>
 
 int main(int argc, char**argv)
 {

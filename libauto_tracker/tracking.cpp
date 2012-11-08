@@ -192,8 +192,6 @@ namespace tracking{
 
 
   bool Tracker_:: model_detected(msm::front::none const&){
-    //tracker_->resetTracker();
-
     vpImageConvert::convert(*I_,Igray_);
     vpPose pose;
 
@@ -236,7 +234,6 @@ namespace tracking{
         tracker_->track(Igray_); // track the object on this image
         tracker_->getPose(cMo_); // get the pose
       }
-      std::cout << "done..." << std::endl;
     }catch(vpTrackingException& e){
       std::cout << "Tracking failed" << std::endl;
       std::cout << e.getStringMessage() << std::endl;
