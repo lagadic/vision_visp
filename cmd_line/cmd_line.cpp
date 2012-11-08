@@ -12,11 +12,12 @@ void CmdLine::common(){
           ("video-source,s", po::value<std::string>(&video_channel_)->default_value("/dev/video1"),"video source. For example /dev/video1")
           ("data-directory,D", po::value<std::string>(&data_dir_)->default_value("./data/"),"directory from which to load images")
           ("video-input-path,J", po::value<std::string>(&input_file_pattern_)->default_value("/images/%08d.jpg"),"input video file path relative to the data directory")
-          ("video-output-path,L", po::value<std::string>(&log_file_pattern_)->default_value("/log/%08d.jpg"),"output video file path relative to the data directory")
+          ("video-output-path,L", po::value<std::string>(&log_file_pattern_),"output video file path relative to the data directory")
           ("single-image,I", po::value<std::string>(&single_image_name_),"load this single image (relative to data dir)")
           ("pattern-name,P", po::value<std::string>(&pattern_name_)->default_value("pattern"),"name of xml,init and wrl files")
           /*("showfps,f", "show framerate")*/
           ("detector-type,r", po::value<std::string>()->default_value("zbar"),"Type of your detector that will be used for initialisation/recovery. zbar for QRcodes and more, dtmx for flashcodes.")
+          ("tracker-type,t", po::value<std::string>()->default_value("klt_mbt"),"Type of tracker. mbt_klt for hybrid: mbt+klt, mbt for model based, klt for klt-based")
           ("verbose,v", "show states of the tracker")
           ("dmx-detector-timeout,T", po::value<int>(&dmx_timeout_)->default_value(1000), "timeout for datamatrix detection in ms")
           ("config-file,c", po::value<std::string>(&config_file)->default_value("./data/config.cfg"), "config file for the program")
@@ -31,8 +32,8 @@ void CmdLine::common(){
           po::value< std::vector<double> >(&flashcode_coordinates)->multitoken()->composing(),
           "3D coordinates of the flashcode in clockwise order")
           ("inner-coordinates,i",
-                po::value< std::vector<double> >(&inner_coordinates)->multitoken()->composing(),
-                "3D coordinates of the inner region in clockwise order")
+                          po::value< std::vector<double> >(&inner_coordinates)->multitoken()->composing(),
+                          "3D coordinates of the inner region in clockwise order")
           ("outer-coordinates,o",
                       po::value< std::vector<double> >(&outer_coordinates)->multitoken()->composing(),
                       "3D coordinates of the outer region in clockwise order")
@@ -83,8 +84,34 @@ void CmdLine::loadConfig(std::string& config_file){
     outer_points_3D_.push_back(p);
   }
 
-  if(get_verbose())
+  if(get_verbose()){
       std::cout << "Loaded " << flashcode_points_3D_.size() << " flashcode extremity points, " << inner_points_3D_.size() << " inner contour points and " << outer_points_3D_.size() << " outer contour points." << std::endl;
+      std::cout << "Tracker set to:";
+      switch(get_tracker_type()){
+        case MBT:
+          std::cout << "model based tracker";
+          break;
+        case KLT_MBT:
+          std::cout << "hybrid (mbt+klt)";
+          break;
+        case KLT:
+          std::cout << "tracker with klt points";
+          break;
+      }
+      std::cout << std::endl;
+
+      std::cout << "Detector set to:";
+      switch(get_tracker_type()){
+        case ZBAR:
+          std::cout << "QR code";
+          break;
+        case DTMX:
+          std::cout << "Datamatrix (flashcode)";
+          break;
+      }
+      std::cout << std::endl;
+
+  }
 
   if(using_var_file())
     std::cout << "Using variance file:" << get_var_file() << std::endl;
@@ -177,6 +204,10 @@ bool CmdLine:: using_var_file(){
   return vm_.count("variance-file")>0;
 }
 
+bool CmdLine:: logging_video(){
+  return vm_.count("video-output-path")>0;
+}
+
 bool CmdLine:: dmtx_only(){
   return vm_.count("dmtxonly")>0;
 }
@@ -263,6 +294,16 @@ CmdLine::DETECTOR_TYPE CmdLine:: get_detector_type(){
   else
     return CmdLine::DTMX;
 }
+
+CmdLine::TRACKER_TYPE CmdLine:: get_tracker_type(){
+  if(vm_["tracker-type"].as<std::string>()=="mbt")
+    return CmdLine::MBT;
+  else if(vm_["tracker-type"].as<std::string>()=="klt")
+    return CmdLine::KLT;
+  else
+    return CmdLine::KLT_MBT;
+}
+
 
 double CmdLine:: get_adhoc_recovery_size(){
   return adhoc_recovery_size_;

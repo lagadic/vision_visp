@@ -14,11 +14,12 @@
 
 namespace tracking{
 
-  Tracker_:: Tracker_(CmdLine& cmd, detectors::DetectorBase* detector,bool flush_display) :
+  Tracker_:: Tracker_(CmdLine& cmd, detectors::DetectorBase* detector,vpMbTracker* tracker,bool flush_display) :
       cmd(cmd),
       iter_(0),
       flashcode_center_(640/2,480/2),
       detector_(detector),
+      tracker_(tracker),
       flush_display_(flush_display){
     std::cout << "starting tracker" << std::endl;
     points3D_inner_ = cmd.get_inner_points_3D();
@@ -36,7 +37,6 @@ namespace tracking{
       }
     }
     f_ = cmd.get_flashcode_points_3D();
-
 
     if(cmd.using_var_file()){
       varfile_.open(cmd.get_var_file().c_str(),std::ios::out);
@@ -60,18 +60,24 @@ namespace tracking{
         i->init(cmd.get_hinkley_alpha(),cmd.get_hinkley_delta());
     }
 
-    tracker_.getMovingEdge(tracker_me_config_);
+    if(cmd.using_mbt_dynamic_range()){
+      vpMbEdgeTracker *tracker_me = dynamic_cast<vpMbEdgeTracker*>(tracker_);
+      if(tracker_me)
+        tracker_me->getMovingEdge(tracker_me_config_);
+      else
+        std::cout << "error: could not init moving edges on tracker that doesn't support them." << std::endl;
+    }
 
-    tracker_.loadConfigFile(cmd.get_xml_file().c_str() ); // Load the configuration of the tracker
-    tracker_.loadModel(cmd.get_wrl_file().c_str()); // load the 3d model, to read .wrl model the 3d party library coin is required, if coin is not installed .cao file can be used.
+    tracker_->loadConfigFile(cmd.get_xml_file().c_str() ); // Load the configuration of the tracker
+    tracker_->loadModel(cmd.get_wrl_file().c_str()); // load the 3d model, to read .wrl model the 3d party library coin is required, if coin is not installed .cao file can be used.
   }
 
   detectors::DetectorBase& Tracker_:: get_detector(){
     return *detector_;
   }
 
-  vpMbEdgeKltTracker& Tracker_:: get_mbt(){
-    return tracker_;
+  vpMbTracker& Tracker_:: get_mbt(){
+    return *tracker_;
   }
 
   std::vector<vpPoint>& Tracker_:: get_points3D_inner(){
@@ -186,7 +192,7 @@ namespace tracking{
 
 
   bool Tracker_:: model_detected(msm::front::none const&){
-    //tracker_.resetTracker();
+    //tracker_->resetTracker();
 
     vpImageConvert::convert(*I_,Igray_);
     vpPose pose;
@@ -196,7 +202,6 @@ namespace tracking{
 
     pose.computePose(vpPose::LAGRANGE,cMo_);
     pose.computePose(vpPose::VIRTUAL_VS,cMo_);
-    std::cout << "pose=" << vpPoseVector(cMo_).t() << std::endl;
     vpDisplay::displayFrame(*I_,cMo_,cam_,0.01,vpColor::none,2);
 
     std::vector<vpImagePoint> model_inner_corner(4);
@@ -215,13 +220,21 @@ namespace tracking{
     }
 
     try{
-      tracker_.initFromPose(Igray_,cMo_);
-      tracker_.track(Igray_); // track the object on this image
-      tracker_.getPose(cMo_); // get the pose
-      tracker_.setCovarianceComputation(true);
+      if(cmd.get_tracker_type()==CmdLine::MBT){
+        vpMbEdgeTracker* me_tracker = dynamic_cast<vpMbEdgeTracker*>(tracker_);
+        me_tracker->resetTracker();
+        me_tracker->loadConfigFile(cmd.get_xml_file().c_str() );
+        me_tracker->loadModel(cmd.get_wrl_file().c_str());
+      }
+
+      tracker_->initFromPose(Igray_,cMo_);
+
+      tracker_->track(Igray_); // track the object on this image
+      tracker_->getPose(cMo_); // get the pose
+      tracker_->setCovarianceComputation(true);
       for(int i=0;i<cmd.get_mbt_convergence_steps();i++){
-        tracker_.track(Igray_); // track the object on this image
-        tracker_.getPose(cMo_); // get the pose
+        tracker_->track(Igray_); // track the object on this image
+        tracker_->getPose(cMo_); // get the pose
       }
       std::cout << "done..." << std::endl;
     }catch(vpTrackingException& e){
@@ -238,9 +251,9 @@ namespace tracking{
     try{
       LogFileWriter writer(varfile_); //the destructor of this class will act as a finally statement
       vpImageConvert::convert(evt.I,Igray_);
-      tracker_.track(Igray_); // track the object on this image
-      tracker_.getPose(cMo_);
-      vpMatrix mat = tracker_.getCovarianceMatrix();
+      tracker_->track(Igray_); // track the object on this image
+      tracker_->getPose(cMo_);
+      vpMatrix mat = tracker_->getCovarianceMatrix();
       if(cmd.using_var_file()){
         writer.write(iter_);
         for(int i=0;i<mat.getRows();i++)
@@ -355,9 +368,14 @@ namespace tracking{
 
     if(cmd.using_mbt_dynamic_range()){
       int range = (const unsigned int)(boost::accumulators::mean(acc)*cmd.get_mbt_dynamic_range());
-      tracker_.getMovingEdge(tracker_me_config_);
-      tracker_me_config_.setRange(range);
-      tracker_.setMovingEdge(tracker_me_config_);
+
+      vpMbEdgeTracker *tracker_me = dynamic_cast<vpMbEdgeTracker*>(tracker_);
+      if(tracker_me){
+        tracker_me->getMovingEdge(tracker_me_config_);
+        tracker_me_config_.setRange(range);
+        tracker_me->setMovingEdge(tracker_me_config_);
+      }else
+        std::cout << "error: could not init moving edges on tracker that doesn't support them." << std::endl;
     }
 
     cvTrackingBox_ = cv::boundingRect(points);

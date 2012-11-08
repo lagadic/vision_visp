@@ -9,6 +9,9 @@
 #include <visp/vpDisplayX.h>
 #include "detectors/datamatrix/detector.h"
 #include "detectors/qrcode/detector.h"
+#include <visp/vpMbEdgeKltTracker.h>
+#include <visp/vpMbKltTracker.h>
+#include <visp/vpMbEdgeTracker.h>
 #include <boost/thread/thread.hpp>
 #include "threading.h"
 #include "events.h"
@@ -27,15 +30,17 @@ int main(int argc, char**argv)
   vpV4l2Grabber video_reader;
   vpVideoWriter writer;
   vpImage<vpRGBa> logI;
+  vpMbTracker* tracker;
 
   vpCameraParameters cam = cmd.get_cam_calib_params();
   if(cmd.get_verbose())
     std::cout << "loaded camera parameters:" << cam << std::endl;
 
-  //cam.initPersProjWithDistortion(543.1594454,539.1300717,320.1025306,212.8181022,0.01488495076,-0.01484690262);
-  writer.setFileName((cmd.get_data_dir() + cmd.get_log_file_pattern()).c_str());
 
-  writer.open(logI);
+  if(cmd.logging_video()){
+    writer.setFileName((cmd.get_data_dir() + cmd.get_log_file_pattern()).c_str());
+    writer.open(logI);
+  }
 
   if(cmd.using_single_image()){
     if(cmd.get_verbose())
@@ -70,7 +75,15 @@ int main(int argc, char**argv)
     detector = new detectors::qrcode::Detector;
   else if(cmd.get_detector_type() == CmdLine::DTMX)
     detector = new detectors::datamatrix::Detector;
-  tracking::Tracker t(cmd,detector);
+
+  if(cmd.get_tracker_type() == CmdLine::KLT)
+    tracker = new vpMbKltTracker();
+  else if(cmd.get_tracker_type() == CmdLine::KLT_MBT)
+    tracker = new vpMbEdgeKltTracker();
+  else if(cmd.get_tracker_type() == CmdLine::MBT)
+    tracker = new vpMbEdgeTracker();
+
+  tracking::Tracker t(cmd,detector,tracker);
   TrackerThread tt(t);
   boost::thread bt(tt);
 
@@ -99,7 +112,8 @@ int main(int argc, char**argv)
       reader.acquire(I);
     t.process_event(tracking::input_ready(I,cam,iter));
     d->getImage(logI);
-    writer.saveFrame(logI);
+    if(cmd.logging_video())
+      writer.saveFrame(logI);
   }
 
   t.process_event(tracking::finished());

@@ -27,7 +27,7 @@
 
 #include "cmd_line/cmd_line.h"
 #include "detectors/detector_base.h"
-#include <visp/vpMbEdgeKltTracker.h>
+#include <visp/vpMbEdgeTracker.h>
 #include "states.hpp"
 #include "events.h"
 
@@ -57,7 +57,7 @@ namespace tracking{
     typedef boost::array<vpHinkley,6> hinkley_array_t;
     hinkley_array_t hink_;
 
-    vpMbEdgeKltTracker tracker_; // Create a model based tracker.
+    vpMbTracker* tracker_; // Create a model based tracker.
     vpMe tracker_me_config_;
     vpImage<vpRGBa> *I_;
     vpImage<vpRGBa> *_I;
@@ -82,7 +82,7 @@ namespace tracking{
     void set_flush_display(bool val);
     bool get_flush_display();
     detectors::DetectorBase& get_detector();
-    vpMbEdgeKltTracker& get_mbt();
+    vpMbTracker& get_mbt();
     std::vector<vpPoint>& get_points3D_inner();
     std::vector<vpPoint>& get_points3D_outer();
     std::vector<vpPoint>& get_points3D_middle();
@@ -93,7 +93,7 @@ namespace tracking{
     vpCameraParameters& get_cam();
     CmdLine& get_cmd();
 
-    Tracker_(CmdLine& cmd, detectors::DetectorBase* detector,bool flush_display = true);
+    Tracker_(CmdLine& cmd, detectors::DetectorBase* detector,vpMbTracker* tracker_,bool flush_display = true);
 
     typedef WaitingForInput initial_state;      //initial state of our state machine tracker
 

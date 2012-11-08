@@ -28,8 +28,7 @@ class CmdLine{
   std::string var_file_;
   std::string single_image_name_;
   std::vector<vpPoint> flashcode_points_3D_;
-  std::vector<vpPoint> inner_points_3D_;
-  std::vector<vpPoint> outer_points_3D_;
+  std::vector<vpPoint> inner_points_3D_,outer_points_3D_;
 
   po::options_description prog_args;
   std::vector<double> flashcode_coordinates,inner_coordinates,outer_coordinates;
@@ -40,6 +39,9 @@ class CmdLine{
  public:
   enum DETECTOR_TYPE{
     DTMX, ZBAR
+  };
+  enum TRACKER_TYPE{
+    KLT, MBT, KLT_MBT
   };
 
   CmdLine(int argc,char**argv);
@@ -117,6 +119,8 @@ class CmdLine{
 
   bool using_var_limit();
 
+  bool logging_video();
+
   std::string get_single_image_path();
 
   std::vector<vpPoint>& get_flashcode_points_3D();
@@ -124,5 +128,7 @@ class CmdLine{
   std::vector<vpPoint>& get_outer_points_3D();
 
   DETECTOR_TYPE get_detector_type();
+
+  TRACKER_TYPE get_tracker_type();
 };
 #endif
