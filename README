@@ -19,6 +19,7 @@ First, it finds the flashcode and deduces the model from it.
 Afterwards, the model is tracked.
 The whole state machine is defined in tracking.h. 
 This is also the most interesting file to look at to understand the code.  
+General options:
   -d [ --dmtxonly ]                     only detect the datamatrix
   -C [ --video-camera ]                 video from camera
   -s [ --video-source ] arg (=/dev/video1)
@@ -28,8 +29,7 @@ This is also the most interesting file to look at to understand the code.
   -J [ --video-input-path ] arg (=/images/%08d.jpg)
                                         input video file path relative to the 
                                         data directory
-  -L [ --video-output-path ] arg (=/log/%08d.jpg)
-                                        output video file path relative to the 
+  -L [ --video-output-path ] arg        output video file path relative to the 
                                         data directory
   -I [ --single-image ] arg             load this single image (relative to 
                                         data dir)
@@ -37,6 +37,9 @@ This is also the most interesting file to look at to understand the code.
   -r [ --detector-type ] arg (=zbar)    Type of your detector that will be used
                                         for initialisation/recovery. zbar for 
                                         QRcodes and more, dtmx for flashcodes.
+  -t [ --tracker-type ] arg (=klt_mbt)  Type of tracker. mbt_klt for hybrid: 
+                                        mbt+klt, mbt for model based, klt for 
+                                        klt-based
   -v [ --verbose ]                      show states of the tracker
   -T [ --dmx-detector-timeout ] arg (=1000)
                                         timeout for datamatrix detection in ms
