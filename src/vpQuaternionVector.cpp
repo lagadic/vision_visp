@@ -187,9 +187,9 @@ void vpQuaternionVector::buildFrom(const vpRotationMatrix &R)
   double norm = sqrt(axis_x*axis_x+axis_y*axis_y+axis_z*axis_z);	
   if(fabs(norm)<minimum) norm = 1.;
   double sinTheta_2 = sin(theta);
-  set(cos(theta),
-      (axis_x * sinTheta_2)/norm,
+  set((axis_x * sinTheta_2)/norm,
       (axis_y * sinTheta_2)/norm,
-      (axis_z * sinTheta_2)/norm);
+      (axis_z * sinTheta_2)/norm,
+      cos(theta));
 
 }
