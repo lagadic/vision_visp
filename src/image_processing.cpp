@@ -113,6 +113,7 @@ ImageProcessing::ImageProcessing() :
   ros::param::get(visp_camera_calibration::model_points_x_param,model_points_x_list);
   ros::param::get(visp_camera_calibration::model_points_y_param,model_points_y_list);
   ros::param::get(visp_camera_calibration::model_points_z_param,model_points_z_list);
+
   ROS_ASSERT(model_points_x_list.getType() == XmlRpc::XmlRpcValue::TypeArray);
   ROS_ASSERT(model_points_x_list.size() == model_points_y_list.size() && model_points_x_list.size()==model_points_z_list.size());
   for(int i=0;i<model_points_x_list.size();i++){
@@ -160,7 +161,10 @@ ImageProcessing::ImageProcessing() :
 
 bool ImageProcessing::setCameraInfoBisCallback(sensor_msgs::SetCameraInfo::Request  &req,
                              sensor_msgs::SetCameraInfo::Response &res){
-  camera_calibration_parsers::writeCalibration("calibration.ini",visp_camera_calibration::raw_image_topic,req.camera_info);
+  std::string calibration_path;
+  ros::param::getCached(visp_camera_calibration::calibration_path_param,calibration_path);
+  ROS_INFO("saving calibration file to %s",calibration_path.c_str());
+  camera_calibration_parsers::writeCalibration(calibration_path,visp_camera_calibration::raw_image_topic,req.camera_info);
   return true;
 }
 void ImageProcessing::rawImageCallback(const sensor_msgs::Image::ConstPtr& image){

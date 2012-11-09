@@ -64,6 +64,7 @@ namespace visp_camera_calibration
   extern std::string size_precision_param;
   extern std::string pause_at_each_frame_param;
   extern std::string images_path_param;
+  extern std::string calibration_path_param;
 
   extern std::string model_points_x_param;
   extern std::string model_points_y_param;

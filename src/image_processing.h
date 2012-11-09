@@ -80,7 +80,6 @@ class ImageProcessing
   std::vector<vpPoint> selected_points_;
   std::vector<vpPoint> model_points_;
 
-
   vpCameraParameters cam_;
   /*!
     \brief callback corresponding to the raw_image topic.

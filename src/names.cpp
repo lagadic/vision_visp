@@ -59,7 +59,7 @@ namespace visp_camera_calibration
   std::string calibrate_service("calibrate");
   std::string set_camera_info_bis_service("set_camera_info_bis");
 
-  std::string gray_level_precision_param("/visp_camera_calibration/visp_camera_calibration_image_processing/gray_level_precision");
+    std::string gray_level_precision_param("/visp_camera_calibration/visp_camera_calibration_image_processing/gray_level_precision");
   std::string size_precision_param("/visp_camera_calibration/visp_camera_calibration_image_processing/size_precision");
   std::string pause_at_each_frame_param("/visp_camera_calibration/visp_camera_calibration_image_processing/pause_at_each_frame");
   std::string images_path_param("/visp_camera_calibration/visp_camera_calibration_camera/images_path");
@@ -71,6 +71,8 @@ namespace visp_camera_calibration
   std::string selected_points_x_param("/visp_camera_calibration/visp_camera_calibration_image_processing/selected_points_x");
   std::string selected_points_y_param("/visp_camera_calibration/visp_camera_calibration_image_processing/selected_points_y");
   std::string selected_points_z_param("/visp_camera_calibration/visp_camera_calibration_image_processing/selected_points_z");
+
+  std::string calibration_path_param("/visp_camera_calibration/visp_camera_calibration_image_processing/calibration_path");
 
   void remap(){
     if (ros::names::remap("camera_prefix") != "camera_prefix") {

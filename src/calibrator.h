@@ -50,8 +50,8 @@
 #include "ros/ros.h"
 
 #include "visp_camera_calibration/CalibPointArray.h"
-#include "visp/vpPoint.h"
-#include "visp/vpCalibration.h"
+#include <visp/vpPoint.h>
+#include <visp/vpCalibration.h>
 #include "visp_camera_calibration/calibrate.h"
 #include <vector>
 
