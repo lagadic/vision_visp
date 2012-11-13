@@ -1,0 +1,7 @@
+<library path="lib/libvisp_auto_tracker_nodelet">
+  <class name="visp_auto_tracker/AutoTrackerNodelet" type="visp_auto_tracker::AutoTrackerNodelet" base_class_type="nodelet::Nodelet">
+    <description> 
+      A node to track a pattern with init and recovery.
+    </description>
+  </class>
+</library>

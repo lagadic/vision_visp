@@ -14,8 +14,13 @@
   <depend package="sensor_msgs"/>
   <depend package="geometry_msgs"/>
   <depend package="message_filters"/>
+  <depend package="std_msgs"/>
+
   <depend package="nodelet"/>
   <depend package="visp"/>
+  <export>
+    <nodelet plugin="${prefix}/visp_auto_tracker_nodelet.xml"/>
+  </export>
 
 </package>
 

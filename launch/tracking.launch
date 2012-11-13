@@ -1,0 +1,12 @@
+<launch>
+  <arg name="config" />
+  <!-- nodelet manager process -->
+  <node pkg="nodelet" type="nodelet" name="visp_nodelet_manager" args="manager"  output="screen"/>
+
+  <!-- Launch the tracking node -->
+  <node pkg="nodelet" type="nodelet" name="visp_auto_tracker"
+        args="load visp_auto_tracker/AutoTrackerNodelet visp_nodelet_manager" output="screen">
+	<param name="tracker_config_file" type="string" value="$(arg config)" />
+  </node>
+
+</launch>
