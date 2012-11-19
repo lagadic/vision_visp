@@ -4,6 +4,7 @@
 #include <boost/make_shared.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/thread.hpp>
+#include <boost/thread/locks.hpp>
 #include <visp/vpDisplay.h>
 
 #include <nodelet/nodelet.h>
@@ -15,13 +16,19 @@
 #include "libauto_tracker/tracking_events.h"
 #include "tracking_events/display_visp.h"
 
+#include "message_filters/subscriber.h"
+#include "message_filters/time_synchronizer.h"
+#include "sensor_msgs/CameraInfo.h"
+#include "sensor_msgs/Image.h"
+#include <visp_tracker/Init.h>
+#include "geometry_msgs/TransformStamped.h"
 #include <string>
 
 
 namespace visp_auto_tracker
 {
 
-  class AutoTrackerNodelet : public nodelet::Nodelet,public tracking_events::DisplayVispEvents
+  class AutoTrackerNodelet : public nodelet::Nodelet,public tracking::EventsBase
   {
   public:
     AutoTrackerNodelet ();
@@ -32,19 +39,50 @@ namespace visp_auto_tracker
     void spinTracker();
     void spinMachine();
 
+
     void on_finished();
+        void on_initial_waiting_for_pattern(const vpImage<vpRGBa>& I);
+        void on_detect_pattern(const unsigned int iter,const vpImage<vpRGBa>& I, const vpCameraParameters& cam, detectors::DetectorBase& detector);
+        void on_redetect_pattern(const unsigned int iter,
+                                         const vpImage<vpRGBa>& I,
+                                         const  vpCameraParameters& cam,
+                                         detectors::DetectorBase& detector,
+                                         const vpRect& detection_region);
+        void on_detect_model(const vpImage<vpRGBa>& I,
+                                     const vpCameraParameters& cam,
+                                     const vpHomogeneousMatrix& cMo,
+                                     vpMbTracker& mbt,
+                                     const std::vector<vpImagePoint>& model_inner_corner,
+                                     const std::vector<vpImagePoint>& model_outer_corner);
+        void on_track_model(const unsigned int iter,
+                                    const vpImage<vpRGBa>& I,
+                                    const vpCameraParameters& cam,
+                                    const vpHomogeneousMatrix& cMo,
+                                    vpMbTracker& mbt);
+
+        void frameCallback(const sensor_msgs::ImageConstPtr& image, const sensor_msgs::CameraInfoConstPtr& cam_info);
+        void trackingCallback(const sensor_msgs::ImageConstPtr& image, const sensor_msgs::CameraInfoConstPtr& cam_info, const geometry_msgs::TransformStampedConstPtr& transform);
+        //tracking::Tracker* tracker_;
   private:
+    boost::mutex mutex_tracking_;
+
+    tracking::Tracker* tracker_;
     volatile bool exiting_;
-    boost::shared_ptr<tracking::Tracker> tracker_;
-    boost::shared_ptr<boost::thread> thread_;
-    ros::Publisher posePublisher_;
+    unsigned int queue_size_;
+    bool input_selected_;
+
     vpDisplay* d_;
     vpImage<vpRGBa> I_;
     CmdLine* cmd_;
 
+    ros::Publisher posePublisher_;
+
     std::string tracker_config_file_;
     int video_reader_width_;
     int video_reader_height_;
+
+    ros::ServiceClient tracker_init_service_;
+    visp_tracker::Init tracker_init_comm_;
   };
 
 } // end of namespace visp_tracker.

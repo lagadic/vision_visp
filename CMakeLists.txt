@@ -7,7 +7,7 @@ include($ENV{ROS_ROOT}/core/rosbuild/rosbuild.cmake)
 #  Release        : w/o debug symbols, w/ optimization
 #  RelWithDebInfo : w/ debug symbols, w/ optimization
 #  MinSizeRel     : w/o debug symbols, w/ optimization, stripped binaries
-#set(ROS_BUILD_TYPE RelWithDebInfo)
+set(ROS_BUILD_TYPE Debug)
 
 rosbuild_init()
 
@@ -33,15 +33,16 @@ rosbuild_add_library(auto_tracker
   flashcode_mbt/libauto_tracker/states.hpp 
   flashcode_mbt/libauto_tracker/events.h 
   flashcode_mbt/libauto_tracker/tracking.h 
-  flashcode_mbt/libauto_tracker/tracking.cpp 
+  flashcode_mbt/libauto_tracker/tracking.cpp
+#  flashcode_mbt/libauto_tracker/tracking_events.cpp  
   flashcode_mbt/libauto_tracker/logfilewriter.hpp 
   flashcode_mbt/libauto_tracker/threading.h 
   flashcode_mbt/libauto_tracker/threading.cpp)
 
-rosbuild_add_library(tracking_events_visp
-			flashcode_mbt/tracking_events/display_visp.cpp
-			flashcode_mbt/tracking_events/display_visp.h 
-			)
+#rosbuild_add_library(tracking_events_visp
+#			flashcode_mbt/tracking_events/display_visp.cpp
+#			flashcode_mbt/tracking_events/display_visp.h 
+#			)
 			
 add_subdirectory(flashcode_mbt/cmd_line)
 add_subdirectory(flashcode_mbt/detectors)
@@ -50,10 +51,12 @@ rosbuild_add_library(visp_auto_tracker_nodelet
   src/nodelets/controller.cpp
   )
 
+#rosbuild_add_library(controller src/controller/controller_client.cpp)
+
 rosbuild_link_boost(visp_auto_tracker_nodelet
   filesystem system signals regex date_time program_options thread)
 
-target_link_libraries(visp_auto_tracker_nodelet auto_tracker tracking_events_visp visp-2 auto_tracker qrcode_detector datamatrix_detector cmd_line dmtx zbar )
+target_link_libraries(visp_auto_tracker_nodelet auto_tracker  visp-2 auto_tracker qrcode_detector datamatrix_detector cmd_line dmtx zbar )
 #to be removed
 target_link_libraries(visp_auto_tracker_nodelet
 /usr/lib/liblapack.so 
