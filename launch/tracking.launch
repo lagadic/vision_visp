@@ -4,7 +4,8 @@
     <param name="model_path" value="/home/fnovotny/fuerte_workspace/vision_visp/visp_auto_tracker/models" />
     <param name="model_name" value="pattern" />
 
-  <node pkg="visp_tracker" type="tracker" name="tracker" output="screen" >
+
+  <node pkg="visp_tracker" type="tracker" name="tracker" output="screen">
     <param name="camera_prefix" value="/usb_cam" />
     <remap from="/usb_cam/image_rect" to="/usb_cam/image_raw" />
     <param name="model_path" value="package://visp_auto_tracker/models" />
@@ -13,9 +14,19 @@
 
   </node>
 
-  <!-- nodelet manager process -->
-  <node pkg="nodelet" type="nodelet" name="visp_nodelet_manager" args="manager" />
 
+  <node pkg="nodelet" type="nodelet" name="visp_nodelet_manager" args="manager" />
+<!--
+  <node pkg="nodelet" type="nodelet" name="tracker"
+        args="load visp_tracker/Tracker visp_nodelet_manager">
+    <param name="camera_prefix" value="/usb_cam" />
+    <remap from="/usb_cam/image_rect" to="/usb_cam/image_raw" />
+    <param name="model_path" value="package://visp_auto_tracker/models" />
+    <param name="model_name" value="pattern" />
+    <rosparam file="$(find visp_auto_tracker)/models/pattern/tracker.yaml" />
+
+  </node>
+-->
   <!-- Launch the tracking node -->
   <node pkg="nodelet" type="nodelet" name="visp_auto_tracker"
         args="standalone visp_auto_tracker/AutoTrackerNodelet" output="screen" >
@@ -27,7 +38,6 @@
   </node>
 
 
-<node pkg="visp_tracker" type="viewer" name="tracker_mbt_viewer"/>
   <node pkg="tf" type="static_transform_publisher" name="tm_bc" args="0 0 0  0.0 0.0 0.0 /world /head_camera 100" />
 
   <node pkg="tf" type="static_transform_publisher" name="odometry_frame_broadcaster" args="0 0 0  0.0 0.0 0.0 /world /base_link 100" />
@@ -40,7 +50,7 @@
       <rosparam param="P">[543.1594454, 0.0, 320.1025306, 0.0, 0.0, 539.1300717, 212.8181022, 0.0, 0.0, 0.0, 1.0, 0.0]</rosparam>
       <rosparam param="R">[1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0]</rosparam>
       <rosparam param="K">[543.1594454, 0.0, 320.1025306, 0.0, 539.1300717, 212.8181022, 0.0, 0.0, 1.0]</rosparam>
-      <param name="wait_time" type="double" value=".5"/>
+      <param name="wait_time" type="double" value=".2"/>
   </node>
 
 </launch>
