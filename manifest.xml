@@ -4,25 +4,19 @@
      visp_auto_tracker
 
   </description>
-  <author>fnovotny</author>
+  <author>dt</author>
   <license>BSD</license>
   <review status="unreviewed" notes=""/>
   <url>http://ros.org/wiki/visp_auto_tracker</url>
   <depend package="roscpp"/>
   <depend package="rospy"/>
   <depend package="visp_bridge"/>
-  <depend package="visp_tracker"/>
-
   <depend package="sensor_msgs"/>
   <depend package="geometry_msgs"/>
   <depend package="message_filters"/>
   <depend package="std_msgs"/>
-
-  <depend package="nodelet"/>
   <depend package="visp"/>
-  <export>
-    <nodelet plugin="${prefix}/visp_auto_tracker_nodelet.xml"/>
-  </export>
+  <depend package="image_transport"/>
 
 </package>
 

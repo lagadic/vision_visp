@@ -1,3 +1,0 @@
-[submodule "flashcode_mbt"]
-	path = flashcode_mbt
-	url = git@github.com:filipnovotny/flashcode_mbt.git
