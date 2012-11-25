@@ -6,6 +6,7 @@
 #include <boost/program_options/parsers.hpp>
 #include <exception>
 #include <string>
+#include <visp/vpConfig.h>
 #include <visp/vpPoint.h>
 namespace po = boost::program_options;
 class CmdLine{

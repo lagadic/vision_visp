@@ -1,6 +1,7 @@
 #include "cmd_line.h"
 #include <iostream>
 #include <fstream>
+#include <visp/vpConfig.h>
 #include <visp/vpMbEdgeTracker.h>
 
 void CmdLine::common(){

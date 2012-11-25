@@ -196,6 +196,8 @@ namespace tracking{
     vpPlot* plot_;
     int iter_;
   public:
+    vpHomogeneousMatrix cMo;
+
     ~TrackModel(){
       delete plot_;
     }
@@ -219,7 +221,6 @@ namespace tracking{
     template <class Event, class Fsm>
     void on_exit(Event const& evt, Fsm& fsm)
     {
-      vpHomogeneousMatrix cMo;
       fsm.get_mbt().getPose(cMo);
       vpDisplay::display(evt.I);
       fsm.get_mbt().display(evt.I, cMo, fsm.get_cam(), vpColor::red, 1);// display the model at the computed pose.
