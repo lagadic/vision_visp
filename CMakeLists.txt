@@ -21,10 +21,34 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 #uncomment if you have defined services
 #rosbuild_gensrv()
 
-#common commands for building c++ executables and libraries
-#rosbuild_add_library(${PROJECT_NAME} src/example.cpp)
-#target_link_libraries(${PROJECT_NAME} another_library)
-#rosbuild_add_boost_directories()
-#rosbuild_link_boost(${PROJECT_NAME} thread)
-#rosbuild_add_executable(example examples/example.cpp)
-#target_link_libraries(example ${PROJECT_NAME})
+include_directories("${CMAKE_SOURCE_DIR}/pattern_mbt")
+include_directories("${CMAKE_SOURCE_DIR}/pattern_mbt/detectors")
+
+# Library gathering libvisp_tracker used by all nodes.
+rosbuild_add_library(auto_tracker
+  pattern_mbt/libauto_tracker/states.hpp
+  pattern_mbt/libauto_tracker/events.h
+  pattern_mbt/libauto_tracker/tracking.h
+  pattern_mbt/libauto_tracker/tracking.cpp
+  pattern_mbt/libauto_tracker/logfilewriter.hpp
+  pattern_mbt/libauto_tracker/threading.h
+  pattern_mbt/libauto_tracker/threading.cpp)
+
+rosbuild_add_library(cmd_line
+	pattern_mbt/cmd_line/cmd_line.cpp
+)
+
+add_subdirectory(pattern_mbt/detectors)
+
+rosbuild_add_executable(visp_auto_tracker
+  src/main.cpp
+  src/node.cpp
+  src/names.cpp
+  )
+
+#rosbuild_add_library(controller src/controller/controller_client.cpp)
+
+rosbuild_link_boost(visp_auto_tracker
+  filesystem system signals regex date_time program_options thread)
+
+target_link_libraries(visp_auto_tracker auto_tracker auto_tracker qrcode_detector datamatrix_detector cmd_line dmtx zbar )

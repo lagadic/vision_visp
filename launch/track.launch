@@ -1,0 +1,15 @@
+<launch>
+	<arg name="config" default="/home/dt/data/config.cfg" />
+	
+	<node pkg="visp_auto_tracker" type="visp_auto_tracker" name="visp_auto_tracker" output="screen">
+	      <param name="tracker_config_path" type="string" value="$(arg config)" />
+	      <remap from="/visp_auto_tracker/camera_info" to="/camera_info"/>
+      	      <remap from="/visp_auto_tracker/image_raw" to="/visp_camera_calibration/image_raw"/>
+
+	</node>
+
+	<param name="/visp_camera_calibration/visp_camera_calibration_camera/images_path" value="/home/dt/data/images/%010d.ppm" />
+	<node pkg="visp_camera_calibration" name="visp_camera_calibration_camera" type="visp_camera_calibration_camera">
+	      
+	</node>
+</launch>
