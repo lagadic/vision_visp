@@ -76,5 +76,12 @@ namespace visp_bridge{
     \return: transformation in ROS/geometry_msgs format.
   */
   geometry_msgs::Transform toGeometryMsgsTransform(vpHomogeneousMatrix& mat);
+
+  /*!
+	  \brief Converts a ViSP homogeneous matrix (vpHomogeneousMatrix) to a geometry_msgs::Pose.
+	  \param mat: transformation in ViSP format.
+	  \return: transformation in ROS/geometry_msgs format.
+	*/
+  geometry_msgs::Pose toGeometryMsgsPose(vpHomogeneousMatrix& mat);
 }
 #endif /* 3DPOSE_H_ */
