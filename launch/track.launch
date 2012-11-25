@@ -1,5 +1,5 @@
 <launch>
-	<arg name="config" default="/home/dt/data/config.cfg" />
+	<arg name="config" default="$(find visp_auto_tracker)/data/config.cfg" />
 	
 	<node pkg="visp_auto_tracker" type="visp_auto_tracker" name="visp_auto_tracker" output="screen">
 	      <param name="tracker_config_path" type="string" value="$(arg config)" />
