@@ -49,7 +49,6 @@
 #include "visp/vpConfig.h"
 #include "3dpose.h"
 #include <cmath>
-#include <ros/ros.h>
 
 #if VISP_VERSION_INT > (2<<16 | 6<<8 | 1)
 #include <visp/vpQuaternionVector.h>
@@ -58,7 +57,7 @@
 #include <visp/vpRotationMatrix.h>
 #endif
 #include <visp/vpTranslationVector.h>
-//#define USE_OLD_QUATERNION
+
 
 namespace visp_bridge{
 
@@ -67,11 +66,8 @@ namespace visp_bridge{
     vpHomogeneousMatrix mat;
     vpTranslationVector vec(pose.position.x,pose.position.y,pose.position.z);
     vpQuaternionVector q(pose.orientation.x,pose.orientation.y,pose.orientation.z,pose.orientation.w);
-#ifdef USE_OLD_QUATERNION
-    mat.buildFromOld(vec,q);
-#else
     mat.buildFrom(vec,q);
-#endif
+
     return mat;
   }
 
@@ -87,11 +83,7 @@ namespace visp_bridge{
   geometry_msgs::Transform toGeometryMsgsTransform(vpHomogeneousMatrix& mat){
     geometry_msgs::Transform trans;
     vpQuaternionVector q;
-#ifdef USE_OLD_QUATERNION
-    mat.extractOld(q);
-#else
     mat.extract(q);
-#endif
     trans.rotation.x = q.x();
     trans.rotation.y = q.y();
     trans.rotation.z = q.z();
@@ -105,6 +97,30 @@ namespace visp_bridge{
     return trans;
   }
 
+  geometry_msgs::Pose toGeometryMsgsPose(vpHomogeneousMatrix& mat){
+    geometry_msgs::Pose pose;
+
+	vpThetaUVector tu(mat);
+	vpColVector u;
+	double theta;
+	tu.extract(theta, u);
+
+	theta *= 0.5;
+
+	double sinTheta_2 = sin(theta);
+
+	pose.orientation.x = u[0] * sinTheta_2;
+	pose.orientation.y = u[1] * sinTheta_2;
+	pose.orientation.z = u[2] * sinTheta_2;
+	pose.orientation.w = cos(theta);
+
+	pose.position.x = mat[0][3];
+	pose.position.y = mat[1][3];
+	pose.position.z = mat[2][3];
+
+	return pose;
+  }
+
 
 #else
   vpHomogeneousMatrix toVispHomogeneousMatrix(const geometry_msgs::Transform& trans){
@@ -112,10 +128,10 @@ namespace visp_bridge{
       vpTranslationVector vec(trans.translation.x,trans.translation.y,trans.translation.z);
       vpRotationMatrix rmat;
 
-      double a = trans.rotation.w;
-      double b = trans.rotation.x;
-      double c = trans.rotation.y;
-      double d = trans.rotation.z;
+      double a = trans.rotation.x;
+      double b = trans.rotation.y;
+      double c = trans.rotation.z;
+      double d = trans.rotation.w;
       rmat[0][0] = a*a+b*b-c*c-d*d;
       rmat[0][1] = 2*b*c-2*a*d;
       rmat[0][2] = 2*a*c+2*b*d;
@@ -157,10 +173,10 @@ namespace visp_bridge{
       vpTranslationVector vec(pose.position.x,pose.position.y,pose.position.z);
       vpRotationMatrix rmat;
 
-      double a = pose.orientation.w;
-      double b = pose.orientation.x;
-      double c = pose.orientation.y;
-      double d = pose.orientation.z;
+      double a = pose.orientation.x;
+      double b = pose.orientation.y;
+      double c = pose.orientation.z;
+      double d = pose.orientation.w;
       rmat[0][0] = a*a+b*b-c*c-d*d;
       rmat[0][1] = 2*b*c-2*a*d;
       rmat[0][2] = 2*a*c+2*b*d;

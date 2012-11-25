@@ -117,7 +117,7 @@ vpImage<vpRGBa> toVispImageRGBa(const sensor_msgs::Image& src)
         dst[j][i] = vpRGBa(src.data[j * src.step + i],src.data[j * src.step + i],src.data[j * src.step + i]);
       }
     }
-  else if (src.encoding == RGB8 || src.encoding == RGBA8 || src.encoding == BGR8 || src.encoding == BGRA8){
+  else{
     unsigned nc = sensor_msgs::image_encodings::numChannels(src.encoding);
 
     for (unsigned i = 0; i < dst.getWidth(); ++i){
@@ -140,9 +140,9 @@ sensor_msgs::Image toSensorMsgsImage(const vpImage<vpRGBa>& src){
   dst.data.resize(dst.height * dst.step);
   for (unsigned i = 0; i < src.getWidth(); ++i){
     for (unsigned j = 0; j < src.getHeight(); ++j){
-      dst.data[j * dst.step + i * nc + 0] = src.bitmap[j * 4 + i].R;
-      dst.data[j * dst.step + i * nc + 1] = src.bitmap[j * 4 + i].G;
-      dst.data[j * dst.step + i * nc + 2] = src.bitmap[j * 4 + i].B;
+      dst.data[j * dst.step + i * nc + 0] = src.bitmap[j * src.getWidth() + i].R;
+      dst.data[j * dst.step + i * nc + 1] = src.bitmap[j * src.getWidth() + i].G;
+      dst.data[j * dst.step + i * nc + 2] = src.bitmap[j * src.getWidth() + i].B;
       //dst.data[j * dst.step + i * nc + 3] = src.bitmap[j * dst.step + i].A;
     }
   }
