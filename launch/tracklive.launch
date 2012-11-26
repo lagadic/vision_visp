@@ -1,0 +1,19 @@
+<launch>
+	<arg name="config" default="$(find visp_auto_tracker)/data/config.cfg" />
+
+	<node pkg="visp_auto_tracker" type="visp_auto_tracker" name="visp_auto_tracker" output="screen">
+	      <param name="tracker_config_path" type="string" value="$(arg config)" />
+	      <remap from="/visp_auto_tracker/camera_info" to="/camera/camera_info"/>
+      	      <remap from="/visp_auto_tracker/image_raw" to="/camera/image_raw"/>
+
+	</node>
+
+
+  <node pkg="camera1394" type="camera1394_node" name="my_camera1394_node" args="_video_mode:=640x480_rgb8" >
+    <param name="camera_info_url" value="package://visp_auto_tracker/data/calibration.ini" type="string" />
+    <param name="frame_id" value="/map" type="string" />
+  </node>
+
+  <node pkg="rviz" type="rviz" name="rviz" />
+
+</launch>

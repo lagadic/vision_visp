@@ -1,15 +1,27 @@
 <launch>
 	<arg name="config" default="$(find visp_auto_tracker)/data/config.cfg" />
-	
+	<arg name="images_path" default="/home/fnovotny/playground/flashcode_mbt/data/images/test-%010d.jpg" />
+
 	<node pkg="visp_auto_tracker" type="visp_auto_tracker" name="visp_auto_tracker" output="screen">
 	      <param name="tracker_config_path" type="string" value="$(arg config)" />
-	      <remap from="/visp_auto_tracker/camera_info" to="/camera_info"/>
-      	      <remap from="/visp_auto_tracker/image_raw" to="/visp_camera_calibration/image_raw"/>
+	      <remap from="/visp_auto_tracker/camera_info" to="/usb_cam/camera_info"/>
+      	      <remap from="/visp_auto_tracker/image_raw" to="/usb_cam/image_raw"/>
 
 	</node>
 
-	<param name="/visp_camera_calibration/visp_camera_calibration_camera/images_path" value="/home/dt/data/images/%010d.ppm" />
-	<node pkg="visp_camera_calibration" name="visp_camera_calibration_camera" type="visp_camera_calibration_camera">
-	      
-	</node>
+  <node pkg="usb_cam" type="usb_cam_node" name="usb_cam" output="screen">
+      <param name="images_directory" type="string" value="$(arg images_path)" />
+      <param name="image_width" type="int" value="640" />
+      <param name="image_height" type="int" value="480" />
+      <param name="video_device" type="string" value="/dev/video1" />
+      <param name="io_method" type="string" value="video" />
+      <param name="pixel_format" type="string" value="mjpeg" />
+
+      <rosparam param="D">[-0.01484690262, 0.,0., 0., 0.000]</rosparam>
+      <rosparam param="P">[543.1594454, 0.0, 320.1025306, 0.0, 0.0, 539.1300717, 212.8181022, 0.0, 0.0, 0.0, 1.0, 0.0]</rosparam>
+      <rosparam param="R">[1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0]</rosparam>
+      <rosparam param="K">[543.1594454, 0.0, 320.1025306, 0.0, 539.1300717, 212.8181022, 0.0, 0.0, 1.0]</rosparam>
+      <param name="wait_time" type="double" value=".01"/>
+  </node>
+
 </launch>
