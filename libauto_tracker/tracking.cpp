@@ -234,7 +234,7 @@ namespace tracking{
         tracker_->track(Igray_); // track the object on this image
         tracker_->getPose(cMo_); // get the pose
       }
-    }catch(vpTrackingException& e){
+    }catch(vpException& e){
       std::cout << "Tracking failed" << std::endl;
       std::cout << e.getStringMessage() << std::endl;
       return false;
@@ -332,7 +332,7 @@ namespace tracking{
 
       }
 
-    }catch(vpTrackingException& e){
+    }catch(vpException& e){
       std::cout << "Tracking lost" << std::endl;
       return false;
     }
@@ -375,7 +375,7 @@ namespace tracking{
         std::cout << "error: could not init moving edges on tracker that doesn't support them." << std::endl;
     }
 
-    cvTrackingBox_ = cv::boundingRect(points);
+    cvTrackingBox_ = cv::boundingRect(cv::Mat(points));
     int s_x = cvTrackingBox_.x,
         s_y = cvTrackingBox_.y,
         d_x = cvTrackingBox_.x + cvTrackingBox_.width,
