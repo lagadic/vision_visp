@@ -28,3 +28,6 @@ add_library(auto_tracker
 			libauto_tracker/threading.cpp)
 ADD_EXECUTABLE( tracking examples/complex.cpp )
 TARGET_LINK_LIBRARIES( tracking auto_tracker ${OpenCV_LIBS} qrcode_detector datamatrix_detector dmtx zbar boost_program_options cmd_line boost_thread)
+
+ADD_EXECUTABLE( tracking_simple examples/simple.cpp )
+TARGET_LINK_LIBRARIES( tracking_simple auto_tracker ${OpenCV_LIBS} qrcode_detector datamatrix_detector dmtx zbar boost_program_options cmd_line boost_thread)

@@ -102,7 +102,7 @@ void CmdLine::loadConfig(std::string& config_file){
       std::cout << std::endl;
 
       std::cout << "Detector set to:";
-      switch(get_tracker_type()){
+      switch(get_detector_type()){
         case ZBAR:
           std::cout << "QR code";
           break;

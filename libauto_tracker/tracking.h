@@ -87,12 +87,19 @@ namespace tracking{
     std::vector<vpPoint>& get_points3D_outer();
     std::vector<vpPoint>& get_points3D_middle();
     std::vector<vpPoint>& get_flashcode();
+
+    //returns tracking box where to look for pattern (may be full image)
     template<class T>
     const T& get_tracking_box();
+    //returns currently treated image
     vpImage<vpRGBa>& get_I();
+    //returns camera parameters
     vpCameraParameters& get_cam();
+    //returns tracker configuration
     CmdLine& get_cmd();
 
+    //constructor
+    //inits tracker from a detector, a visp tracker
     Tracker_(CmdLine& cmd, detectors::DetectorBase* detector,vpMbTracker* tracker_,bool flush_display = true);
 
     typedef WaitingForInput initial_state;      //initial state of our state machine tracker
@@ -108,8 +115,11 @@ namespace tracking{
     //actions
     void find_flashcode_pos(input_ready const& evt);
     void track_model(input_ready const& evt);
+
+    //gets statistics about the last tracking experience
     statistics_t& get_statistics();
 
+    //here is how the tracker works
     struct transition_table : mpl::vector<
       //    Start               Event              Target                       Action                         Guard
       //   +------------------+--------------------+-----------------------+------------------------------+------------------------------+
