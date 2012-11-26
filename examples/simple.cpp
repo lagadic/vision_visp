@@ -13,8 +13,6 @@
 //visp includes
 #include <visp/vpImageIo.h>
 #include <visp/vpVideoReader.h>
-#include <visp/vpVideoWriter.h>
-#include <visp/vpV4l2Grabber.h>
 #include <visp/vpMbEdgeKltTracker.h>
 #include <visp/vpMbKltTracker.h>
 #include <visp/vpMbEdgeTracker.h>
@@ -72,5 +70,4 @@ int main(int argc, char**argv)
   }
 
   t.process_event(tracking::finished());
-  writer.close();
 }
