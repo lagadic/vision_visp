@@ -34,7 +34,6 @@ int main(int argc, char**argv)
   if(cmd.get_verbose())
     std::cout << "loaded camera parameters:" << cam << std::endl;
 
-
   std::string filenames((cmd.get_data_dir() + cmd.get_input_file_pattern()));
   if(cmd.get_verbose())
     std::cout << "Loading: " << filenames << std::endl;
@@ -63,7 +62,9 @@ int main(int argc, char**argv)
   tracking::Tracker t(cmd,detector,tracker);
 
   t.start();
+  reader.acquire(I);
 
+  t.process_event(tracking::select_input(I));
   for(int iter=0;(iter<reader.getLastFrameIndex()-1); iter++){
     reader.acquire(I);
     t.process_event(tracking::input_ready(I,cam,iter));
