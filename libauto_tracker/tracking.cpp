@@ -40,7 +40,7 @@ namespace tracking{
 
     if(cmd.using_var_file()){
       varfile_.open(cmd.get_var_file().c_str(),std::ios::out);
-      varfile_ << "#These are variances from the model based tracker in gnuplot format" << std::endl;
+      varfile_ << "#These are variances and other data from the model based tracker in gnuplot format" << std::endl;
       if(cmd.using_hinkley())
         varfile_ << "iteration\tvar_x\var_y\tvar_z\tvar_wx\tvar_wy\var_wz";
       if(cmd.using_mbt_dynamic_range())
@@ -48,7 +48,7 @@ namespace tracking{
       if(cmd.log_pose())
         varfile_ << "\tpose_tx\tpose_ty\tpose_tz\tpose_rx\tpose_ry\tpose_rz";
       if(cmd.log_checkpoints())
-        varfile_ << "\tcheckpoint_variance";
+        varfile_ << "\tcheckpoint_median";
 
       varfile_ << std::endl;
     }

@@ -135,7 +135,7 @@ namespace tracking{
       //   +------------------+--------------------+-----------------------+------------------------------+------------------------------+
         row< ReDetectFlashcode, input_ready        , DetectModel           , &Tracker_::find_flashcode_pos,&Tracker_::flashcode_redetected >,
       //   +------------------+--------------------+-----------------------+------------------------------+------------------------------+
-        row< ReDetectFlashcode, input_ready        , TrackModel            , &Tracker_::track_model       ,&Tracker_::mbt_success          >,
+      //row< ReDetectFlashcode, input_ready        , TrackModel            , &Tracker_::track_model       ,&Tracker_::mbt_success          >,
       //   +------------------+--------------------+-----------------------+------------------------------+------------------------------+
        _row< TrackModel       , finished           , Finished                                                                              >,
       //   +------------------+--------------------+-----------------------+------------------------------+------------------------------+
