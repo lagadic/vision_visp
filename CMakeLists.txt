@@ -51,4 +51,4 @@ rosbuild_add_executable(visp_auto_tracker
 rosbuild_link_boost(visp_auto_tracker
   filesystem system signals regex date_time program_options thread)
 
-target_link_libraries(visp_auto_tracker auto_tracker auto_tracker qrcode_detector datamatrix_detector cmd_line dmtx zbar )
+target_link_libraries(visp_auto_tracker auto_tracker qrcode_detector datamatrix_detector cmd_line dmtx zbar )
