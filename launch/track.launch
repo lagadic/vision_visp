@@ -9,19 +9,16 @@
 
 	</node>
 
-  <node pkg="usb_cam" type="usb_cam_node" name="usb_cam" output="screen">
-      <param name="images_directory" type="string" value="$(arg images_path)" />
+  <node pkg="usb_cam" type="usb_cam_node" name="usb_cam" output="screen">      
       <param name="image_width" type="int" value="640" />
       <param name="image_height" type="int" value="480" />
-      <param name="video_device" type="string" value="/dev/video1" />
-      <param name="io_method" type="string" value="video" />
-      <param name="pixel_format" type="string" value="mjpeg" />
+      <param name="video_device" type="string" value="/dev/video0" />      
+      <param name="pixel_format" type="string" value="yuyv" />
 
       <rosparam param="D">[-0.01484690262, 0.,0., 0., 0.000]</rosparam>
       <rosparam param="P">[543.1594454, 0.0, 320.1025306, 0.0, 0.0, 539.1300717, 212.8181022, 0.0, 0.0, 0.0, 1.0, 0.0]</rosparam>
       <rosparam param="R">[1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0]</rosparam>
       <rosparam param="K">[543.1594454, 0.0, 320.1025306, 0.0, 539.1300717, 212.8181022, 0.0, 0.0, 1.0]</rosparam>
-      <param name="wait_time" type="double" value=".01"/>
   </node>
 
 </launch>
