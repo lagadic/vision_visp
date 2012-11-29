@@ -1,3 +1,3 @@
-[submodule "pattern_mbt"]
-	path = pattern_mbt
-	url = git@github.com:filipnovotny/flashcode_mbt.git
+[submodule "flashcode_mbt"]
+	path = flashcode_mbt
+	url = git@github.com:lagadic/flashcode_mbt.git
