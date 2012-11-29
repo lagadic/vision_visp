@@ -95,6 +95,7 @@ namespace visp_auto_tracker{
 		message_filters::TimeSynchronizer<sensor_msgs::Image, sensor_msgs::CameraInfo> image_info_sync(raw_image_subscriber, camera_info_subscriber, queue_size_);
 		image_info_sync.registerCallback(boost::bind(&Node::frameCallback,this, _1, _2));
 		ros::Publisher object_pose_publisher = n_.advertise<geometry_msgs::PoseStamped>(object_position_topic, queue_size_);
+		ros::Publisher object_pose_covariance_publisher = n_.advertise<geometry_msgs::PoseWithCovarianceStamped>(object_position_covariance_topic, queue_size_);
 
 		//wait for an image to be ready
 		waitForImage();
@@ -107,6 +108,7 @@ namespace visp_auto_tracker{
 
 		unsigned int iter=0;
 		geometry_msgs::PoseStamped ps;
+		geometry_msgs::PoseWithCovarianceStamped ps_cov;
 		ps.header.frame_id = tracker_ref_frame;
 		ros::Rate rate(25); //init 25fps publishing frequency
 		while(ros::ok()){
@@ -119,7 +121,10 @@ namespace visp_auto_tracker{
 			ps.header.stamp = ros::Time::now(); //sign the pose with time
 			ps.header.seq = iter++; //...and sequence
 			ps.pose = visp_bridge::toGeometryMsgsPose(track_model.cMo); //convert
+			ps_cov.pose.pose = ps.pose;
+			ps_cov.header = ps.header;
 			object_pose_publisher.publish(ps); //publish
+			object_pose_covariance_publisher.publish(ps_cov); //publish
 			ros::spinOnce();
 			rate.sleep();
 		}
