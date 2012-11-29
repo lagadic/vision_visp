@@ -21,24 +21,24 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 #uncomment if you have defined services
 #rosbuild_gensrv()
 
-include_directories("${CMAKE_SOURCE_DIR}/pattern_mbt")
-include_directories("${CMAKE_SOURCE_DIR}/pattern_mbt/detectors")
+include_directories("${CMAKE_SOURCE_DIR}/flashcode_mbt")
+include_directories("${CMAKE_SOURCE_DIR}/flashcode_mbt/detectors")
 
 # Library gathering libvisp_tracker used by all nodes.
 rosbuild_add_library(auto_tracker
-  pattern_mbt/libauto_tracker/states.hpp
-  pattern_mbt/libauto_tracker/events.h
-  pattern_mbt/libauto_tracker/tracking.h
-  pattern_mbt/libauto_tracker/tracking.cpp
-  pattern_mbt/libauto_tracker/logfilewriter.hpp
-  pattern_mbt/libauto_tracker/threading.h
-  pattern_mbt/libauto_tracker/threading.cpp)
+  flashcode_mbt/libauto_tracker/states.hpp
+  flashcode_mbt/libauto_tracker/events.h
+  flashcode_mbt/libauto_tracker/tracking.h
+  flashcode_mbt/libauto_tracker/tracking.cpp
+  flashcode_mbt/libauto_tracker/logfilewriter.hpp
+  flashcode_mbt/libauto_tracker/threading.h
+  flashcode_mbt/libauto_tracker/threading.cpp)
 
 rosbuild_add_library(cmd_line
-	pattern_mbt/cmd_line/cmd_line.cpp
+	flashcode_mbt/cmd_line/cmd_line.cpp
 )
 
-add_subdirectory(pattern_mbt/detectors)
+add_subdirectory(flashcode_mbt/detectors)
 
 rosbuild_add_executable(visp_auto_tracker
   src/main.cpp
