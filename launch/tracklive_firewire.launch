@@ -20,7 +20,7 @@
 
     
   <node pkg="camera1394" type="camera1394_node" name="my_camera1394_node" args="_video_mode:=640x480_rgb8" >
-    <param name="camera_info_url" value="package://visp_auto_tracker/data/calibration.ini" type="string" />
+    <param name="camera_info_url" value="package://visp_auto_tracker/models/calibration.ini" type="string" />
     <param name="frame_id" value="/map" type="string" />
     <remap from="/camera/image_raw" to="/image_rect"/>
     <remap from="/camera/camera_info" to="/camera_info"/>

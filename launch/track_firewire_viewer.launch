@@ -2,13 +2,13 @@
 	<param name="/camera_prefix" type="string" value="/" />
 		
 	<node pkg="visp_auto_tracker" type="visp_auto_tracker" name="visp_auto_tracker" output="screen">
-	      <param name="model_path" type="string" value="$(find visp_auto_tracker)/models" />
-	      <param name="model_name" type="string" value="pattern" />
-	      <remap from="/visp_auto_tracker/camera_info" to="/camera_info"/>
-      	      <remap from="/visp_auto_tracker/image_raw" to="/image_rect"/>
+		  <param name="model_path" type="string" value="$(find visp_auto_tracker)/models" />
+		  <param name="model_name" type="string" value="pattern" />
+		  <remap from="/visp_auto_tracker/camera_info" to="/camera_info"/>
+		  <remap from="/visp_auto_tracker/image_raw" to="/image_rect"/>
 		
-  		<remap from="/visp_auto_tracker/object_position_covariance" to="/object_position_covariance"  />
-  		<remap from="/visp_auto_tracker/object_position" to="/object_position"  />
+		<remap from="/visp_auto_tracker/object_position_covariance" to="/object_position_covariance"  />
+		<remap from="/visp_auto_tracker/object_position" to="/object_position"  />
 	</node>
 
 
