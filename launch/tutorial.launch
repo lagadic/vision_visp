@@ -1,9 +1,9 @@
 <!-- -*- xml -*-
 
      This tutorial relies on a recorded video sequence where the
-     camera is fixed in front of QR code planar target. The model corresponding to
-     this cube is given into the models/qrcode directoy of this
-     package.
+     camera is fixed in front of QR code planar target. The model 
+     corresponding to this target is given into the models directory 
+     of this package.
 
      See http://www.ros.org/wiki/visp_auto_tracker/Tutorials for more
      information.
