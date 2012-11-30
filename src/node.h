@@ -14,25 +14,26 @@
 #include "geometry_msgs/PoseWithCovarianceStamped.h"
 
 namespace visp_auto_tracker{
-	class Node{
-	private:
-		boost::mutex lock_;
-		ros::NodeHandle n_;
-		unsigned long queue_size_;
-		std::string tracker_config_path_;
+        class Node{
+        private:
+                boost::mutex lock_;
+                ros::NodeHandle n_;
+                unsigned long queue_size_;
+                std::string tracker_config_path_;
+                std::string model_description_;
 
-		vpImage<vpRGBa> I_;
-		bool got_image_;
+                vpImage<vpRGBa> I_;
+                bool got_image_;
 
-		tracking::Tracker* t_;
+                tracking::Tracker* t_;
 
 
-	    void waitForImage();
+            void waitForImage();
 
-	    void frameCallback(const sensor_msgs::ImageConstPtr& image, const sensor_msgs::CameraInfoConstPtr& cam_info);
-	public:
-		Node();
-		void spin();
-	};
+            void frameCallback(const sensor_msgs::ImageConstPtr& image, const sensor_msgs::CameraInfoConstPtr& cam_info);
+        public:
+                Node();
+                void spin();
+        };
 };
 #endif

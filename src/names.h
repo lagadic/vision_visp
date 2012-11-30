@@ -4,15 +4,16 @@
 
 namespace visp_auto_tracker
 {
-	extern std::string camera_info_topic;
-	extern std::string image_topic;
+        extern std::string camera_info_topic;
+        extern std::string image_topic;
+        extern std::string moving_edge_sites_topic;
 
-	extern std::string object_position_topic;
-	extern std::string object_position_covariance_topic;
-	extern std::string init_service;
+        extern std::string object_position_topic;
+        extern std::string object_position_covariance_topic;
+        extern std::string init_service;
 
-	extern std::string tracker_ref_frame;
-	extern std::string tracker_config_file;
+        extern std::string tracker_ref_frame;
+        extern std::string tracker_config_file;
 }
 
 #endif

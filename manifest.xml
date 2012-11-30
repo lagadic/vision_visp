@@ -16,8 +16,9 @@
   <depend package="message_filters"/>
   <depend package="std_msgs"/>
   <depend package="visp"/>
+  <depend package="visp_tracker"/>
+  <depend package="resource_retriever"/>
   <depend package="image_transport"/>
 
 </package>
-
 

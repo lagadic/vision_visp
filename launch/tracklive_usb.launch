@@ -1,4 +1,4 @@
-<launch>
+<launch>	
 	<arg name="config" default="$(find visp_auto_tracker)/data/config.cfg" />
 	<arg name="images_path" default="/home/fnovotny/playground/flashcode_mbt/data/images/test-%010d.jpg" />
 
