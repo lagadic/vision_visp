@@ -29,6 +29,7 @@
 #include "visp_tracker/MovingEdgeSites.h"
 
 #include "std_msgs/Header.h"
+#include "std_msgs/Int8.h"
 
 
 namespace visp_auto_tracker{
@@ -123,6 +124,7 @@ namespace visp_auto_tracker{
                 ros::Publisher object_pose_publisher = n_.advertise<geometry_msgs::PoseStamped>(object_position_topic, queue_size_);
                 ros::Publisher object_pose_covariance_publisher = n_.advertise<geometry_msgs::PoseWithCovarianceStamped>(object_position_covariance_topic, queue_size_);
                 ros::Publisher moving_edge_sites_publisher = n_.advertise<visp_tracker::MovingEdgeSites>(moving_edge_sites_topic, queue_size_);
+                ros::Publisher status_publisher = n_.advertise<std_msgs::Int8>(status_topic, queue_size_);
 
                 //wait for an image to be ready
                 waitForImage();
@@ -158,10 +160,13 @@ namespace visp_auto_tracker{
                           me.header.stamp = ros::Time::now();
                           ps_cov.header.stamp = ros::Time::now();
                           ps.header.frame_id = tracker_ref_frame;
+                          std_msgs::Int8 status;
+                          status.data = (unsigned char)(*(t_->current_state()));
 
                           object_pose_publisher.publish(ps); //publish
                           object_pose_covariance_publisher.publish(ps_cov); //publish
                           moving_edge_sites_publisher.publish(me);
+                          status_publisher.publish(status);
 
                         //}
                         ros::spinOnce();
