@@ -329,3 +329,8 @@ bool CmdLine:: log_checkpoints(){
 bool CmdLine:: log_pose(){
   return vm_.count("log-pose")>0;
 }
+
+void CmdLine:: set_data_directory(std::string dir){
+  data_dir_ = dir;
+}
+

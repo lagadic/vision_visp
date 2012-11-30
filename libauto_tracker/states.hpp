@@ -79,6 +79,10 @@ namespace tracking{
 
   struct DetectFlashcodeGeneric : public msm::front::state<>
   {
+      vpImagePoint corner0;
+      vpImagePoint corner1;
+      vpImagePoint corner2;
+      vpImagePoint corner3;
       virtual vpColor getColor() = 0;
       template <class Fsm>
       void on_entry(finished const& evt, Fsm& fsm){}
@@ -105,10 +109,10 @@ namespace tracking{
           return;
         }
 
-        const vpImagePoint corner0(polygon[0].y,polygon[0].x);
-        const vpImagePoint corner1(polygon[1].y,polygon[1].x);
-        const vpImagePoint corner2(polygon[2].y,polygon[2].x);
-        const vpImagePoint corner3(polygon[3].y,polygon[3].x);
+        corner0 = vpImagePoint (polygon[0].y,polygon[0].x);
+        corner1 = vpImagePoint (polygon[1].y,polygon[1].x);
+        corner2 = vpImagePoint (polygon[2].y,polygon[2].x);
+        corner3 = vpImagePoint (polygon[3].y,polygon[3].x);
 
         std::vector<std::pair<cv::Point,cv::Point> >& lines = fsm.get_detector().get_lines();
         for(std::vector<std::pair<cv::Point,cv::Point> >::iterator i = lines.begin();
@@ -141,6 +145,11 @@ namespace tracking{
 
   struct DetectModel : public msm::front::state<>
   {
+      std::vector<vpImagePoint> model_inner_corner;
+      std::vector<vpImagePoint> model_outer_corner;
+      vpHomogeneousMatrix cMo;
+
+      DetectModel() : model_inner_corner(4),model_outer_corner(4){}
       template <class Fsm>
       void on_entry(finished const& evt, Fsm& fsm){}
 
@@ -157,8 +166,6 @@ namespace tracking{
         std::vector<vpPoint>& points3D_inner = fsm.get_points3D_inner();
         std::vector<vpPoint>& points3D_outer = fsm.get_points3D_outer();
 
-        std::vector<vpImagePoint> model_inner_corner(4);
-        std::vector<vpImagePoint> model_outer_corner(4);
         for(int i=0;i<4;i++){
           vpMeterPixelConversion::convertPoint(fsm.get_cam(),points3D_outer[i].get_x(),points3D_outer[i].get_y(),model_outer_corner[i]);
           vpMeterPixelConversion::convertPoint(fsm.get_cam(),points3D_inner[i].get_x(),points3D_inner[i].get_y(),model_inner_corner[i]);
@@ -183,7 +190,7 @@ namespace tracking{
         vpDisplay::displayCharString(I,model_outer_corner[3],"mo4",vpColor::darkRed);
         vpDisplay::displayCross(I,model_outer_corner[3],2,vpColor::darkRed,2);
 
-        vpHomogeneousMatrix cMo;
+
         fsm.get_mbt().getPose(cMo);
         fsm.get_mbt().display(I, cMo, fsm.get_cam(), vpColor::blue, 1);// display the model at the computed pose.
         if(fsm.get_flush_display()) vpDisplay::flush(I);

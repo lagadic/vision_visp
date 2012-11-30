@@ -131,5 +131,7 @@ class CmdLine{
   DETECTOR_TYPE get_detector_type();
 
   TRACKER_TYPE get_tracker_type();
+
+  void set_data_directory(std::string dir);
 };
 #endif
