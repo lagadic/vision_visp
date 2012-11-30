@@ -145,15 +145,19 @@ namespace visp_auto_tracker{
                         //Access this state and broadcast the pose
                         tracking::TrackModel& track_model = t_->get_state<tracking::TrackModel&>();
                         ps.pose = visp_bridge::toGeometryMsgsPose(track_model.cMo); //convert
-                        ps_cov.pose.pose = ps.pose;
-                        ps.header.stamp = ros::Time::now();
-                        me.header.stamp = ros::Time::now();
-                        ps_cov.header.stamp = ros::Time::now();
-                        ps.header.frame_id = tracker_ref_frame;
 
-                        object_pose_publisher.publish(ps); //publish
-                        object_pose_covariance_publisher.publish(ps_cov); //publish
-                        moving_edge_sites_publisher.publish(me);
+                        if(*(t_->current_state())==3 /*TrackModel*/){
+                          ps_cov.pose.pose = ps.pose;
+                          ps.header.stamp = ros::Time::now();
+                          me.header.stamp = ros::Time::now();
+                          ps_cov.header.stamp = ros::Time::now();
+                          ps.header.frame_id = tracker_ref_frame;
+
+                          object_pose_publisher.publish(ps); //publish
+                          object_pose_covariance_publisher.publish(ps_cov); //publish
+                          moving_edge_sites_publisher.publish(me);
+
+                        }
                         ros::spinOnce();
                         rate.sleep();
                 }
