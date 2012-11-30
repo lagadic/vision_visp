@@ -1,7 +1,7 @@
 <launch>
 	<param name="/camera_prefix" type="string" value="/" />
 		
-	<node pkg="visp_auto_tracker" type="visp_auto_tracker" name="visp_auto_tracker">
+	<node pkg="visp_auto_tracker" type="visp_auto_tracker" name="visp_auto_tracker" output="screen">
 	      <param name="model_path" type="string" value="$(find visp_auto_tracker)/models" />
 	      <param name="model_name" type="string" value="pattern" />
 	      <remap from="/visp_auto_tracker/camera_info" to="/camera_info"/>
@@ -19,7 +19,7 @@
 	    <remap from="/camera/camera_info" to="/camera_info"/>
 	  </node>
   
-	<node pkg="visp_tracker" type="viewer" name="tracker_mbt_viewer" args="_camera_prefix:=/" output="screen">
+	<node pkg="visp_tracker" type="viewer" name="tracker_mbt_viewer" args="_camera_prefix:=/">
 		<param name="model_path" value="$(find visp_auto_tracker)/data/pattern.wrl" />
   	</node>
 	

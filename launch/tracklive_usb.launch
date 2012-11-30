@@ -1,11 +1,10 @@
 <launch>	
-	<arg name="config" default="$(find visp_auto_tracker)/data/config.cfg" />
-	<arg name="images_path" default="/home/fnovotny/playground/flashcode_mbt/data/images/test-%010d.jpg" />
-
 	<node pkg="visp_auto_tracker" type="visp_auto_tracker" name="visp_auto_tracker" output="screen">
-	      <param name="tracker_config_path" type="string" value="$(arg config)" />
+		<param name="model_path" type="string" value="$(find visp_auto_tracker)/models" />
+	      <param name="model_name" type="string" value="pattern" />
+	      
 	      <remap from="/visp_auto_tracker/camera_info" to="/usb_cam/camera_info"/>
-      	      <remap from="/visp_auto_tracker/image_raw" to="/usb_cam/image_raw"/>
+      	  <remap from="/visp_auto_tracker/image_raw" to="/usb_cam/image_raw"/>
 
 	</node>
 

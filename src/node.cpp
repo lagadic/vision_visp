@@ -39,6 +39,7 @@ namespace visp_auto_tracker{
                 //get the tracker configuration file
                 //this file contains all of the tracker's parameters, they are not passed to ros directly.
                 n_.param<std::string>("tracker_config_path", tracker_config_path_, "");
+                n_.param<bool>("debug_display", debug_display_, false);
                 std::string model_name;
                 std::string model_full_path;
                 n_.param<std::string>("model_path", model_path_, "");
@@ -90,7 +91,10 @@ namespace visp_auto_tracker{
 
 
                 //create display
-                vpDisplayX* d = new vpDisplayX();
+
+                vpDisplayX* d;
+                if(debug_display_)
+                  d = new vpDisplayX();
 
                 //init detector based on user preference
                 detectors::DetectorBase* detector = NULL;
@@ -108,7 +112,7 @@ namespace visp_auto_tracker{
                         tracker = new vpMbEdgeTracker();
 
                 //compile detectors and paramters into the automatic tracker.
-                t_ = new tracking::Tracker(cmd,detector,tracker);
+                t_ = new tracking::Tracker(cmd,detector,tracker,debug_display_);
                 t_->start(); //start the state machine
 
                 //subscribe to ros topics and prepare a publisher that will publish the pose
@@ -125,7 +129,9 @@ namespace visp_auto_tracker{
                 {
                         //when an image is ready tell the tracker to start searching for patterns
                         boost::mutex::scoped_lock(lock_);
-                        d->init(I_); //also init display
+                        if(debug_display_)
+                          d->init(I_); //also init display
+
                         t_->process_event(tracking::select_input(I_));
                 }
 
@@ -146,7 +152,7 @@ namespace visp_auto_tracker{
                         tracking::TrackModel& track_model = t_->get_state<tracking::TrackModel&>();
                         ps.pose = visp_bridge::toGeometryMsgsPose(track_model.cMo); //convert
 
-                        if(*(t_->current_state())==3 /*TrackModel*/){
+                        //if(*(t_->current_state())==3 /*TrackModel*/){
                           ps_cov.pose.pose = ps.pose;
                           ps.header.stamp = ros::Time::now();
                           me.header.stamp = ros::Time::now();
@@ -157,7 +163,7 @@ namespace visp_auto_tracker{
                           object_pose_covariance_publisher.publish(ps_cov); //publish
                           moving_edge_sites_publisher.publish(me);
 
-                        }
+                        //}
                         ros::spinOnce();
                         rate.sleep();
                 }
