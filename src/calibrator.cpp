@@ -139,7 +139,8 @@ namespace visp_camera_calibration
 
     set_camera_info_comm.request.camera_info = visp_bridge::toSensorMsgsCameraInfo(cam,req.sample_width,req.sample_height);
 
-    if(set_camera_info_service_.call(set_camera_info_comm) && set_camera_info_bis_service_.call(set_camera_info_comm)){
+    set_camera_info_service_.call(set_camera_info_comm);
+    if(set_camera_info_bis_service_.call(set_camera_info_comm)){
       ROS_INFO("set_camera_info service called successfully");
     }else{
       ROS_ERROR("Failed to call service set_camera_info");
