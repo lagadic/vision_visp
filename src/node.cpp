@@ -93,7 +93,7 @@ namespace visp_auto_tracker{
 
                 //create display
 
-                vpDisplayX* d;
+                vpDisplayX* d = NULL;
                 if(debug_display_)
                   d = new vpDisplayX();
 
