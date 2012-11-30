@@ -18,7 +18,6 @@
 #include "events.h"
 
 
-
 namespace msm = boost::msm;
 
 namespace tracking{
@@ -30,9 +29,12 @@ namespace tracking{
       template <class Event, class Fsm>
       void on_exit(Event const& evt, Fsm& fsm){
         std::cout <<"leaving: WaitingForInput" << std::endl;
-        vpDisplay::display(evt.I);
-        if(fsm.get_flush_display()) vpDisplay::flush(evt.I);
+        if(fsm.get_flush_display()){
+          vpDisplay::display(evt.I);
+          vpDisplay::flush(evt.I);
+        }
       }
+
   };
 
   struct Finished : public msm::front::state<>{
@@ -100,33 +102,38 @@ namespace tracking{
       void on_exit(Event const& evt, Fsm& fsm)
       {
         std::cout <<"leaving: DetectFlashcode" << std::endl;
-        vpDisplay::display(evt.I);
-        vpDisplay::displayRectangle(evt.I,fsm.template get_tracking_box< vpRect > (),getColor(),false,2);
         std::vector<cv::Point>& polygon = fsm.get_detector().get_polygon();
-        if(polygon.size()==0){
-          vpDisplay::displayCharString(evt.I,vpImagePoint(0,0),"TRACKING LOST",vpColor::red);
-          if(fsm.get_flush_display()) vpDisplay::flush(evt.I);
-          return;
-        }
-
+        if(polygon.size()!=4) return;
         corner0 = vpImagePoint (polygon[0].y,polygon[0].x);
         corner1 = vpImagePoint (polygon[1].y,polygon[1].x);
         corner2 = vpImagePoint (polygon[2].y,polygon[2].x);
         corner3 = vpImagePoint (polygon[3].y,polygon[3].x);
 
-        std::vector<std::pair<cv::Point,cv::Point> >& lines = fsm.get_detector().get_lines();
-        for(std::vector<std::pair<cv::Point,cv::Point> >::iterator i = lines.begin();
-            i!=lines.end();
-            i++
-        ){
-          vpDisplay::displayLine(evt.I,vpImagePoint(i->first.y,i->first.x),vpImagePoint(i->second.y,i->second.x),getColor(),2);
-        }
-        vpDisplay::displayCharString(evt.I,corner0,"1",vpColor::blue);
-        vpDisplay::displayCharString(evt.I,corner1,"2",vpColor::yellow);
-        vpDisplay::displayCharString(evt.I,corner2,"3",vpColor::cyan);
-        vpDisplay::displayCharString(evt.I,corner3,"4",vpColor::darkRed);
+        if(fsm.get_flush_display()){
+          vpDisplay::display(evt.I);
+          vpDisplay::displayRectangle(evt.I,fsm.template get_tracking_box< vpRect > (),getColor(),false,2);
 
-        if(fsm.get_flush_display()) vpDisplay::flush(evt.I);
+          if(polygon.size()==0){
+            vpDisplay::displayCharString(evt.I,vpImagePoint(0,0),"TRACKING LOST",vpColor::red);
+            if(fsm.get_flush_display()) vpDisplay::flush(evt.I);
+            return;
+          }
+
+
+          std::vector<std::pair<cv::Point,cv::Point> >& lines = fsm.get_detector().get_lines();
+          for(std::vector<std::pair<cv::Point,cv::Point> >::iterator i = lines.begin();
+              i!=lines.end();
+              i++
+          ){
+            vpDisplay::displayLine(evt.I,vpImagePoint(i->first.y,i->first.x),vpImagePoint(i->second.y,i->second.x),getColor(),2);
+          }
+          vpDisplay::displayCharString(evt.I,corner0,"1",vpColor::blue);
+          vpDisplay::displayCharString(evt.I,corner1,"2",vpColor::yellow);
+          vpDisplay::displayCharString(evt.I,corner2,"3",vpColor::cyan);
+          vpDisplay::displayCharString(evt.I,corner3,"4",vpColor::darkRed);
+
+          vpDisplay::flush(evt.I);
+        }
       }
   };
 
@@ -166,34 +173,37 @@ namespace tracking{
         std::vector<vpPoint>& points3D_inner = fsm.get_points3D_inner();
         std::vector<vpPoint>& points3D_outer = fsm.get_points3D_outer();
 
+        fsm.get_mbt().getPose(cMo);
+
         for(int i=0;i<4;i++){
           vpMeterPixelConversion::convertPoint(fsm.get_cam(),points3D_outer[i].get_x(),points3D_outer[i].get_y(),model_outer_corner[i]);
           vpMeterPixelConversion::convertPoint(fsm.get_cam(),points3D_inner[i].get_x(),points3D_inner[i].get_y(),model_inner_corner[i]);
         }
+        if(fsm.get_flush_display()){
+          vpImage<vpRGBa>& I = fsm.get_I();
+          vpDisplay::displayCharString(I,model_inner_corner[0],"mi1",vpColor::blue);
+          vpDisplay::displayCross(I,model_inner_corner[0],2,vpColor::blue,2);
+          vpDisplay::displayCharString(I,model_inner_corner[1],"mi2",vpColor::yellow);
+          vpDisplay::displayCross(I,model_inner_corner[1],2,vpColor::yellow,2);
+          vpDisplay::displayCharString(I,model_inner_corner[2],"mi3",vpColor::cyan);
+          vpDisplay::displayCross(I,model_inner_corner[2],2,vpColor::cyan,2);
+          vpDisplay::displayCharString(I,model_inner_corner[3],"mi4",vpColor::darkRed);
+          vpDisplay::displayCross(I,model_inner_corner[3],2,vpColor::darkRed,2);
 
-        vpImage<vpRGBa>& I = fsm.get_I();
-        vpDisplay::displayCharString(I,model_inner_corner[0],"mi1",vpColor::blue);
-        vpDisplay::displayCross(I,model_inner_corner[0],2,vpColor::blue,2);
-        vpDisplay::displayCharString(I,model_inner_corner[1],"mi2",vpColor::yellow);
-        vpDisplay::displayCross(I,model_inner_corner[1],2,vpColor::yellow,2);
-        vpDisplay::displayCharString(I,model_inner_corner[2],"mi3",vpColor::cyan);
-        vpDisplay::displayCross(I,model_inner_corner[2],2,vpColor::cyan,2);
-        vpDisplay::displayCharString(I,model_inner_corner[3],"mi4",vpColor::darkRed);
-        vpDisplay::displayCross(I,model_inner_corner[3],2,vpColor::darkRed,2);
-
-        vpDisplay::displayCharString(I,model_outer_corner[0],"mo1",vpColor::blue);
-        vpDisplay::displayCross(I,model_outer_corner[0],2,vpColor::blue,2);
-        vpDisplay::displayCharString(I,model_outer_corner[1],"mo2",vpColor::yellow);
-        vpDisplay::displayCross(I,model_outer_corner[1],2,vpColor::yellow,2);
-        vpDisplay::displayCharString(I,model_outer_corner[2],"mo3",vpColor::cyan);
-        vpDisplay::displayCross(I,model_outer_corner[2],2,vpColor::cyan,2);
-        vpDisplay::displayCharString(I,model_outer_corner[3],"mo4",vpColor::darkRed);
-        vpDisplay::displayCross(I,model_outer_corner[3],2,vpColor::darkRed,2);
+          vpDisplay::displayCharString(I,model_outer_corner[0],"mo1",vpColor::blue);
+          vpDisplay::displayCross(I,model_outer_corner[0],2,vpColor::blue,2);
+          vpDisplay::displayCharString(I,model_outer_corner[1],"mo2",vpColor::yellow);
+          vpDisplay::displayCross(I,model_outer_corner[1],2,vpColor::yellow,2);
+          vpDisplay::displayCharString(I,model_outer_corner[2],"mo3",vpColor::cyan);
+          vpDisplay::displayCross(I,model_outer_corner[2],2,vpColor::cyan,2);
+          vpDisplay::displayCharString(I,model_outer_corner[3],"mo4",vpColor::darkRed);
+          vpDisplay::displayCross(I,model_outer_corner[3],2,vpColor::darkRed,2);
 
 
-        fsm.get_mbt().getPose(cMo);
-        fsm.get_mbt().display(I, cMo, fsm.get_cam(), vpColor::blue, 1);// display the model at the computed pose.
-        if(fsm.get_flush_display()) vpDisplay::flush(I);
+          fsm.get_mbt().display(I, cMo, fsm.get_cam(), vpColor::blue, 1);// display the model at the computed pose.
+          vpDisplay::flush(I);
+        }
+
       }
   };
 
@@ -231,45 +241,47 @@ namespace tracking{
     void on_exit(Event const& evt, Fsm& fsm)
     {
       fsm.get_mbt().getPose(cMo);
-      vpDisplay::display(evt.I);
-      fsm.get_mbt().display(evt.I, cMo, fsm.get_cam(), vpColor::red, 1);// display the model at the computed pose.
-      vpDisplay::displayFrame(evt.I,cMo,fsm.get_cam(),.3,vpColor::none,2);
-      if(fsm.get_cmd().using_adhoc_recovery()){
-        for(int p=0;p<fsm.get_points3D_middle().size();p++){
-          vpPoint& point3D = fsm.get_points3D_middle()[p];
-          vpPoint& point3D_inner = fsm.get_points3D_inner()[p];
-          double _u=0.,_v=0.,_u_inner=0.,_v_inner=0.;
+      if(fsm.get_flush_display()){
+        vpDisplay::display(evt.I);
+        fsm.get_mbt().display(evt.I, cMo, fsm.get_cam(), vpColor::red, 1);// display the model at the computed pose.
+        vpDisplay::displayFrame(evt.I,cMo,fsm.get_cam(),.3,vpColor::none,2);
+        if(fsm.get_cmd().using_adhoc_recovery()){
+          for(int p=0;p<fsm.get_points3D_middle().size();p++){
+            vpPoint& point3D = fsm.get_points3D_middle()[p];
+            vpPoint& point3D_inner = fsm.get_points3D_inner()[p];
+            double _u=0.,_v=0.,_u_inner=0.,_v_inner=0.;
 
-          vpMeterPixelConversion::convertPoint(fsm.get_cam(),point3D.get_x(),point3D.get_y(),_u,_v);
-          vpMeterPixelConversion::convertPoint(fsm.get_cam(),point3D_inner.get_x(),point3D_inner.get_y(),_u_inner,_v_inner);
-          int region_width= std::max((int)(std::abs(_u-_u_inner)*fsm.get_cmd().get_adhoc_recovery_size()),1);
-          int region_height=std::max((int)(std::abs(_v-_v_inner)*fsm.get_cmd().get_adhoc_recovery_size()),1);
+            vpMeterPixelConversion::convertPoint(fsm.get_cam(),point3D.get_x(),point3D.get_y(),_u,_v);
+            vpMeterPixelConversion::convertPoint(fsm.get_cam(),point3D_inner.get_x(),point3D_inner.get_y(),_u_inner,_v_inner);
+            int region_width= std::max((int)(std::abs(_u-_u_inner)*fsm.get_cmd().get_adhoc_recovery_size()),1);
+            int region_height=std::max((int)(std::abs(_v-_v_inner)*fsm.get_cmd().get_adhoc_recovery_size()),1);
 
-          int u=(int)_u;
-          int v=(int)_v;
-          vpDisplay::displayRectangle(
-              evt.I,
-              vpImagePoint(
-                  std::max(v-region_height,0),
-                  std::max(u-region_width,0)
-              ),
-              vpImagePoint(
-                  std::min(v+region_height,(int)evt.I.getHeight()),
-                  std::min(u+region_width,(int)evt.I.getWidth())
-              ),
-              vpColor::cyan,
-              true
-              );
+            int u=(int)_u;
+            int v=(int)_v;
+            vpDisplay::displayRectangle(
+                evt.I,
+                vpImagePoint(
+                    std::max(v-region_height,0),
+                    std::max(u-region_width,0)
+                ),
+                vpImagePoint(
+                    std::min(v+region_height,(int)evt.I.getHeight()),
+                    std::min(u+region_width,(int)evt.I.getWidth())
+                ),
+                vpColor::cyan,
+                true
+                );
+          }
         }
-      }
-      if(fsm.get_flush_display()) vpDisplay::flush(evt.I);
+        vpDisplay::flush(evt.I);
 
-      vpMatrix mat = fsm.get_mbt().getCovarianceMatrix();
-      if(fsm.get_cmd().show_plot()){
-        if(fsm.get_cmd().using_var_limit())
-          plot_->plot(0,6,iter_,(double)fsm.get_cmd().get_var_limit());
-        for(int i=0;i<6;i++)
-          plot_->plot(0,i,iter_,mat[i][i]);
+        vpMatrix mat = fsm.get_mbt().getCovarianceMatrix();
+        if(fsm.get_cmd().show_plot()){
+          if(fsm.get_cmd().using_var_limit())
+            plot_->plot(0,6,iter_,(double)fsm.get_cmd().get_var_limit());
+          for(int i=0;i<6;i++)
+            plot_->plot(0,i,iter_,mat[i][i]);
+        }
       }
 
 
