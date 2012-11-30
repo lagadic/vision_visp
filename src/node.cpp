@@ -28,7 +28,6 @@
 #include "resource_retriever/retriever.h"
 #include "visp_tracker/MovingEdgeSites.h"
 
-#include "std_msgs/Header.h"
 #include "std_msgs/Int8.h"
 
 

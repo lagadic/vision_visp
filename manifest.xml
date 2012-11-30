@@ -1,10 +1,10 @@
 <package>
   <description brief="visp_auto_tracker">
 
-     visp_auto_tracker
+     Automatic tracker capable of detecting a model using a pattern on its texture and then to track it & recover loss.
 
   </description>
-  <author>dt</author>
+  <author>Filip Novotny</author>
   <license>BSD</license>
   <review status="unreviewed" notes=""/>
   <url>http://ros.org/wiki/visp_auto_tracker</url>
