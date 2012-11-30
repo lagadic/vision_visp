@@ -175,7 +175,7 @@ namespace tracking{
 
         fsm.get_mbt().getPose(cMo);
 
-        for(int i=0;i<4;i++){
+        for(unsigned int i=0;i<4;i++){
           vpMeterPixelConversion::convertPoint(fsm.get_cam(),points3D_outer[i].get_x(),points3D_outer[i].get_y(),model_outer_corner[i]);
           vpMeterPixelConversion::convertPoint(fsm.get_cam(),points3D_inner[i].get_x(),points3D_inner[i].get_y(),model_inner_corner[i]);
         }
@@ -246,7 +246,7 @@ namespace tracking{
         fsm.get_mbt().display(evt.I, cMo, fsm.get_cam(), vpColor::red, 1);// display the model at the computed pose.
         vpDisplay::displayFrame(evt.I,cMo,fsm.get_cam(),.3,vpColor::none,2);
         if(fsm.get_cmd().using_adhoc_recovery()){
-          for(int p=0;p<fsm.get_points3D_middle().size();p++){
+          for(unsigned int p=0;p<fsm.get_points3D_middle().size();p++){
             vpPoint& point3D = fsm.get_points3D_middle()[p];
             vpPoint& point3D_inner = fsm.get_points3D_inner()[p];
             double _u=0.,_v=0.,_u_inner=0.,_v_inner=0.;
@@ -279,7 +279,7 @@ namespace tracking{
         if(fsm.get_cmd().show_plot()){
           if(fsm.get_cmd().using_var_limit())
             plot_->plot(0,6,iter_,(double)fsm.get_cmd().get_var_limit());
-          for(int i=0;i<6;i++)
+          for(unsigned int i=0;i<6;i++)
             plot_->plot(0,i,iter_,mat[i][i]);
         }
       }

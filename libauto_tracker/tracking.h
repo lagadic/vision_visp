@@ -52,6 +52,7 @@ namespace tracking{
   private:
     CmdLine cmd;
     int iter_;
+    vpImagePoint flashcode_center_;
     std::ofstream varfile_;
     detectors::DetectorBase* detector_;
     typedef boost::array<vpHinkley,6> hinkley_array_t;
@@ -64,7 +65,7 @@ namespace tracking{
     vpHomogeneousMatrix cMo_; // Pose computed using the tracker.
     vpCameraParameters cam_;
     vpImage<unsigned char> Igray_;
-    vpImagePoint flashcode_center_;
+
     std::vector<vpPoint> outer_points_3D_bcp_;
     std::vector<vpPoint> points3D_inner_;
     std::vector<vpPoint> points3D_outer_;

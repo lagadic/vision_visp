@@ -67,19 +67,19 @@ void CmdLine::loadConfig(std::string& config_file){
   po::notify(vm_);
   in.close();
 
-  for(int i =0;i<flashcode_coordinates.size()/3;i++){
+  for(unsigned int i =0;i<flashcode_coordinates.size()/3;i++){
     vpPoint p;
     p.setWorldCoordinates(flashcode_coordinates[i*3],flashcode_coordinates[i*3+1],flashcode_coordinates[i*3+2]);
     flashcode_points_3D_.push_back(p);
   }
 
-  for(int i =0;i<inner_coordinates.size()/3;i++){
+  for(unsigned int i =0;i<inner_coordinates.size()/3;i++){
     vpPoint p;
     p.setWorldCoordinates(inner_coordinates[i*3],inner_coordinates[i*3+1],inner_coordinates[i*3+2]);
     inner_points_3D_.push_back(p);
   }
 
-  for(int i =0;i<outer_coordinates.size()/3;i++){
+  for(unsigned int i =0;i<outer_coordinates.size()/3;i++){
     vpPoint p;
     p.setWorldCoordinates(outer_coordinates[i*3],outer_coordinates[i*3+1],outer_coordinates[i*3+2]);
     outer_points_3D_.push_back(p);

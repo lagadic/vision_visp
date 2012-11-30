@@ -26,7 +26,7 @@ namespace tracking{
     points3D_outer_ = cmd.get_outer_points_3D();
     outer_points_3D_bcp_ = cmd.get_outer_points_3D();
     if(cmd.using_adhoc_recovery() || cmd.log_checkpoints()){
-      for(int i=0;i<points3D_outer_.size();i++){
+      for(unsigned int i=0;i<points3D_outer_.size();i++){
         vpPoint p;
         p.setWorldCoordinates(
                   (points3D_outer_[i].get_oX()+points3D_inner_[i].get_oX())*cmd.get_adhoc_recovery_ratio(),
@@ -130,7 +130,6 @@ namespace tracking{
 
   bool Tracker_:: flashcode_detected(input_ready const& evt){
     this->cam_ = evt.cam_;
-    clock_t t = clock();
     cv::Mat cvI;//(evt.I.getRows(),evt.I.getCols(),CV_8UC3);
 
     cv::Mat vpToMat((int)evt.I.getRows(), (int)evt.I.getCols(), CV_8UC4, (void*)evt.I.bitmap);
@@ -155,7 +154,6 @@ namespace tracking{
    */
   bool Tracker_:: flashcode_redetected(input_ready const& evt){
     this->cam_ = evt.cam_;
-    clock_t t = clock();
     cv::Mat cvI;
 
     //vpImageConvert::convert(evt.I,cvI);
@@ -179,7 +177,7 @@ namespace tracking{
     double centerY = (double)(polygon[0].y+polygon[1].y+polygon[2].y+polygon[3].y)/4.;
     vpPixelMeterConversion::convertPoint(cam_, flashcode_center_, centerX, centerY);
 
-    for(int i=0;i<f_.size();i++){
+    for(unsigned int i=0;i<f_.size();i++){
       double x=0, y=0;
       vpImagePoint poly_pt(polygon[i].y,polygon[i].x);
 
@@ -195,7 +193,7 @@ namespace tracking{
     vpImageConvert::convert(*I_,Igray_);
     vpPose pose;
 
-    for(int i=0;i<f_.size();i++)
+    for(unsigned int i=0;i<f_.size();i++)
       pose.addPoint(f_[i]);
 
     pose.computePose(vpPose::LAGRANGE,cMo_);
@@ -204,7 +202,7 @@ namespace tracking{
 
     std::vector<vpImagePoint> model_inner_corner(4);
     std::vector<vpImagePoint> model_outer_corner(4);
-    for(int i=0;i<4;i++){
+    for(unsigned int i=0;i<4;i++){
       points3D_outer_[i].project(cMo_);
       points3D_inner_[i].project(cMo_);
       if(cmd.using_adhoc_recovery() || cmd.log_checkpoints())
@@ -253,15 +251,15 @@ namespace tracking{
       vpMatrix mat = tracker_->getCovarianceMatrix();
       if(cmd.using_var_file()){
         writer.write(iter_);
-        for(int i=0;i<mat.getRows();i++)
+        for(unsigned int i=0;i<mat.getRows();i++)
           writer.write(mat[i][i]);
       }
       if(cmd.using_var_limit())
-        for(int i=0; i<6; i++)
+        for(unsigned int i=0; i<6; i++)
           if(mat[i][i]>cmd.get_var_limit())
             return false;
       if(cmd.using_hinkley())
-        for(int i=0; i<6; i++){
+        for(unsigned int i=0; i<6; i++){
           if(hink_[i].testDownUpwardJump(mat[i][i]) != vpHinkley::noJump){
             writer.write(mat[i][i]);
             if(cmd.get_verbose())
@@ -274,7 +272,7 @@ namespace tracking{
 
 
 
-      for(int i=0;i<mat.getRows();i++)
+      for(unsigned int i=0;i<mat.getRows();i++)
         statistics.var(mat[i][i]);
 
       if(mat.getRows() == 6){ //if the covariance matrix is set
@@ -288,12 +286,12 @@ namespace tracking{
 
       if(cmd.using_var_file() && cmd.log_pose()){
         vpPoseVector p(cMo_);
-        for(int i=0;i<p.getRows();i++)
+        for(unsigned int i=0;i<p.getRows();i++)
           writer.write(p[i]);
       }
 
       if(cmd.using_adhoc_recovery() || cmd.log_checkpoints()){
-        for(int p=0;p<points3D_middle_.size();p++){
+        for(unsigned int p=0;p<points3D_middle_.size();p++){
           vpPoint& point3D = points3D_middle_[p];
 
           double _u=0.,_v=0.,_u_inner=0.,_v_inner=0.;
@@ -350,7 +348,7 @@ namespace tracking{
                         boost::accumulators::tag::mean
                       >
                     > acc;
-    for(int i=0;i<points3D_outer_.size();i++){
+    for(unsigned int i=0;i<points3D_outer_.size();i++){
       points3D_outer_[i].project(cMo_);
       points3D_inner_[i].project(cMo_);
 
