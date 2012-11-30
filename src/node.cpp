@@ -30,6 +30,7 @@
 
 #include "std_msgs/Header.h"
 
+
 namespace visp_auto_tracker{
         Node::Node() :
                         n_("~"),
@@ -38,15 +39,16 @@ namespace visp_auto_tracker{
                 //get the tracker configuration file
                 //this file contains all of the tracker's parameters, they are not passed to ros directly.
                 n_.param<std::string>("tracker_config_path", tracker_config_path_, "");
-                std::string model_path;
                 std::string model_name;
                 std::string model_full_path;
-                n_.param<std::string>("model_path", model_path, "");
+                n_.param<std::string>("model_path", model_path_, "");
                 n_.param<std::string>("model_name", model_name, "");
-                model_full_path = model_path[model_path.length()-1]=='/'?model_path+model_name:model_path+std::string("/")+model_name;
+                model_path_= model_path_[model_path_.length()-1]=='/'?model_path_:model_path_+std::string("/");
+                model_full_path = model_path_+model_name;
+                tracker_config_path_ = model_full_path+".cfg";
                 ROS_INFO("model full path=%s",model_full_path.c_str());
                 resource_retriever::Retriever r;
-                resource_retriever::MemoryResource res = r.get(std::string(model_full_path+".wrl"));
+                resource_retriever::MemoryResource res = r.get(std::string("file://")+std::string(model_full_path+".wrl"));
 
                 model_description_.resize(res.size);
                 unsigned i = 0;
@@ -56,11 +58,7 @@ namespace visp_auto_tracker{
                 ROS_INFO("model content=%s",model_description_.c_str());
 
                 n_.setParam ("/model_description", model_description_);
-                if(tracker_config_path_ == ""){
-                        ROS_ERROR("cannot find config file!");
-                        ros::shutdown();
-                }else
-                        ROS_INFO("tracker config path: %s",tracker_config_path_.c_str());
+
         }
 
         void Node::waitForImage(){
@@ -80,6 +78,7 @@ namespace visp_auto_tracker{
         void Node::spin(){
                 //Parse command line arguments from config file (as ros param)
                 CmdLine cmd(tracker_config_path_);
+                cmd.set_data_directory(model_path_); //force data path
 
                 if(cmd.should_exit()) return; //exit if needed
 

@@ -12,6 +12,7 @@
 #include "sensor_msgs/Image.h"
 #include "geometry_msgs/PoseStamped.h"
 #include "geometry_msgs/PoseWithCovarianceStamped.h"
+#include <sstream>
 
 namespace visp_auto_tracker{
         class Node{
@@ -21,6 +22,7 @@ namespace visp_auto_tracker{
                 unsigned long queue_size_;
                 std::string tracker_config_path_;
                 std::string model_description_;
+                std::string model_path_;
 
                 vpImage<vpRGBa> I_;
                 bool got_image_;
