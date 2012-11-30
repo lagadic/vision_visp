@@ -52,3 +52,13 @@ rosbuild_link_boost(visp_auto_tracker
   filesystem system signals regex date_time program_options thread)
 
 target_link_libraries(visp_auto_tracker auto_tracker qrcode_detector datamatrix_detector cmd_line dmtx zbar )
+
+#############
+# Bag files #
+#############
+
+# Tutorial
+rosbuild_download_data(
+  https://github.com/downloads/lagadic/visp_auto_tracker/tutorial-qrcode.bag
+  bag/tutorial-qrcode.bag
+  0f80ceea2610b8400591ca7aff764dfa)
