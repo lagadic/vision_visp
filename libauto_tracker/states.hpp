@@ -212,7 +212,9 @@ namespace tracking{
     TrackModel() : plot_(NULL),iter_(0){}
 
     template <class Fsm>
-    void on_entry(finished const& evt, Fsm& fsm){}
+    void on_entry(finished const& evt, Fsm& fsm){
+      fsm.get_mbt().getPose(cMo);
+    }
 
     template <class Fsm>
     void on_exit(finished const& evt, Fsm& fsm){}
