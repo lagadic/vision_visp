@@ -12,6 +12,7 @@
 #include "sensor_msgs/Image.h"
 #include "geometry_msgs/PoseStamped.h"
 #include "geometry_msgs/PoseWithCovarianceStamped.h"
+#include "std_msgs/Header.h"
 #include <sstream>
 
 namespace visp_auto_tracker{
@@ -26,6 +27,7 @@ namespace visp_auto_tracker{
                 bool debug_display_;
 
                 vpImage<vpRGBa> I_;
+                std_msgs::Header image_header_;
                 bool got_image_;
 
                 tracking::Tracker* t_;

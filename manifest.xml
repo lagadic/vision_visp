@@ -1,7 +1,7 @@
 <package>
   <description brief="visp_auto_tracker">
 
-     Automatic tracker capable of detecting a model using a pattern on its texture and then to track it & recover loss.
+     Automatic tracker capable of detecting a model using a pattern on its texture and then to track it and recover loss.
 
   </description>
   <author>Filip Novotny</author>

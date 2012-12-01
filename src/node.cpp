@@ -72,6 +72,7 @@ namespace visp_auto_tracker{
         //records last recieved image
         void Node::frameCallback(const sensor_msgs::ImageConstPtr& image, const sensor_msgs::CameraInfoConstPtr& cam_info){
                 boost::mutex::scoped_lock(lock_);
+                image_header_ = image->header;
                 I_ = visp_bridge::toVispImageRGBa(*image); //make sure the image isn't worked on by locking a mutex
                 got_image_ = true;
         }
@@ -140,9 +141,7 @@ namespace visp_auto_tracker{
                 geometry_msgs::PoseStamped ps;
                 geometry_msgs::PoseWithCovarianceStamped ps_cov;
                 visp_tracker::MovingEdgeSites me;
-                ps.header.frame_id = tracker_ref_frame;
-                ps_cov.header.frame_id = tracker_ref_frame;
-                me.header.frame_id = tracker_ref_frame;
+
                 ros::Rate rate(25); //init 25fps publishing frequency
                 while(ros::ok()){
                         boost::mutex::scoped_lock(lock_);
@@ -155,10 +154,13 @@ namespace visp_auto_tracker{
 
                         //if(*(t_->current_state())==3 /*TrackModel*/){
                           ps_cov.pose.pose = ps.pose;
-                          ps.header.stamp = ros::Time::now();
-                          me.header.stamp = ros::Time::now();
-                          ps_cov.header.stamp = ros::Time::now();
+                          //header isn't necessarily timestamped to now (not in rosbag case)
+                          ps.header = image_header_;
+                          me.header = image_header_;
+                          ps_cov.header = image_header_;
                           ps.header.frame_id = tracker_ref_frame;
+						  ps_cov.header.frame_id = tracker_ref_frame;
+						  me.header.frame_id = tracker_ref_frame;
                           std_msgs::Int8 status;
                           status.data = (unsigned char)(*(t_->current_state()));
 

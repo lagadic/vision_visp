@@ -20,7 +20,6 @@
 	  </node>
   
 	<node pkg="visp_tracker" type="viewer" name="tracker_mbt_viewer" args="_camera_prefix:=/">
-		<param name="model_path" value="$(find visp_auto_tracker)/data/pattern.wrl" />
   	</node>
 	
 	

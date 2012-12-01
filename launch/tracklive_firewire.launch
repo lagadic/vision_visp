@@ -1,6 +1,4 @@
 <launch>
-	<arg name="config" default="$(find visp_auto_tracker)/data/config.cfg" />
-
 	<param name="/camera_prefix" type="string" value="/" />
 		
 	<node pkg="visp_auto_tracker" type="visp_auto_tracker" name="visp_auto_tracker">
@@ -27,9 +25,6 @@
   </node>
   
 	<node pkg="visp_tracker" type="viewer" name="tracker_mbt_viewer" args="_camera_prefix:=/" output="screen">
-  		
-  		
-		<param name="model_path" value="$(find visp_auto_tracker)/data/pattern.wrl" />
   	</node>
 	
 	
