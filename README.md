@@ -12,9 +12,14 @@ This computer vision algorithm computes the pose (i.e. position and
 orientation) of an object in an image. It is fast enough to allow
 object online tracking using a camera.
 
-This package is composed of one node called 'visp_auto_tracker'. The node tries first to detect the QRcode or the Flash code associated to the object. Once the detection is performed, the node tracks the object. When a lost of tracking occurs the node tries to detect once again the object and then restart a tracking.  
+This package is composed of one node called 'visp_auto_tracker'. The 
+node tries first to detect the QRcode or the Flash code associated to 
+the object. Once the detection is performed, the node tracks the object. 
+When a lost of tracking occurs the node tries to detect once again the 
+object and then restart a tracking.
 
-The viewer comming with visp_tracker package can be used to monitor the tracking result.
+The viewer comming with visp_tracker package can be used to monitor the 
+tracking result.
 
 * [Project webpage on ros.org: tutorial and API reference] [ros-homepage]
 * [Project webpage: source code download, bug report] [github-homepage]
