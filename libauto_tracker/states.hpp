@@ -96,29 +96,32 @@ namespace tracking{
       void on_entry(Event const&, Fsm&)
       {
         std::cout <<"entering: DetectFlashcode" << std::endl;
-
       }
       template <class Event, class Fsm>
       void on_exit(Event const& evt, Fsm& fsm)
       {
         std::cout <<"leaving: DetectFlashcode" << std::endl;
+        if(fsm.get_flush_display()) {
+          vpDisplay::display(evt.I);
+        }
         std::vector<cv::Point>& polygon = fsm.get_detector().get_polygon();
-        if(polygon.size()!=4) return;
+        if(polygon.size()!=4) {
+          if(fsm.get_flush_display()) vpDisplay::flush(evt.I);
+          return;
+        }
         corner0 = vpImagePoint (polygon[0].y,polygon[0].x);
         corner1 = vpImagePoint (polygon[1].y,polygon[1].x);
         corner2 = vpImagePoint (polygon[2].y,polygon[2].x);
         corner3 = vpImagePoint (polygon[3].y,polygon[3].x);
 
         if(fsm.get_flush_display()){
-          vpDisplay::display(evt.I);
           vpDisplay::displayRectangle(evt.I,fsm.template get_tracking_box< vpRect > (),getColor(),false,2);
 
           if(polygon.size()==0){
             vpDisplay::displayCharString(evt.I,vpImagePoint(0,0),"TRACKING LOST",vpColor::red);
-            if(fsm.get_flush_display()) vpDisplay::flush(evt.I);
+            vpDisplay::flush(evt.I);
             return;
           }
-
 
           std::vector<std::pair<cv::Point,cv::Point> >& lines = fsm.get_detector().get_lines();
           for(std::vector<std::pair<cv::Point,cv::Point> >::iterator i = lines.begin();
