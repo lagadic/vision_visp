@@ -101,7 +101,7 @@ namespace visp_auto_tracker{
                 detectors::DetectorBase* detector = NULL;
                 if (cmd.get_detector_type() == CmdLine::ZBAR)
                         detector = new detectors::qrcode::Detector;
-                else if(cmd.get_detector_type() == CmdLine::DTMX)
+                else if(cmd.get_detector_type() == CmdLine::DMTX)
                         detector = new detectors::datamatrix::Detector;
 
                 //init tracker based on user preference
@@ -131,8 +131,10 @@ namespace visp_auto_tracker{
                 {
                         //when an image is ready tell the tracker to start searching for patterns
                         boost::mutex::scoped_lock(lock_);
-                        if(debug_display_)
+                        if(debug_display_) {
                           d->init(I_); //also init display
+                          vpDisplay::setTitle(I_, "visp_auto_tracker debug display");
+                        }
 
                         t_->process_event(tracking::select_input(I_));
                 }
