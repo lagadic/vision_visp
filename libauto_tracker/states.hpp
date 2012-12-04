@@ -268,8 +268,8 @@ namespace tracking{
                     std::max(u-region_width,0)
                 ),
                 vpImagePoint(
-                    std::min(v+region_height,(int)evt.I.getHeight()),
-                    std::min(u+region_width,(int)evt.I.getWidth())
+                    std::max(0, std::min(v+region_height,(int)evt.I.getHeight())),
+                    std::max(0, std::min(u+region_width,(int)evt.I.getWidth()))
                 ),
                 vpColor::cyan,
                 true
