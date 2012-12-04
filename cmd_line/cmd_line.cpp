@@ -17,7 +17,7 @@ void CmdLine::common(){
           ("single-image,I", po::value<std::string>(&single_image_name_),"load this single image (relative to data dir)")
           ("pattern-name,P", po::value<std::string>(&pattern_name_)->default_value("pattern"),"name of xml,init and wrl files")
           /*("showfps,f", "show framerate")*/
-          ("detector-type,r", po::value<std::string>()->default_value("zbar"),"Type of your detector that will be used for initialisation/recovery. zbar for QRcodes and more, dtmx for flashcodes.")
+          ("detector-type,r", po::value<std::string>()->default_value("zbar"),"Type of your detector that will be used for initialisation/recovery. zbar for QRcodes and more, dmtx for flashcodes.")
           ("tracker-type,t", po::value<std::string>()->default_value("klt_mbt"),"Type of tracker. mbt_klt for hybrid: mbt+klt, mbt for model based, klt for klt-based")
           ("verbose,v", "show states of the tracker")
           ("dmx-detector-timeout,T", po::value<int>(&dmx_timeout_)->default_value(1000), "timeout for datamatrix detection in ms")
@@ -106,7 +106,7 @@ void CmdLine::loadConfig(std::string& config_file){
         case ZBAR:
           std::cout << "QR code";
           break;
-        case DTMX:
+        case DMTX:
           std::cout << "Datamatrix (flashcode)";
           break;
       }
@@ -293,7 +293,7 @@ CmdLine::DETECTOR_TYPE CmdLine:: get_detector_type(){
   if(vm_["detector-type"].as<std::string>()=="zbar")
     return CmdLine::ZBAR;
   else
-    return CmdLine::DTMX;
+    return CmdLine::DMTX;
 }
 
 CmdLine::TRACKER_TYPE CmdLine:: get_tracker_type(){

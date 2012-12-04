@@ -39,7 +39,7 @@ class CmdLine{
   void common();
  public:
   enum DETECTOR_TYPE{
-    DTMX, ZBAR
+    DMTX, ZBAR
   };
   enum TRACKER_TYPE{
     KLT, MBT, KLT_MBT
