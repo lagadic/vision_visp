@@ -35,9 +35,11 @@
   		<harris>0.01</harris>
 		<size_block>3</size_block> 
   		<pyramid_lvl>3</pyramid_lvl> 
-  		<angle_appear>75</angle_appear> 
-  		<angle_desappear>75</angle_desappear>
 		<mask_border>0</mask_border>
 	</klt>
+	<face>
+  		<angle_appear>75</angle_appear> 
+  		<angle_disappear>75</angle_disappear>
+	</face>
 </conf>
 
