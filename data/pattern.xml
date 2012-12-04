@@ -27,7 +27,7 @@
   		<py>540.0600505</py>
 	</camera>
 	<klt>
-		<erosion>10</erosion> 
+		<threshold_outlier>0.7</threshold_outlier> 
   		<max_features>10000</max_features> 
   		<window_size>5</window_size> 
   		<quality>0.01</quality> 
@@ -35,8 +35,11 @@
   		<harris>0.01</harris>
 		<size_block>3</size_block> 
   		<pyramid_lvl>3</pyramid_lvl> 
-  		<angle_appear>75</angle_appear> 
-  		<angle_desappear>75</angle_desappear>
+		<mask_border>0</mask_border>
 	</klt>
+	<face>
+  		<angle_appear>75</angle_appear> 
+  		<angle_disappear>75</angle_disappear>
+	</face>
 </conf>
 
