@@ -247,7 +247,7 @@ namespace tracking{
       if(fsm.get_flush_display()){
         vpDisplay::display(evt.I);
         fsm.get_mbt().display(evt.I, cMo, fsm.get_cam(), vpColor::red, 1);// display the model at the computed pose.
-        vpDisplay::displayFrame(evt.I,cMo,fsm.get_cam(),.3,vpColor::none,2);
+        vpDisplay::displayFrame(evt.I,cMo,fsm.get_cam(),.1,vpColor::none,2);
         if(fsm.get_cmd().using_adhoc_recovery()){
           for(unsigned int p=0;p<fsm.get_points3D_middle().size();p++){
             vpPoint& point3D = fsm.get_points3D_middle()[p];
