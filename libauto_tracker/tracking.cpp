@@ -198,7 +198,7 @@ namespace tracking{
 
     pose.computePose(vpPose::LAGRANGE,cMo_);
     pose.computePose(vpPose::VIRTUAL_VS,cMo_);
-    vpDisplay::displayFrame(*I_,cMo_,cam_,0.01,vpColor::none,2);
+    //vpDisplay::displayFrame(*I_,cMo_,cam_,0.01,vpColor::none,2);
 
     std::vector<vpImagePoint> model_inner_corner(4);
     std::vector<vpImagePoint> model_outer_corner(4);
