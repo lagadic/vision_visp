@@ -202,8 +202,14 @@ namespace tracking{
           vpDisplay::displayCharString(I,model_outer_corner[3],"mo4",vpColor::darkRed);
           vpDisplay::displayCross(I,model_outer_corner[3],2,vpColor::darkRed,2);
 
+          try {
+            fsm.get_mbt().display(I, cMo, fsm.get_cam(), vpColor::blue, 1);// display the model at the computed pose.
+          }
+          catch(vpException& e)
+          {
+            std::cout << "Cannot display the model" << std::endl;
+          }
 
-          fsm.get_mbt().display(I, cMo, fsm.get_cam(), vpColor::blue, 1);// display the model at the computed pose.
           vpDisplay::flush(I);
         }
 
