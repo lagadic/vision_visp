@@ -73,7 +73,7 @@ namespace tracking{
     std::vector<vpPoint> f_;
     vpRect vpTrackingBox_;
     cv::Rect cvTrackingBox_;
-
+    bool cvTrackingBox_init_;
 
     statistics_t statistics;
     bool flush_display_;

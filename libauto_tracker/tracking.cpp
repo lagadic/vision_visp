@@ -22,6 +22,12 @@ namespace tracking{
       tracker_(tracker),
       flush_display_(flush_display){
     std::cout << "starting tracker" << std::endl;
+    cvTrackingBox_init_ = false;
+    cvTrackingBox_.x = 0;
+    cvTrackingBox_.y = 0;
+    cvTrackingBox_.width = 0;
+    cvTrackingBox_.height = 0;
+
     points3D_inner_ = cmd.get_inner_points_3D();
     points3D_outer_ = cmd.get_outer_points_3D();
     outer_points_3D_bcp_ = cmd.get_outer_points_3D();
@@ -130,22 +136,21 @@ namespace tracking{
 
   bool Tracker_:: flashcode_detected(input_ready const& evt){
     this->cam_ = evt.cam_;
-    cv::Mat cvI;//(evt.I.getRows(),evt.I.getCols(),CV_8UC3);
 
-    cv::Mat vpToMat((int)evt.I.getRows(), (int)evt.I.getCols(), CV_8UC4, (void*)evt.I.bitmap);
+    cv::Mat rgba = cv::Mat((int)evt.I.getRows(), (int)evt.I.getCols(), CV_8UC4, (void*)evt.I.bitmap);
 
-    cvI = cv::Mat((int)evt.I.getRows(), (int)evt.I.getCols(), CV_8UC3);
+    cv::Mat bgr = cv::Mat((int)evt.I.getRows(), (int)evt.I.getCols(), CV_8UC3);
     cv::Mat alpha((int)evt.I.getRows(), (int)evt.I.getCols(), CV_8UC1);
 
-    cv::Mat out[] = {cvI, alpha};
+    cv::Mat out[] = {bgr, alpha};
+    // rgba[0] -> bgr[2], rgba[1] -> bgr[1],
+    // rgba[2] -> bgr[0], rgba[3] -> alpha[0]
     int from_to[] = { 0,2,  1,1,  2,0,  3,3 };
-    cv::mixChannels(&vpToMat, 1, out, 2, from_to, 4);
+    cv::mixChannels(&rgba, 1, out, 2, from_to, 4);
 
-    //vpImageConvert::convert(evt.I,cvI);
+    //vpImageConvert::convert(evt.I,bgr);
 
-
-
-    return detector_->detect(cvI,cmd.get_dmx_timeout(),0,0);
+    return detector_->detect(bgr,cmd.get_dmx_timeout(),0,0);
   }
 
   /*
@@ -154,21 +159,30 @@ namespace tracking{
    */
   bool Tracker_:: flashcode_redetected(input_ready const& evt){
     this->cam_ = evt.cam_;
-    cv::Mat cvI;
 
     //vpImageConvert::convert(evt.I,cvI);
-    cv::Mat vpToMat((int)evt.I.getRows(), (int)evt.I.getCols(), CV_8UC4, (void*)evt.I.bitmap);
+    cv::Mat rgba = cv::Mat((int)evt.I.getRows(), (int)evt.I.getCols(), CV_8UC4, (void*)evt.I.bitmap);
 
-    cvI = cv::Mat((int)evt.I.getRows(), (int)evt.I.getCols(), CV_8UC3);
+    cv::Mat bgr = cv::Mat((int)evt.I.getRows(), (int)evt.I.getCols(), CV_8UC3);
     cv::Mat alpha((int)evt.I.getRows(), (int)evt.I.getCols(), CV_8UC1);
 
-    cv::Mat out[] = {cvI, alpha};
+    cv::Mat out[] = {bgr, alpha};
+    // rgba[0] -> bgr[2], rgba[1] -> bgr[1],
+    // rgba[2] -> bgr[0], rgba[3] -> alpha[0]
     int from_to[] = { 0,2,  1,1,  2,0,  3,3 };
-    cv::mixChannels(&vpToMat, 1, out, 2, from_to, 4);
-    cv::Mat subImage = cv::Mat(cvI,get_tracking_box<cv::Rect>()).clone();
+    cv::mixChannels(&rgba, 1, out, 2, from_to, 4);
 
-    double timeout = cmd.get_dmx_timeout()*(double)(get_tracking_box<cv::Rect>().width*get_tracking_box<cv::Rect>().height)/(double)(cvI.cols*cvI.rows);
-    return detector_->detect(subImage,(unsigned int)timeout,get_tracking_box<cv::Rect>().x,get_tracking_box<cv::Rect>().y);
+    if (cvTrackingBox_init_)
+    {
+      cv::Mat subImage = cv::Mat(bgr,get_tracking_box<cv::Rect>()).clone();
+
+      double timeout = cmd.get_dmx_timeout()*(double)(get_tracking_box<cv::Rect>().width*get_tracking_box<cv::Rect>().height)/(double)(bgr.cols*bgr.rows);
+      return detector_->detect(subImage,(unsigned int)timeout,get_tracking_box<cv::Rect>().x,get_tracking_box<cv::Rect>().y);
+    }
+    else
+    {
+      return detector_->detect(bgr,cmd.get_dmx_timeout(),0,0);
+    }
   }
 
   void Tracker_:: find_flashcode_pos(input_ready const& evt){
@@ -372,7 +386,7 @@ namespace tracking{
       }else
         std::cout << "error: could not init moving edges on tracker that doesn't support them." << std::endl;
     }
-
+    cvTrackingBox_init_ = true;
     cvTrackingBox_ = cv::boundingRect(cv::Mat(points));
     int s_x = cvTrackingBox_.x,
         s_y = cvTrackingBox_.y,
