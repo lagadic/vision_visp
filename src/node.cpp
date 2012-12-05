@@ -18,6 +18,7 @@
 #include <visp/vpMbEdgeKltTracker.h>
 #include <visp/vpMbKltTracker.h>
 #include <visp/vpMbEdgeTracker.h>
+#include <visp/vpTime.h>
 
 #include "conversions/camera.h"
 #include "conversions/image.h"
@@ -146,6 +147,7 @@ namespace visp_auto_tracker{
 
                 ros::Rate rate(25); //init 25fps publishing frequency
                 while(ros::ok()){
+                  double t = vpTime::measureTimeMs();
                         boost::mutex::scoped_lock(lock_);
                         //process the new frame with the tracker
                         t_->process_event(tracking::input_ready(I_,cam,iter));
@@ -174,6 +176,8 @@ namespace visp_auto_tracker{
                         //}
                         ros::spinOnce();
                         rate.sleep();
+                        if (cmd.show_fps())
+                          std::cout << "Tracking done in " << vpTime::measureTimeMs() - t << " ms" << std::endl;
                 }
                 t_->process_event(tracking::finished());
 
