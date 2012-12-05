@@ -23,12 +23,14 @@ namespace msm = boost::msm;
 namespace tracking{
   struct WaitingForInput : public msm::front::state<>{
       template <class Event, class Fsm>
-      void on_entry(Event const&, Fsm& ){
-        std::cout <<"entering: WaitingForInput" << std::endl;
+      void on_entry(Event const&, Fsm& fsm){
+        if(fsm.get_cmd().get_verbose())
+          std::cout <<"entering: WaitingForInput" << std::endl;
       }
       template <class Event, class Fsm>
       void on_exit(Event const& evt, Fsm& fsm){
-        std::cout <<"leaving: WaitingForInput" << std::endl;
+        if(fsm.get_cmd().get_verbose())
+          std::cout <<"leaving: WaitingForInput" << std::endl;
         if(fsm.get_flush_display()){
           vpDisplay::display(evt.I);
           vpDisplay::flush(evt.I);
@@ -40,42 +42,45 @@ namespace tracking{
   struct Finished : public msm::front::state<>{
     template <class Event, class Fsm>
     void on_entry(Event const& evt, Fsm& fsm){
-      typename Fsm::statistics_t& statistics = fsm.get_statistics();
-      std::cout << "statistics:" << std::endl;
-      std::cout << "\tglobal:" << std::endl;
-      std::cout << "\t\tmedian:" << boost::accumulators::median(statistics.var) << std::endl;
-      std::cout << "\t\tmean:" << boost::accumulators::mean(statistics.var) << std::endl;
-      std::cout << "\t\tmax:" << boost::accumulators::max(statistics.var) << std::endl;
+      if(fsm.get_cmd().get_verbose())
+      {
+        typename Fsm::statistics_t& statistics = fsm.get_statistics();
+        std::cout << "statistics:" << std::endl;
+        std::cout << "\tglobal:" << std::endl;
+        std::cout << "\t\tmedian:" << boost::accumulators::median(statistics.var) << std::endl;
+        std::cout << "\t\tmean:" << boost::accumulators::mean(statistics.var) << std::endl;
+        std::cout << "\t\tmax:" << boost::accumulators::max(statistics.var) << std::endl;
 
-      std::cout << "\tX:" << std::endl;
-      std::cout << "\t\tmedian:" << boost::accumulators::median(statistics.var_x) << std::endl;
-      std::cout << "\t\tmean:" << boost::accumulators::mean(statistics.var_x) << std::endl;
-      std::cout << "\t\tmax:" << boost::accumulators::max(statistics.var_x) << std::endl;
+        std::cout << "\tX:" << std::endl;
+        std::cout << "\t\tmedian:" << boost::accumulators::median(statistics.var_x) << std::endl;
+        std::cout << "\t\tmean:" << boost::accumulators::mean(statistics.var_x) << std::endl;
+        std::cout << "\t\tmax:" << boost::accumulators::max(statistics.var_x) << std::endl;
 
-      std::cout << "\tY:" << std::endl;
-      std::cout << "\t\tmedian:" << boost::accumulators::median(statistics.var_y) << std::endl;
-      std::cout << "\t\tmean:" << boost::accumulators::mean(statistics.var_y) << std::endl;
-      std::cout << "\t\tmax:" << boost::accumulators::max(statistics.var_y) << std::endl;
+        std::cout << "\tY:" << std::endl;
+        std::cout << "\t\tmedian:" << boost::accumulators::median(statistics.var_y) << std::endl;
+        std::cout << "\t\tmean:" << boost::accumulators::mean(statistics.var_y) << std::endl;
+        std::cout << "\t\tmax:" << boost::accumulators::max(statistics.var_y) << std::endl;
 
-      std::cout << "\tZ:" << std::endl;
-      std::cout << "\t\tmedian:" << boost::accumulators::median(statistics.var_z) << std::endl;
-      std::cout << "\t\tmean:" << boost::accumulators::mean(statistics.var_z) << std::endl;
-      std::cout << "\t\tmax:" << boost::accumulators::max(statistics.var_z) << std::endl;
+        std::cout << "\tZ:" << std::endl;
+        std::cout << "\t\tmedian:" << boost::accumulators::median(statistics.var_z) << std::endl;
+        std::cout << "\t\tmean:" << boost::accumulators::mean(statistics.var_z) << std::endl;
+        std::cout << "\t\tmax:" << boost::accumulators::max(statistics.var_z) << std::endl;
 
-      std::cout << "\tW_X:" << std::endl;
-      std::cout << "\t\tmedian:" << boost::accumulators::median(statistics.var_wx) << std::endl;
-      std::cout << "\t\tmean:" << boost::accumulators::mean(statistics.var_wx) << std::endl;
-      std::cout << "\t\tmax:" << boost::accumulators::max(statistics.var_wx) << std::endl;
+        std::cout << "\tW_X:" << std::endl;
+        std::cout << "\t\tmedian:" << boost::accumulators::median(statistics.var_wx) << std::endl;
+        std::cout << "\t\tmean:" << boost::accumulators::mean(statistics.var_wx) << std::endl;
+        std::cout << "\t\tmax:" << boost::accumulators::max(statistics.var_wx) << std::endl;
 
-      std::cout << "\tW_Y:" << std::endl;
-      std::cout << "\t\tmedian:" << boost::accumulators::median(statistics.var_wy) << std::endl;
-      std::cout << "\t\tmean:" << boost::accumulators::mean(statistics.var_wy) << std::endl;
-      std::cout << "\t\tmax:" << boost::accumulators::max(statistics.var_wy) << std::endl;
+        std::cout << "\tW_Y:" << std::endl;
+        std::cout << "\t\tmedian:" << boost::accumulators::median(statistics.var_wy) << std::endl;
+        std::cout << "\t\tmean:" << boost::accumulators::mean(statistics.var_wy) << std::endl;
+        std::cout << "\t\tmax:" << boost::accumulators::max(statistics.var_wy) << std::endl;
 
-      std::cout << "\tW_Z:" << std::endl;
-      std::cout << "\t\tmedian:" << boost::accumulators::median(statistics.var_wz) << std::endl;
-      std::cout << "\t\tmean:" << boost::accumulators::mean(statistics.var_wz) << std::endl;
-      std::cout << "\t\tmax:" << boost::accumulators::max(statistics.var_wz) << std::endl;
+        std::cout << "\tW_Z:" << std::endl;
+        std::cout << "\t\tmedian:" << boost::accumulators::median(statistics.var_wz) << std::endl;
+        std::cout << "\t\tmean:" << boost::accumulators::mean(statistics.var_wz) << std::endl;
+        std::cout << "\t\tmax:" << boost::accumulators::max(statistics.var_wz) << std::endl;
+      }
     }
   };
 
@@ -93,14 +98,16 @@ namespace tracking{
       void on_exit(finished const& evt, Fsm& fsm){}
 
       template <class Event, class Fsm>
-      void on_entry(Event const&, Fsm&)
+      void on_entry(Event const&, Fsm& fsm)
       {
-        std::cout <<"entering: DetectFlashcode" << std::endl;
+        if(fsm.get_cmd().get_verbose())
+          std::cout <<"entering: DetectFlashcode" << std::endl;
       }
       template <class Event, class Fsm>
       void on_exit(Event const& evt, Fsm& fsm)
       {
-        std::cout <<"leaving: DetectFlashcode" << std::endl;
+        if(fsm.get_cmd().get_verbose())
+          std::cout <<"leaving: DetectFlashcode" << std::endl;
         if(fsm.get_flush_display()) {
           vpDisplay::display(evt.I);
         }
@@ -145,10 +152,10 @@ namespace tracking{
   };
   struct ReDetectFlashcode: public DetectFlashcodeGeneric {
     template <class Event, class Fsm>
-    void on_entry(Event const&, Fsm&)
+    void on_entry(Event const&, Fsm& fsm)
     {
-      std::cout <<"entering: ReDetectFlashcode" << std::endl;
-
+      if(fsm.get_cmd().get_verbose())
+        std::cout <<"entering: ReDetectFlashcode" << std::endl;
     }
     vpColor getColor(){ return vpColor::orange; }
   };
@@ -167,12 +174,16 @@ namespace tracking{
       void on_exit(finished const& evt, Fsm& fsm){}
 
       template <class Event, class Fsm>
-      void on_entry(Event const&, Fsm& )
-      {std::cout <<"entering: DetectModel" << std::endl;}
+      void on_entry(Event const&, Fsm& fsm)
+      {
+        if(fsm.get_cmd().get_verbose())
+          std::cout <<"entering: DetectModel" << std::endl;
+      }
       template <class Event, class Fsm>
       void on_exit(Event const& evt, Fsm& fsm)
       {
-        std::cout <<"leaving: DetectModel" << std::endl;
+        if(fsm.get_cmd().get_verbose())
+          std::cout <<"leaving: DetectModel" << std::endl;
         std::vector<vpPoint>& points3D_inner = fsm.get_points3D_inner();
         std::vector<vpPoint>& points3D_outer = fsm.get_points3D_outer();
 
