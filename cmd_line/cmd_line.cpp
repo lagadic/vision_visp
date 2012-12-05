@@ -16,13 +16,13 @@ void CmdLine::common(){
           ("video-output-path,L", po::value<std::string>(&log_file_pattern_),"output video file path relative to the data directory")
           ("single-image,I", po::value<std::string>(&single_image_name_),"load this single image (relative to data dir)")
           ("pattern-name,P", po::value<std::string>(&pattern_name_)->default_value("pattern"),"name of xml,init and wrl files")
-          /*("showfps,f", "show framerate")*/
           ("detector-type,r", po::value<std::string>()->default_value("zbar"),"Type of your detector that will be used for initialisation/recovery. zbar for QRcodes and more, dmtx for flashcodes.")
           ("tracker-type,t", po::value<std::string>()->default_value("klt_mbt"),"Type of tracker. mbt_klt for hybrid: mbt+klt, mbt for model based, klt for klt-based")
-          ("verbose,v", "show states of the tracker")
+          ("verbose,v", po::value< bool >(&verbose_)->default_value(false)->composing(), "Enable or disable additional printings")
           ("dmx-detector-timeout,T", po::value<int>(&dmx_timeout_)->default_value(1000), "timeout for datamatrix detection in ms")
           ("config-file,c", po::value<std::string>(&config_file)->default_value("./data/config.cfg"), "config file for the program")
-          ("show-plot,p", "show variances graph")
+          ("show-fps,f", po::value< bool >(&show_fps_)->default_value(false)->composing(), "show framerate")
+          ("show-plot,p", po::value< bool >(&show_plot_)->default_value(false)->composing(), "show variances graph")
 
           ("help", "produce help message")
           ;
@@ -41,22 +41,22 @@ void CmdLine::common(){
           ("variance-file,V", po::value< std::string >(&var_file_)->composing(), "file to store variance values")
           ("variance-limit,l", po::value< double >(&var_limit_)->composing(),
               "above this limit the tracker will be considered lost and the pattern will be detected with the flascode")
-          ("mbt-convergence-steps,S", po::value< int >(&mbt_convergence_steps_)->default_value(100)->composing(),
-              "when a new model is found, how many tracking iterations should the tracker perform so the model matches the projection.")
+          ("mbt-convergence-steps,S", po::value< int >(&mbt_convergence_steps_)->default_value(1)->composing(),
+              "when a new model is detected, how many tracking iterations should the tracker perform so the model matches the projection.")
           ("hinkley-range,H",
                             po::value< std::vector<double> >(&hinkley_range_)->multitoken()->composing(),
                             "pair of alpha, delta values describing the two hinkley tresholds")
           ("mbt-dynamic-range,R", po::value< double >(&mbt_dynamic_range_)->composing(),
                     "Adapt mbt range to symbol size. The width of the outer black corner is multiplied by this value to get the mbt range. Try 0.2")
-          ("ad-hoc-recovery,W", "use ad-hoc recovery")
+          ("ad-hoc-recovery,W", po::value< bool >(&adhoc_recovery_)->default_value(true)->composing(), "Enable or disable ad-hoc recovery")
           ("ad-hoc-recovery-ratio,y", po::value< double >(&adhoc_recovery_ratio_)->default_value(0.5)->composing(),
               "use ad-hoc recovery based on the model. The tracker will look for black pixels at ratio*[pattern size] from the center")
           ("ad-hoc-recovery-size,w", po::value< double >(&adhoc_recovery_size_)->default_value(0.5)->composing(),
                     "fraction of the black outer band size. The control points (those that should be black and in that way check tracking is still there).")
           ("ad-hoc-recovery-threshold,Y", po::value< unsigned int >(&adhoc_recovery_treshold_)->default_value(100)->composing(),
-              "Treshold over which the point is considered out of the black area of the object")
+              "Threshold over which the point is considered out of the black area of the object")
           ("log-checkpoints,g","log checkpoints in the log file")
-          ("log-pose,q","log pose in the log file")
+          ("log-pose,q", po::value< bool >(&log_pose_)->default_value(false)->composing(),"log pose in the log file")
           ;
       prog_args.add(general);
       prog_args.add(configuration);
@@ -158,7 +158,7 @@ std::string CmdLine::get_input_file_pattern(){
 }
 
 bool CmdLine:: show_plot(){
-  return vm_.count("show-plot")>0;
+  return show_plot_;
 }
 
 bool CmdLine:: using_hinkley(){
@@ -221,12 +221,12 @@ std::string CmdLine:: get_video_channel(){
   return video_channel_;
 }
 
-int CmdLine:: show_fps(){
-  return vm_.count("showfps")>0;
+bool CmdLine:: show_fps(){
+  return show_fps_;
 }
 
-int CmdLine:: get_verbose(){
-  return vm_.count("verbose")>0;
+bool CmdLine:: get_verbose(){
+  return verbose_;
 }
 
 int CmdLine:: get_dmx_timeout(){
@@ -319,7 +319,7 @@ unsigned int CmdLine:: get_adhoc_recovery_treshold(){
 }
 
 bool CmdLine:: using_adhoc_recovery(){
-  return vm_.count("ad-hoc-recovery")>0;
+  return adhoc_recovery_;
 }
 
 bool CmdLine:: log_checkpoints(){
@@ -327,7 +327,7 @@ bool CmdLine:: log_checkpoints(){
 }
 
 bool CmdLine:: log_pose(){
-  return vm_.count("log-pose")>0;
+  return log_pose_;
 }
 
 void CmdLine:: set_data_directory(std::string dir){

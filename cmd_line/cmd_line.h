@@ -12,18 +12,23 @@ namespace po = boost::program_options;
 class CmdLine{
  private:
   boost::program_options::variables_map vm_;
+  bool verbose_;
+  bool show_fps_;
+  bool show_plot_;
+  bool log_pose_;
   bool should_exit_;
   std::string video_channel_;
   double inner_ratio_;
   double outer_ratio_;
   double var_limit_;
+  bool adhoc_recovery_;
   double adhoc_recovery_ratio_;
   unsigned int adhoc_recovery_treshold_;
+  double adhoc_recovery_size_;
   std::vector<double> hinkley_range_;
   int dmx_timeout_;
   int mbt_convergence_steps_;
   double mbt_dynamic_range_;
-  double adhoc_recovery_size_;
   std::string data_dir_;
   std::string pattern_name_;
   std::string var_file_;
@@ -68,7 +73,7 @@ class CmdLine{
 
   std::string get_video_channel();
 
-  int show_fps();
+  bool show_fps();
 
   int get_mbt_convergence_steps();
 
@@ -82,7 +87,7 @@ class CmdLine{
 
   bool using_mbt_dynamic_range();
 
-  int get_verbose();
+  bool get_verbose();
 
   int get_dmx_timeout();
 
