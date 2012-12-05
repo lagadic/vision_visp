@@ -7,7 +7,7 @@ include($ENV{ROS_ROOT}/core/rosbuild/rosbuild.cmake)
 #  Release        : w/o debug symbols, w/ optimization
 #  RelWithDebInfo : w/ debug symbols, w/ optimization
 #  MinSizeRel     : w/o debug symbols, w/ optimization, stripped binaries
-#set(ROS_BUILD_TYPE RelWithDebInfo)
+set(ROS_BUILD_TYPE RelWithDebInfo)
 
 rosbuild_init()
 
@@ -35,7 +35,7 @@ rosbuild_add_library(auto_tracker
   flashcode_mbt/libauto_tracker/threading.cpp)
 
 rosbuild_add_library(cmd_line
-	flashcode_mbt/cmd_line/cmd_line.cpp
+  flashcode_mbt/cmd_line/cmd_line.cpp
 )
 
 add_subdirectory(flashcode_mbt/detectors)
@@ -62,3 +62,4 @@ rosbuild_download_data(
   https://github.com/downloads/lagadic/visp_auto_tracker/tutorial-qrcode.bag
   bag/tutorial-qrcode.bag
   0f80ceea2610b8400591ca7aff764dfa)
+
