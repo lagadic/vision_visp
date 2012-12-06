@@ -49,6 +49,7 @@ void CmdLine::common(){
           ("mbt-dynamic-range,R", po::value< double >(&mbt_dynamic_range_)->composing(),
                     "Adapt mbt range to symbol size. The width of the outer black corner is multiplied by this value to get the mbt range. Try 0.2")
           ("ad-hoc-recovery,W", po::value< bool >(&adhoc_recovery_)->default_value(true)->composing(), "Enable or disable ad-hoc recovery")
+          ("ad-hoc-recovery-display,D", po::value< bool >(&adhoc_recovery_display_)->default_value(false)->composing(), "Enable or disable ad-hoc recovery display")
           ("ad-hoc-recovery-ratio,y", po::value< double >(&adhoc_recovery_ratio_)->default_value(0.5)->composing(),
               "use ad-hoc recovery based on the model. The tracker will look for black pixels at ratio*[pattern size] from the center")
           ("ad-hoc-recovery-size,w", po::value< double >(&adhoc_recovery_size_)->default_value(0.5)->composing(),
@@ -316,6 +317,10 @@ double CmdLine:: get_adhoc_recovery_ratio(){
 
 unsigned int CmdLine:: get_adhoc_recovery_treshold(){
   return adhoc_recovery_treshold_;
+}
+
+bool CmdLine:: get_adhoc_recovery_display() {
+  return adhoc_recovery_display_;
 }
 
 bool CmdLine:: using_adhoc_recovery(){

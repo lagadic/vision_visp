@@ -121,7 +121,7 @@ namespace tracking{
         corner2 = vpImagePoint (polygon[2].y,polygon[2].x);
         corner3 = vpImagePoint (polygon[3].y,polygon[3].x);
 
-        if(fsm.get_flush_display()){
+        if(0){//fsm.get_flush_display()){
           vpDisplay::displayRectangle(evt.I,fsm.template get_tracking_box< vpRect > (),getColor(),false,2);
 
           if(polygon.size()==0){
@@ -265,7 +265,7 @@ namespace tracking{
         vpDisplay::display(evt.I);
         fsm.get_mbt().display(evt.I, cMo, fsm.get_cam(), vpColor::red, 1);// display the model at the computed pose.
         vpDisplay::displayFrame(evt.I,cMo,fsm.get_cam(),.1,vpColor::none,2);
-        if(fsm.get_cmd().using_adhoc_recovery()){
+        if(fsm.get_cmd().using_adhoc_recovery() && fsm.get_cmd().get_adhoc_recovery_display()){
           for(unsigned int p=0;p<fsm.get_points3D_middle().size();p++){
             vpPoint& point3D = fsm.get_points3D_middle()[p];
             vpPoint& point3D_inner = fsm.get_points3D_inner()[p];

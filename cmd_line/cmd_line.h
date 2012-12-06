@@ -22,6 +22,7 @@ class CmdLine{
   double outer_ratio_;
   double var_limit_;
   bool adhoc_recovery_;
+  bool adhoc_recovery_display_;
   double adhoc_recovery_ratio_;
   unsigned int adhoc_recovery_treshold_;
   double adhoc_recovery_size_;
@@ -120,6 +121,7 @@ class CmdLine{
   double get_adhoc_recovery_ratio();
 
   unsigned int get_adhoc_recovery_treshold();
+  bool get_adhoc_recovery_display();
 
   bool using_adhoc_recovery();
 
