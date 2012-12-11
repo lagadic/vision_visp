@@ -15,4 +15,4 @@
 	url = git://github.com/lagadic/visp_bridge.git
 [submodule "visp_auto_tracker"]
 	path = visp_auto_tracker
-	url = git@github.com:lagadic/visp_auto_tracker.git
+	url = git://github.com/lagadic/visp_auto_tracker.git
