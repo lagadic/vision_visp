@@ -6,6 +6,7 @@ find_package(catkin REQUIRED)
 find_package(Boost REQUIRED COMPONENTS filesystem thread)
 find_package(VISP REQUIRED)
 #FIXME: look for bullet.
+include_directories(SYSTEM /opt/ros/groovy/stacks/bullet/include)
 
 find_package(catkin REQUIRED COMPONENTS
   dynamic_reconfigure
@@ -24,11 +25,20 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_python_setup()
 
 include_directories(SYSTEM
-  ${Boost_INCLUDE_DIRS} ${VISP_INCLUDE_DIRS}
-  ${catkin_INCLUDE_DIRS})
-include_directories("${CMAKE_SOURCE_DIR}/src")
-include_directories("${CMAKE_SOURCE_DIR}/src/libvisp_tracker")
-link_directories(${catkin_LIBRARY_DIRS})
+  ${Boost_INCLUDE_DIRS}
+  ${VISP_INCLUDE_DIRS}
+  ${catkin_INCLUDE_DIRS}
+  )
+link_directories(
+  ${catkin_LIBRARY_DIRS}
+  ${VISP_LIBRARY_DIRS}
+  ${catkin_LIBRARY_DIRS}
+  )
+
+include_directories(
+  "${CMAKE_CURRENT_SOURCE_DIR}/src"
+  "${CMAKE_CURRENT_SOURCE_DIR}/src/libvisp_tracker"
+  "${CMAKE_CURRENT_SOURCE_DIR}/cfg/cpp")
 
 # Generate messages and services.
 add_message_files(
@@ -45,6 +55,9 @@ add_service_files(
   )
 generate_messages(DEPENDENCIES geometry_msgs sensor_msgs std_msgs)
 
+# Dynamic reconfigure.
+generate_dynamic_reconfigure_options(cfg/MovingEdge.cfg)
+
 catkin_package(
    LIBRARIES visp_tracker trackerNodelet
 
@@ -60,13 +73,11 @@ catkin_package(
    visp
    )
 
+# Add package definitions
+add_definitions(${VISP_DEFINITIONS})
+
 # Make sure Boost.Filesystem v2 is used.
 add_definitions(-DBOOST_FILESYSTEM_VERSION=2)
-
-#FIXME: generate configuration file using dynamic_reconfigure.
-# Dynamic reconfigure.
-#include(${dynamic_reconfigure_DIR}/cfgbuild.cmake)
-#gencfg()
 
 #############
 # Libraries #
