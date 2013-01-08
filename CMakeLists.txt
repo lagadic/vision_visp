@@ -5,8 +5,21 @@ find_package(catkin REQUIRED)
 
 find_package(Boost REQUIRED COMPONENTS filesystem thread)
 find_package(VISP REQUIRED)
-#FIXME: look for bullet.
-include_directories(SYSTEM /opt/ros/groovy/stacks/bullet/include)
+
+# Look for bullet.
+find_path(BULLET_INCLUDE_DIRS
+  btBulletCollisionCommon.h
+  PATHS /opt/ros/groovy/stacks/bullet/include
+  DOC "Bullet library include directory")
+if(NOT BULLET_INCLUDE_DIRS)
+  message(FATAL_ERROR
+    "failed to detect Bullet, please fill BULLET_INCLUDE_DIRS manually")
+endif()
+if(NOT IS_DIRECTORY "${BULLET_INCLUDE_DIRS}")
+  message(FATAL_ERROR
+    "failed to detect Bullet, please fill BULLET_INCLUDE_DIRS manually")
+endif()
+include_directories(SYSTEM ${BULLET_INCLUDE_DIRS})
 
 find_package(catkin REQUIRED COMPONENTS
   dynamic_reconfigure
