@@ -15,6 +15,10 @@
   <url>http://ros.org/wiki/visp_tracker</url>
   <url type="repository">git://github.com/laas/visp_tracker.git</url>
 
+  <export>
+    <nodelet plugin="${prefix}/nodelet_plugins.xml" />
+  </export>
+
   <buildtool_depend>catkin</buildtool_depend>
 
   <build_depend>bullet</build_depend>

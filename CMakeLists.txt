@@ -93,10 +93,21 @@ add_library(visp_tracker
   src/libvisp_tracker/tracker-viewer.cpp
   src/libvisp_tracker/names.cpp)
 target_link_libraries(visp_tracker
-  ${Boost_LIBRARIES} ${VISP_LIBRARIES})
+  ${Boost_LIBRARIES} ${VISP_LIBRARIES}
+  )
 target_link_libraries(visp_tracker
+  ${dynamic_reconfigure_LIBRARIES}
+  ${geometry_msgs_LIBRARIES}
+  ${image_proc_LIBRARIES}
+  ${image_transport_LIBRARIES}
+  ${message_generation_LIBRARIES}
+  ${nodelet_LIBRARIES}
+  ${resource_retriever_LIBRARIES}
   ${roscpp_LIBRARIES}
-  ${nodelet_LIBRARIES})
+  ${sensor_msgs_LIBRARIES}
+  ${std_msgs_LIBRARIES}
+  ${tf_LIBRARIES}
+  )
 
 
 
@@ -109,10 +120,12 @@ add_library(trackerNodelet
   src/nodelets/tracker.cpp
   src/nodelets/client.cpp
   src/nodelets/viewer.cpp)
-target_link_libraries(trackerNodelet visp_tracker visp-2)
+target_link_libraries(trackerNodelet visp_tracker)
 target_link_libraries(trackerNodelet
   ${roscpp_LIBRARIES}
-  ${nodelet_LIBRARIES})
+  ${nodelet_LIBRARIES}
+  ${VISP_LIBRARIES}
+  )
 
 install(TARGETS visp_tracker trackerNodelet
    ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}

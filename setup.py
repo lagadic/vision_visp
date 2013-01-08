@@ -5,7 +5,7 @@ from catkin_pkg.python_setup import generate_distutils_setup
 
 d = generate_distutils_setup(
    scripts=['scripts/tf_localization.py'],
-   packages=['PYTHON_PACKAGE_NAME'],
+   packages=['visp_tracker'],
    package_dir={'': 'src'}
 )
 
