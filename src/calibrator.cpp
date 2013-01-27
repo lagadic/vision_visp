@@ -82,7 +82,7 @@ namespace visp_hand2eye_calibration
       return false;
     }
 
-    ROS_INFO("computing %d values...",wMe_vec_.size());
+    ROS_INFO("computing %d values...",(int)wMe_vec_.size());
     vpHomogeneousMatrix eMc;
     #if VISP_VERSION_INT > (2<<16 | 6<<8 | 1)
     vpCalibration::calibrationTsai(cMo_vec_, wMe_vec_, eMc);
