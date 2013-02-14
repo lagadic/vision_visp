@@ -38,7 +38,7 @@ rosbuild_add_library(visp_tracker
   src/libvisp_tracker/tracker-client.cpp
   src/libvisp_tracker/tracker-viewer.cpp
   src/libvisp_tracker/names.cpp)
-target_link_libraries(visp_tracker visp-2)
+target_link_libraries(visp_tracker visp)
 rosbuild_link_boost(visp_tracker
   filesystem system signals regex date_time program_options thread)
 
@@ -51,7 +51,7 @@ rosbuild_add_library(trackerNodelet
   src/nodelets/tracker.cpp
   src/nodelets/client.cpp
   src/nodelets/viewer.cpp)
-target_link_libraries(trackerNodelet visp_tracker visp-2)
+target_link_libraries(trackerNodelet visp_tracker visp)
 
 ########
 # Node #
