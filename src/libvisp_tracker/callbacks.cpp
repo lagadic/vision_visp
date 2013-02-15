@@ -58,7 +58,7 @@ void reconfigureCallback(vpMbTracker* tracker,
        vpKltOpencv& kltTracker,
        const std::string &trackerType,
 			 boost::recursive_mutex& mutex,
-			 visp_tracker::MovingEdgeConfig& config,
+			 visp_tracker::ModelBasedSettingsConfig& config,
 			 uint32_t level)
 {
   mutex.lock ();
@@ -67,12 +67,12 @@ void reconfigureCallback(vpMbTracker* tracker,
       ROS_INFO("Reconfigure request received.");
       
       if(trackerType != "klt"){
-        convertMovingEdgeConfigToVpMe(config, moving_edge, tracker);
+        convertModelBasedSettingsConfigToVpMe(config, moving_edge, tracker);
 //         moving_edge.print();
       }
       
       if(trackerType != "mbt")
-        convertMovingEdgeConfigToVpKltOpencv(config, kltTracker, tracker); 
+        convertModelBasedSettingsConfigToVpKltOpencv(config, kltTracker, tracker); 
       
       vpHomogeneousMatrix cMo;
       tracker->getPose(cMo);

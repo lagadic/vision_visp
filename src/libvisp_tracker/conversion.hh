@@ -16,7 +16,7 @@
 # include <visp/vpKltOpencv.h>
 
 # include <visp_tracker/Init.h>
-# include <visp_tracker/MovingEdgeConfig.h>
+# include <visp_tracker/ModelBasedSettingsConfig.h>
 
 /// \brief Convert a ROS image into a ViSP one.
 ///
@@ -57,21 +57,21 @@ void transformToVpHomogeneousMatrix(vpHomogeneousMatrix& dst,
 void transformToVpHomogeneousMatrix(vpHomogeneousMatrix& dst,
 				    const geometry_msgs::Pose& src);
 
-void convertMovingEdgeConfigToVpMe(const visp_tracker::MovingEdgeConfig& config,
+void convertModelBasedSettingsConfigToVpMe(const visp_tracker::ModelBasedSettingsConfig& config,
 				   vpMe& moving_edge,
 				   vpMbTracker* tracker);
 
-void convertVpMeToMovingEdgeConfig(const vpMe& moving_edge,
+void convertVpMeToModelBasedSettingsConfig(const vpMe& moving_edge,
 				   const vpMbTracker* tracker,
-				   visp_tracker::MovingEdgeConfig& config);
+				   visp_tracker::ModelBasedSettingsConfig& config);
 
-void convertMovingEdgeConfigToVpKltOpencv(const visp_tracker::MovingEdgeConfig& config,
+void convertModelBasedSettingsConfigToVpKltOpencv(const visp_tracker::ModelBasedSettingsConfig& config,
            vpKltOpencv& klt,
            vpMbTracker* tracker);
 
-void convertVpKltOpencvToMovingEdgeConfig(const vpKltOpencv& klt,
+void convertVpKltOpencvToModelBasedSettingsConfig(const vpKltOpencv& klt,
            const vpMbTracker* tracker,
-           visp_tracker::MovingEdgeConfig& config);
+           visp_tracker::ModelBasedSettingsConfig& config);
 
 void convertVpMeToInitRequest(const vpMe& moving_edge,
 			      const vpMbTracker* tracker,

@@ -65,13 +65,13 @@ namespace visp_tracker
 
     // Load moving edges.     
     vpMe movingEdge;
-    visp_tracker::MovingEdgeConfig config;
+    visp_tracker::ModelBasedSettingsConfig config;
     tracker_->resetTracker();
     
     if(trackerType_!="klt"){ // for mbt and hybrid
       convertInitRequestToVpMe(req, tracker_, movingEdge);
       // Update parameters.
-      convertVpMeToMovingEdgeConfig(movingEdge, tracker_, config);
+      convertVpMeToModelBasedSettingsConfig(movingEdge, tracker_, config);
       reconfigureSrv_.updateConfig(config);
     }
     
@@ -79,7 +79,7 @@ namespace visp_tracker
     if(trackerType_!="mbt"){ // for klt and hybrid
       convertInitRequestToVpKltOpencv(req, tracker_, klt);
       // Update parameters.
-      convertVpKltOpencvToMovingEdgeConfig(klt, tracker_, config);
+      convertVpKltOpencvToModelBasedSettingsConfig(klt, tracker_, config);
       reconfigureSrv_.updateConfig(config);
     }
     

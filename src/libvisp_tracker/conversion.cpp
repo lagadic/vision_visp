@@ -156,7 +156,7 @@ void transformToVpHomogeneousMatrix(vpHomogeneousMatrix& dst,
   dst[3][3] = 1.;
 }
 
-void convertMovingEdgeConfigToVpMe(const visp_tracker::MovingEdgeConfig& config,
+void convertModelBasedSettingsConfigToVpMe(const visp_tracker::ModelBasedSettingsConfig& config,
 				   vpMe& moving_edge,
 				   vpMbTracker* tracker)
 {
@@ -185,9 +185,9 @@ void convertMovingEdgeConfigToVpMe(const visp_tracker::MovingEdgeConfig& config,
   t->setMovingEdge(moving_edge);
 }
 
-void convertVpMeToMovingEdgeConfig(const vpMe& moving_edge,
+void convertVpMeToModelBasedSettingsConfig(const vpMe& moving_edge,
 				   const vpMbTracker* tracker,
-				   visp_tracker::MovingEdgeConfig& config)
+				   visp_tracker::ModelBasedSettingsConfig& config)
 {
   const vpMbEdgeTracker* t = dynamic_cast<const vpMbEdgeTracker*>(tracker);
   
@@ -209,7 +209,7 @@ void convertVpMeToMovingEdgeConfig(const vpMe& moving_edge,
   config.first_threshold = t->percentageGdPt;
 }
 
-void convertMovingEdgeConfigToVpKltOpencv(const visp_tracker::MovingEdgeConfig& config,
+void convertModelBasedSettingsConfigToVpKltOpencv(const visp_tracker::ModelBasedSettingsConfig& config,
            vpKltOpencv& klt,
            vpMbTracker* tracker)
 {
@@ -230,9 +230,9 @@ void convertMovingEdgeConfigToVpKltOpencv(const visp_tracker::MovingEdgeConfig& 
   t->setKltOpencv(klt);
 }
 
-void convertVpKltOpencvToMovingEdgeConfig(const vpKltOpencv& klt,
+void convertVpKltOpencvToModelBasedSettingsConfig(const vpKltOpencv& klt,
            const vpMbTracker* tracker,
-           visp_tracker::MovingEdgeConfig& config)
+           visp_tracker::ModelBasedSettingsConfig& config)
 {
   const vpMbKltTracker* t = dynamic_cast<const vpMbKltTracker*>(tracker);
   

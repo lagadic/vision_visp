@@ -12,7 +12,7 @@
 # include <visp/vpMe.h>
 # include <visp/vpKltOpencv.h>
 
-# include <visp_tracker/MovingEdgeConfig.h>
+# include <visp_tracker/ModelBasedSettingsConfig.h>
 
 
 void
@@ -42,7 +42,7 @@ void reconfigureCallback(vpMbTracker* tracker,
        vpKltOpencv& kltTracker,
        const std::string &trackerType,
 			 boost::recursive_mutex& mutex,
-			 visp_tracker::MovingEdgeConfig& config,
+			 visp_tracker::ModelBasedSettingsConfig& config,
 			 uint32_t level);
 
 #endif //! VISP_TRACKER_CALLBACKS_HH

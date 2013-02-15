@@ -20,7 +20,7 @@
 
 # include <resource_retriever/retriever.h>
 
-# include <visp_tracker/MovingEdgeConfig.h>
+# include <visp_tracker/ModelBasedSettingsConfig.h>
 # include <visp_tracker/MovingEdgeSites.h>
 
 # include <visp/vpCameraParameters.h>
@@ -41,11 +41,11 @@ namespace visp_tracker
     typedef std::vector<vpPoint> points_t;
     typedef std::vector<vpImagePoint> imagePoints_t;
 
-    typedef dynamic_reconfigure::Server<visp_tracker::MovingEdgeConfig>
+    typedef dynamic_reconfigure::Server<visp_tracker::ModelBasedSettingsConfig>
     reconfigureSrv_t;
 
     typedef dynamic_reconfigure::Server
-    <visp_tracker::MovingEdgeConfig>::CallbackType
+    <visp_tracker::ModelBasedSettingsConfig>::CallbackType
     reconfigureCallback_t;
 
 

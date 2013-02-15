@@ -16,7 +16,7 @@
 #include <image_proc/advertisement_checker.h>
 #include <image_transport/image_transport.h>
 #include <visp_tracker/Init.h>
-#include <visp_tracker/MovingEdgeConfig.h>
+#include <visp_tracker/ModelBasedSettingsConfig.h>
 
 #include <visp/vpMe.h>
 #include <visp/vpPixelMeterConversion.h>

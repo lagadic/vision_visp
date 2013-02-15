@@ -18,7 +18,7 @@
 # include <tf/transform_listener.h>
 
 # include <visp_tracker/Init.h>
-# include <visp_tracker/MovingEdgeConfig.h>
+# include <visp_tracker/ModelBasedSettingsConfig.h>
 # include <visp_tracker/MovingEdgeSites.h>
 # include <visp_tracker/KltPoints.h>
 
@@ -37,7 +37,7 @@ namespace visp_tracker
   public:
     typedef vpImage<unsigned char> image_t;
 
-    typedef dynamic_reconfigure::Server<visp_tracker::MovingEdgeConfig>
+    typedef dynamic_reconfigure::Server<visp_tracker::ModelBasedSettingsConfig>
     reconfigureSrv_t;
 
     typedef boost::function<bool (visp_tracker::Init::Request&,
