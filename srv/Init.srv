@@ -10,10 +10,10 @@
 geometry_msgs/Transform initial_cMo
 
 # Moving Edge parameters
-MovingEdge moving_edge
+MovingEdgeSettings moving_edge
 
 # Klt Parameters
-KltParameters klt_param
+KltSettings klt_param
 ---
 # Did the initialization succeed?
 bool initialization_succeed
