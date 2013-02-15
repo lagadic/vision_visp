@@ -26,7 +26,9 @@
 # include <visp/vpCameraParameters.h>
 # include <visp/vpHomogeneousMatrix.h>
 # include <visp/vpImage.h>
-# include <visp/vpMbEdgeTracker.h>
+# include <visp/vpMbTracker.h>
+# include <visp/vpMe.h>
+# include <visp/vpKltOpencv.h>
 # include <visp/vpPose.h>
 
 
@@ -51,6 +53,8 @@ namespace visp_tracker
 		  ros::NodeHandle& privateNh,
 		  volatile bool& exiting,
 		  unsigned queueSize = 5u);
+    
+    ~TrackerClient();
 
     void spin();
   protected:
@@ -104,6 +108,7 @@ namespace visp_tracker
     std::string cameraPrefix_;
     std::string rectifiedImageTopic_;
     std::string cameraInfoTopic_;
+    std::string trackerType_;
 
     boost::filesystem::path vrmlPath_;
     boost::filesystem::path initPath_;
@@ -117,8 +122,9 @@ namespace visp_tracker
     sensor_msgs::CameraInfoConstPtr info_;
 
     vpMe movingEdge_;
+    vpKltOpencv kltTracker_;
     vpCameraParameters cameraParameters_;
-    vpMbEdgeTracker tracker_;
+    vpMbTracker *tracker_;
 
     bool startFromSavedPose_;
     bool confirmInit_;

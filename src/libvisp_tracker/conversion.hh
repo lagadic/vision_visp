@@ -11,8 +11,9 @@
 
 # include <visp/vpHomogeneousMatrix.h>
 # include <visp/vpCameraParameters.h>
-# include <visp/vpMbEdgeTracker.h>
+# include <visp/vpMbTracker.h>
 # include <visp/vpMe.h>
+# include <visp/vpKltOpencv.h>
 
 # include <visp_tracker/Init.h>
 # include <visp_tracker/MovingEdgeConfig.h>
@@ -58,19 +59,35 @@ void transformToVpHomogeneousMatrix(vpHomogeneousMatrix& dst,
 
 void convertMovingEdgeConfigToVpMe(const visp_tracker::MovingEdgeConfig& config,
 				   vpMe& moving_edge,
-				   vpMbEdgeTracker& tracker);
+				   vpMbTracker* tracker);
 
 void convertVpMeToMovingEdgeConfig(const vpMe& moving_edge,
-				   const vpMbEdgeTracker& tracker,
+				   const vpMbTracker* tracker,
 				   visp_tracker::MovingEdgeConfig& config);
 
+void convertMovingEdgeConfigToVpKltOpencv(const visp_tracker::MovingEdgeConfig& config,
+           vpKltOpencv& klt,
+           vpMbTracker* tracker);
+
+void convertVpKltOpencvToMovingEdgeConfig(const vpKltOpencv& klt,
+           const vpMbTracker* tracker,
+           visp_tracker::MovingEdgeConfig& config);
+
 void convertVpMeToInitRequest(const vpMe& moving_edge,
-			      const vpMbEdgeTracker& tracker,
+			      const vpMbTracker* tracker,
 			      visp_tracker::Init& srv);
 
 void convertInitRequestToVpMe(const visp_tracker::Init::Request& req,
-			      vpMbEdgeTracker& tracker,
+			      vpMbTracker* tracker,
 			      vpMe& moving_edge);
+
+void convertVpKltOpencvToInitRequest(const vpKltOpencv& klt,
+            const vpMbTracker* tracker,
+            visp_tracker::Init& srv);
+
+void convertInitRequestToVpKltOpencv(const visp_tracker::Init::Request& req,
+            vpMbTracker* tracker,
+            vpKltOpencv& klt);
 
 void initializeVpCameraFromCameraInfo(vpCameraParameters& cam,
 				      sensor_msgs::CameraInfoConstPtr info);

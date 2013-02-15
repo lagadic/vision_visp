@@ -4,9 +4,13 @@
 # include <image_transport/image_transport.h>
 # include <sensor_msgs/Image.h>
 # include <std_msgs/Header.h>
+
+# include <string>
+
 # include <visp/vpImage.h>
-# include <visp/vpMbEdgeTracker.h>
+# include <visp/vpMbTracker.h>
 # include <visp/vpMe.h>
+# include <visp/vpKltOpencv.h>
 
 # include <visp_tracker/MovingEdgeConfig.h>
 
@@ -32,9 +36,11 @@ bindImageCallback(vpImage<unsigned char>& image,
 		  sensor_msgs::CameraInfoConstPtr& info);
 
 
-void reconfigureCallback(vpMbEdgeTracker& tracker,
+void reconfigureCallback(vpMbTracker* tracker,
 			 vpImage<unsigned char>& I,
 			 vpMe& moving_edge,
+       vpKltOpencv& kltTracker,
+       const std::string &trackerType,
 			 boost::recursive_mutex& mutex,
 			 visp_tracker::MovingEdgeConfig& config,
 			 uint32_t level);
