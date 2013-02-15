@@ -3,7 +3,7 @@ all: visp
 VERSION     = 2.7.0
 TARBALL     = build/ViSP-$(VERSION).tar.gz
 TARBALL_URL = \
-https://gforge.inria.fr/frs/download.php/32066/ViSP-$(VERSION).tar.gz
+https://gforge.inria.fr/frs/download.php/32079/ViSP-$(VERSION).tar.gz
 UNPACK_CMD  = tar xfz
 SOURCE_DIR  = build/ViSP-$(VERSION)
 MD5SUM_FILE = ViSP-$(VERSION).tar.gz.md5sum
