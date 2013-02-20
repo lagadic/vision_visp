@@ -25,6 +25,9 @@
 #include <vector>
 #include <fstream>
 
+#include "visp_tracker/MovingEdgeSites.h"
+#include "visp_tracker/KltPoints.h"
+
 #include "cmd_line/cmd_line.h"
 #include "detectors/detector_base.h"
 #include <visp/vpMbEdgeTracker.h>
@@ -119,6 +122,9 @@ namespace tracking{
 
     //gets statistics about the last tracking experience
     statistics_t& get_statistics();
+
+    void updateMovingEdgeSites(visp_tracker::MovingEdgeSitesPtr sites);
+    void updateKltPoints(visp_tracker::KltPointsPtr klt);
 
     //here is how the tracker works
     struct transition_table : mpl::vector<

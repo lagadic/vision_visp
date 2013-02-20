@@ -1,3 +1,4 @@
+#include "ros/ros.h"
 #include "cv.h"
 #include "highgui.h"
 #include "tracking.h"
@@ -10,6 +11,9 @@
 #include <visp/vpTrackingException.h>
 #include <visp/vpImageIo.h>
 #include <visp/vpRect.h>
+#include <visp/vpMbKltTracker.h>
+#include <visp/vpMbEdgeTracker.h>
+
 #include "logfilewriter.hpp"
 
 namespace tracking{
@@ -27,6 +31,9 @@ namespace tracking{
     cvTrackingBox_.y = 0;
     cvTrackingBox_.width = 0;
     cvTrackingBox_.height = 0;
+
+    // Retrieve camera parameters comming from camera_info message in order to update them after loadConfigFile()
+    tracker_->getCameraParameters(cam_); // init camera parameters
 
     points3D_inner_ = cmd.get_inner_points_3D();
     points3D_outer_ = cmd.get_outer_points_3D();
@@ -76,6 +83,7 @@ namespace tracking{
 
     tracker_->loadConfigFile(cmd.get_xml_file().c_str() ); // Load the configuration of the tracker
     tracker_->loadModel(cmd.get_wrl_file().c_str()); // load the 3d model, to read .wrl model the 3d party library coin is required, if coin is not installed .cao file can be used.
+    tracker_->setCameraParameters(cam_); // Set the good camera parameters coming from camera_info message
   }
 
   detectors::DetectorBase& Tracker_:: get_detector(){
@@ -135,7 +143,7 @@ namespace tracking{
   }
 
   bool Tracker_:: flashcode_detected(input_ready const& evt){
-    this->cam_ = evt.cam_;
+    //this->cam_ = evt.cam_;
 
     cv::Mat rgba = cv::Mat((int)evt.I.getRows(), (int)evt.I.getCols(), CV_8UC4, (void*)evt.I.bitmap);
 
@@ -158,7 +166,7 @@ namespace tracking{
    * The timeout is the default timeout times the surface ratio
    */
   bool Tracker_:: flashcode_redetected(input_ready const& evt){
-    this->cam_ = evt.cam_;
+    //this->cam_ = evt.cam_;
 
     //vpImageConvert::convert(evt.I,cvI);
     cv::Mat rgba = cv::Mat((int)evt.I.getRows(), (int)evt.I.getCols(), CV_8UC4, (void*)evt.I.bitmap);
@@ -186,6 +194,8 @@ namespace tracking{
   }
 
   void Tracker_:: find_flashcode_pos(input_ready const& evt){
+    this->cam_ = evt.cam_;
+
     std::vector<cv::Point> polygon = detector_->get_polygon();
     double centerX = (double)(polygon[0].x+polygon[1].x+polygon[2].x+polygon[3].x)/4.;
     double centerY = (double)(polygon[0].y+polygon[1].y+polygon[2].y+polygon[3].y)/4.;
@@ -230,11 +240,14 @@ namespace tracking{
     }
 
     try{
-      if(cmd.get_tracker_type()==CmdLine::MBT){
-        vpMbEdgeTracker* me_tracker = dynamic_cast<vpMbEdgeTracker*>(tracker_);
-        me_tracker->resetTracker();
-        me_tracker->loadConfigFile(cmd.get_xml_file().c_str() );
-        me_tracker->loadModel(cmd.get_wrl_file().c_str());
+      tracker_->resetTracker();
+      tracker_->loadConfigFile(cmd.get_xml_file().c_str() );
+      tracker_->loadModel(cmd.get_wrl_file().c_str());
+      tracker_->setCameraParameters(cam_);
+      {
+          vpCameraParameters cam;
+          tracker_->getCameraParameters(cam);
+          if (cam.get_px() != 558) ROS_INFO_STREAM("detection Camera parameters: \n" << cam_);
       }
 
       tracker_->initFromPose(Igray_,cMo_);
@@ -251,15 +264,17 @@ namespace tracking{
       std::cout << e.getStringMessage() << std::endl;
       return false;
     }
-    //vpDisplay::getClick(*I_);
     return true;
   }
 
   bool Tracker_:: mbt_success(input_ready const& evt){
     iter_ = evt.frame;
+    this->cam_ = evt.cam_;
+
     try{
       LogFileWriter writer(varfile_); //the destructor of this class will act as a finally statement
       vpImageConvert::convert(evt.I,Igray_);
+
       tracker_->track(Igray_); // track the object on this image
       tracker_->getPose(cMo_);
       vpMatrix mat = tracker_->getCovarianceMatrix();
@@ -343,7 +358,6 @@ namespace tracking{
 
 
       }
-
     }catch(vpException& e){
       std::cout << "Tracking lost" << std::endl;
       return false;
@@ -353,15 +367,18 @@ namespace tracking{
 
   void Tracker_:: track_model(input_ready const& evt){
     this->cam_ = evt.cam_;
+
     std::vector<cv::Point> points;
     I_ = _I = &(evt.I);
     vpImageConvert::convert(evt.I,Igray_);
+
     boost::accumulators::accumulator_set<
                       double,
                       boost::accumulators::stats<
                         boost::accumulators::tag::mean
                       >
                     > acc;
+
     for(unsigned int i=0;i<points3D_outer_.size();i++){
       points3D_outer_[i].project(cMo_);
       points3D_inner_[i].project(cMo_);
@@ -413,6 +430,82 @@ namespace tracking{
 
   bool Tracker_:: get_flush_display(){
     return flush_display_;
+  }
+
+  void
+  Tracker_::updateMovingEdgeSites(visp_tracker::MovingEdgeSitesPtr sites)
+  {
+    if (!sites)
+      return;
+
+    std::list<vpMbtDistanceLine*> linesList;
+
+    if(cmd.get_tracker_type() != CmdLine::KLT) // For mbt and hybrid
+      dynamic_cast<vpMbEdgeTracker*>(tracker_)->getLline(linesList, 0);
+
+    std::list<vpMbtDistanceLine*>::iterator linesIterator = linesList.begin();
+    if (linesList.empty())
+      ROS_DEBUG_THROTTLE(10, "no distance lines");
+    bool noVisibleLine = true;
+    for (; linesIterator != linesList.end(); ++linesIterator)
+    {
+      vpMbtDistanceLine* line = *linesIterator;
+
+      if (line && line->isVisible() && line->meline)
+      {
+        if (line->meline->list.empty()) {
+          ROS_DEBUG_THROTTLE(10, "no moving edge for a line");
+        }
+
+        std::list<vpMeSite>::const_iterator sitesIterator = line->meline->list.begin();
+
+        for (; sitesIterator != line->meline->list.end(); ++sitesIterator)
+        {
+          visp_tracker::MovingEdgeSite movingEdgeSite;
+          movingEdgeSite.x = sitesIterator->ifloat;
+          movingEdgeSite.y = sitesIterator->jfloat;
+          movingEdgeSite.suppress = sitesIterator->suppress;
+          sites->moving_edge_sites.push_back (movingEdgeSite);
+        }
+        noVisibleLine = false;
+
+      }
+    }
+    if (noVisibleLine)
+      ROS_DEBUG_THROTTLE(10, "no distance lines");
+  }
+
+  void
+  Tracker_::updateKltPoints(visp_tracker::KltPointsPtr klt)
+  {
+    if (!klt)
+      return;
+
+    vpMbHiddenFaces<vpMbtKltPolygon> *poly_lst;
+    std::map<int, vpImagePoint> *map_klt;
+
+    if(cmd.get_tracker_type() != CmdLine::MBT) // For klt and hybrid
+      poly_lst = &dynamic_cast<vpMbKltTracker*>(tracker_)->getFaces();
+
+    for(unsigned int i = 0 ; i < poly_lst->size() ; i++)
+    {
+      if((*poly_lst)[i])
+      {
+        map_klt = &((*poly_lst)[i]->getCurrentPoints());
+
+        if(map_klt->size() > 3)
+        {
+          for (std::map<int, vpImagePoint>::iterator it=map_klt->begin(); it!=map_klt->end(); ++it)
+          {
+            visp_tracker::KltPoint kltPoint;
+            kltPoint.id = it->first;
+            kltPoint.i = it->second.get_i();
+            kltPoint.j = it->second.get_j();
+            klt->klt_points_positions.push_back (kltPoint);
+          }
+        }
+      }
+    }
   }
 }
 
