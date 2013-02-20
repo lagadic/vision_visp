@@ -47,13 +47,48 @@
   \brief conversions between ROS and ViSP structures representing camera parameters
 */
 
+#include <sensor_msgs/distortion_models.h>
+
 #include "camera.h"
 
 namespace visp_bridge{
 
-  vpCameraParameters toVispCameraParameters(const sensor_msgs::CameraInfo& cam_info){
-    return vpCameraParameters(cam_info.P[0 * 4 + 0],cam_info.P[1 * 4 + 1],cam_info.P[0 * 4 + 2],cam_info.P[1 * 4 + 2],-cam_info.D[0],cam_info.D[0]);
-  }
+vpCameraParameters toVispCameraParameters(const sensor_msgs::CameraInfo& cam_info){
+  vpCameraParameters cam;
+  // Check that the camera is calibrated, as specified in the
+  // sensor_msgs/CameraInfo message documentation.
+  if (cam_info.K.size() != 3 * 3 || cam_info.K[0] == 0.)
+    throw std::runtime_error ("uncalibrated camera");
+
+  // Check matrix size.
+  if (cam_info.P.size() != 3 * 4)
+    throw std::runtime_error
+      ("camera calibration P matrix has an incorrect size");
+
+  if (cam_info.distortion_model.empty ())
+    {
+      const double& px = cam_info.K[0 * 3 + 0];
+      const double& py = cam_info.K[1 * 3 + 1];
+      const double& u0 = cam_info.K[0 * 3 + 2];
+      const double& v0 = cam_info.K[1 * 3 + 2];
+      cam.initPersProjWithoutDistortion(px, py, u0, v0);
+      return cam;
+    }
+
+  if (cam_info.distortion_model == sensor_msgs::distortion_models::PLUMB_BOB)
+    {
+      const double& px = cam_info.P[0 * 4 + 0];
+      const double& py = cam_info.P[1 * 4 + 1];
+      const double& u0 = cam_info.P[0 * 4 + 2];
+      const double& v0 = cam_info.P[1 * 4 + 2];
+      cam.initPersProjWithoutDistortion(px, py, u0, v0);
+      return cam;
+    }
+
+  throw std::runtime_error ("unsupported distortion model");
+
+ // return vpCameraParameters(cam_info.P[0 * 4 + 0],cam_info.P[1 * 4 + 1],cam_info.P[0 * 4 + 2],cam_info.P[1 * 4 + 2],-cam_info.D[0],cam_info.D[0]);
+}
 
   sensor_msgs::CameraInfo toSensorMsgsCameraInfo(vpCameraParameters& cam_info, unsigned int cam_image_width, unsigned int cam_image_height ){
       sensor_msgs::CameraInfo ret;
