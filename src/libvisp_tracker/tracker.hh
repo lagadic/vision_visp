@@ -18,13 +18,17 @@
 # include <tf/transform_listener.h>
 
 # include <visp_tracker/Init.h>
-# include <visp_tracker/MovingEdgeConfig.h>
+# include <visp_tracker/ModelBasedSettingsConfig.h>
 # include <visp_tracker/MovingEdgeSites.h>
+# include <visp_tracker/KltPoints.h>
 
 # include <visp/vpCameraParameters.h>
 # include <visp/vpHomogeneousMatrix.h>
 # include <visp/vpImage.h>
-# include <visp/vpMbEdgeTracker.h>
+# include <visp/vpMbTracker.h>
+#include <visp/vpMbEdgeKltTracker.h>
+# include <visp/vpMe.h>
+# include <string>
 
 namespace visp_tracker
 {
@@ -33,7 +37,7 @@ namespace visp_tracker
   public:
     typedef vpImage<unsigned char> image_t;
 
-    typedef dynamic_reconfigure::Server<visp_tracker::MovingEdgeConfig>
+    typedef dynamic_reconfigure::Server<visp_tracker::ModelBasedSettingsConfig>
     reconfigureSrv_t;
 
     typedef boost::function<bool (visp_tracker::Init::Request&,
@@ -52,12 +56,16 @@ namespace visp_tracker
 	     ros::NodeHandle& privateNh,
 	     volatile bool& exiting,
 	     unsigned queueSize = 5u);
+    
+    ~Tracker();
+    
     void spin();
   protected:
     bool initCallback(visp_tracker::Init::Request& req,
 		      visp_tracker::Init::Response& res);
 
     void updateMovingEdgeSites(visp_tracker::MovingEdgeSitesPtr sites);
+    void updateKltPoints(visp_tracker::KltPointsPtr klt);
 
     void checkInputs();
     void waitForImage();
@@ -85,6 +93,7 @@ namespace visp_tracker
     image_transport::ImageTransport imageTransport_;
 
     State state_;
+    std::string trackerType_;
 
     image_t image_;
 
@@ -103,15 +112,17 @@ namespace visp_tracker
     ros::Publisher transformationPublisher_;
     tf::TransformBroadcaster tfBroadcaster_;
     ros::Publisher movingEdgeSitesPublisher_;
+    ros::Publisher kltPointsPublisher_;
 
     ros::ServiceServer initService_;
 
     std_msgs::Header header_;
     sensor_msgs::CameraInfoConstPtr info_;
 
+    vpKltOpencv kltTracker_;
     vpMe movingEdge_;
     vpCameraParameters cameraParameters_;
-    vpMbEdgeTracker tracker_;
+    vpMbTracker* tracker_;
 
     unsigned lastTrackedImage_;
 

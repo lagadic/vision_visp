@@ -16,14 +16,11 @@
 #include <std_msgs/String.h>
 #include <tf/transform_broadcaster.h>
 
-#include <visp_tracker/MovingEdgeSites.h>
-
 #include <boost/bind.hpp>
 #include <visp/vpExponentialMap.h>
 #include <visp/vpImage.h>
 #include <visp/vpImageConvert.h>
 #include <visp/vpCameraParameters.h>
-#include <visp/vpMbEdgeTracker.h>
 
 #include "conversion.hh"
 #include "callbacks.hh"
@@ -47,14 +44,15 @@ namespace visp_tracker
     res.initialization_succeed = false;
 
     // If something goes wrong, rollback all changes.
-    BOOST_SCOPE_EXIT((&res)(&tracker_)(&state_)
-		     (&lastTrackedImage_))
+    BOOST_SCOPE_EXIT((&res)(tracker_)(&state_)
+		     (&lastTrackedImage_)(&trackerType_))
       {
 	if(!res.initialization_succeed)
 	  {
-	    tracker_.resetTracker();
+        tracker_->resetTracker();
 	    state_ = WAITING_FOR_INITIALIZATION;
 	    lastTrackedImage_ = 0;
+
 	  }
       } BOOST_SCOPE_EXIT_END;
 
@@ -65,30 +63,34 @@ namespace visp_tracker
     if (!makeModelFile(modelStream, fullModelPath))
       return true;
 
-    // Load moving edges.
+    // Load moving edges.     
     vpMe movingEdge;
-    convertInitRequestToVpMe(req, tracker_, movingEdge);
-
-    // Update parameters.
-    visp_tracker::MovingEdgeConfig config;
-    convertVpMeToMovingEdgeConfig(movingEdge, tracker_, config);
-    reconfigureSrv_.updateConfig(config);
-
-    //FIXME: not sure if this is needed.
-    movingEdge.initMask();
-
-    // Reset the tracker and the node state.
-    tracker_.resetTracker();
+    visp_tracker::ModelBasedSettingsConfig config;
+    tracker_->resetTracker();
+    
+    if(trackerType_!="klt"){ // for mbt and hybrid
+      convertInitRequestToVpMe(req, tracker_, movingEdge);
+      // Update parameters.
+      convertVpMeToModelBasedSettingsConfig(movingEdge, tracker_, config);
+      reconfigureSrv_.updateConfig(config);
+    }
+    
+    vpKltOpencv klt;
+    if(trackerType_!="mbt"){ // for klt and hybrid
+      convertInitRequestToVpKltOpencv(req, tracker_, klt);
+      // Update parameters.
+      convertVpKltOpencvToModelBasedSettingsConfig(klt, tracker_, config);
+      reconfigureSrv_.updateConfig(config);
+    }
+    
     state_ = WAITING_FOR_INITIALIZATION;
     lastTrackedImage_ = 0;
-
-    tracker_.setMovingEdge(movingEdge);
 
     // Load the model.
     try
       {
 	ROS_DEBUG_STREAM("Trying to load the model: " << fullModelPath);
-	tracker_.loadModel(fullModelPath.c_str());
+	tracker_->loadModel(fullModelPath.c_str());
 	modelStream.close();
       }
     catch(...)
@@ -102,13 +104,13 @@ namespace visp_tracker
     transformToVpHomogeneousMatrix(cMo_, req.initial_cMo);
 
     // Enable covariance matrix.
-    tracker_.setCovarianceComputation(true);
+    tracker_->setCovarianceComputation(true);
 
     // Try to initialize the tracker.
     ROS_INFO_STREAM("Initializing tracker with cMo:\n" << cMo_);
     try
       {
-	tracker_.initFromPose(image_, cMo_);
+	tracker_->initFromPose(image_, cMo_);
 	ROS_INFO("Tracker successfully initialized.");
 
 	movingEdge.print();
@@ -131,7 +133,9 @@ namespace visp_tracker
       return;
 
     std::list<vpMbtDistanceLine*> linesList;
-    tracker_.getLline(linesList, 0);
+
+    if(trackerType_!="klt") // For mbt and hybrid
+      dynamic_cast<vpMbEdgeTracker*>(tracker_)->getLline(linesList, 0);
 
     std::list<vpMbtDistanceLine*>::iterator linesIterator =
       linesList.begin();
@@ -142,7 +146,7 @@ namespace visp_tracker
       {
 	vpMbtDistanceLine* line = *linesIterator;
 
-	if (line && line->isVisible())
+  if (line && line->isVisible() && line->meline)
 	  {
 	    std::list<vpMeSite>::const_iterator sitesIterator =
 	      line->meline->list.begin();
@@ -161,6 +165,39 @@ namespace visp_tracker
       }
     if (noVisibleLine)
       ROS_DEBUG_THROTTLE(10, "no distance lines");
+  }
+
+  void
+  Tracker::updateKltPoints(visp_tracker::KltPointsPtr klt)
+  {
+    if (!klt)
+      return;
+
+    vpMbHiddenFaces<vpMbtKltPolygon> *poly_lst;
+    std::map<int, vpImagePoint> *map_klt;
+
+    if(trackerType_!="mbt") // For klt and hybrid
+      poly_lst = &dynamic_cast<vpMbKltTracker*>(tracker_)->getFaces();
+
+    for(unsigned int i = 0 ; i < poly_lst->size() ; i++)
+    {
+      if((*poly_lst)[i])
+      {
+        map_klt = &((*poly_lst)[i]->getCurrentPoints());
+
+        if(map_klt->size() > 3)
+        {
+          for (std::map<int, vpImagePoint>::iterator it=map_klt->begin(); it!=map_klt->end(); ++it)
+          {
+            visp_tracker::KltPoint kltPoint;
+            kltPoint.id = it->first;
+            kltPoint.i = it->second.get_i();
+            kltPoint.j = it->second.get_j();
+            klt->klt_points_positions.push_back (kltPoint);
+          }
+        }
+      }
+    }
   }
 
   void Tracker::checkInputs()
@@ -191,12 +228,13 @@ namespace visp_tracker
       resultPublisher_(),
       transformationPublisher_(),
       movingEdgeSitesPublisher_(),
+      kltPointsPublisher_(),
       initService_(),
       header_(),
       info_(),
+      kltTracker_(),
       movingEdge_(),
       cameraParameters_(),
-      tracker_(),
       lastTrackedImage_(),
       checkInputs_(nodeHandle_, ros::this_node::getName()),
       cMo_ (),
@@ -210,9 +248,17 @@ namespace visp_tracker
   {
     // Set cMo to identity.
     cMo_.eye();
+    //tracker_ = new vpMbEdgeTracker();
 
     // Parameters.
     nodeHandlePrivate_.param<std::string>("camera_prefix", cameraPrefix_, "");
+    nodeHandlePrivate_.param<std::string>("tracker_type", trackerType_, "mbt");
+    if(trackerType_=="mbt")
+      tracker_ = new vpMbEdgeTracker();
+    else if(trackerType_=="klt")
+      tracker_ = new vpMbKltTracker();
+    else
+      tracker_ = new vpMbEdgeKltTracker();
 
     if (cameraPrefix_.empty ())
       {
@@ -253,6 +299,11 @@ namespace visp_tracker
       nodeHandle_.advertise<visp_tracker::MovingEdgeSites>
       (visp_tracker::moving_edge_sites_topic, queueSize_);
 
+    // Klt_points_ publisher.
+    kltPointsPublisher_ =
+      nodeHandle_.advertise<visp_tracker::KltPoints>
+      (visp_tracker::klt_points_topic, queueSize_);
+
     // Camera subscriber.
     cameraSubscriber_ =
       imageTransport_.subscribeCamera
@@ -271,15 +322,23 @@ namespace visp_tracker
 
     // Initialization.
     movingEdge_.initMask();
-    tracker_.setMovingEdge(movingEdge_);
-
+    if(trackerType_!="klt"){
+      vpMbEdgeTracker* t = dynamic_cast<vpMbEdgeTracker*>(tracker_);
+      t->setMovingEdge(movingEdge_);
+    }
+    
+    if(trackerType_!="mbt"){
+      vpMbKltTracker* t = dynamic_cast<vpMbKltTracker*>(tracker_);
+      t->setKltOpencv(kltTracker_);
+    }
+    
     // Dynamic reconfigure.
     reconfigureSrv_t::CallbackType f =
       boost::bind(&reconfigureCallback, boost::ref(tracker_),
-		  boost::ref(image_), boost::ref(movingEdge_),
-		  boost::ref(mutex_), _1, _2);
+                  boost::ref(image_), boost::ref(movingEdge_), boost::ref(kltTracker_),
+                  boost::ref(trackerType_), boost::ref(mutex_), _1, _2);
     reconfigureSrv_.setCallback(f);
-
+    
     // Wait for the image to be initialized.
     waitForImage();
     if (this->exiting())
@@ -310,8 +369,8 @@ namespace visp_tracker
 		"This warning is triggered is px, py, u0 or v0\n"
 		"is set to 0. or 1. (exactly).");
 
-    tracker_.setCameraParameters(cameraParameters_);
-    tracker_.setDisplayMovingEdges(false);
+    tracker_->setCameraParameters(cameraParameters_);
+    tracker_->setDisplayFeatures(false);
 
     ROS_INFO_STREAM(cameraParameters_);
 
@@ -322,157 +381,171 @@ namespace visp_tracker
     initService_ = nodeHandle_.advertiseService
       (visp_tracker::init_service, initCallback);
   }
+  
+  Tracker::~Tracker()
+  {
+    delete tracker_;  
+  }
 
   void Tracker::spin()
-  {
-    ros::Rate loopRateTracking(100);
-    tf::Transform transform;
-    std_msgs::Header lastHeader;
-
-    while (!exiting())
+  {    
+      ros::Rate loopRateTracking(100);
+      tf::Transform transform;
+      std_msgs::Header lastHeader;
+      while (!exiting())
       {
-	// When a camera sequence is played several times,
-	// the seq id will decrease, in this case we want to
-	// continue the tracking.
-	if (header_.seq < lastHeader.seq)
-	  lastTrackedImage_ = 0;
+          // When a camera sequence is played several times,
+          // the seq id will decrease, in this case we want to
+          // continue the tracking.
+          if (header_.seq < lastHeader.seq)
+              lastTrackedImage_ = 0;
 
-	if (lastTrackedImage_ < header_.seq)
-	  {
-	    lastTrackedImage_ = header_.seq;
+          if (lastTrackedImage_ < header_.seq)
+          {
+              lastTrackedImage_ = header_.seq;
 
-	    // If we can estimate the camera displacement using tf,
-	    // we update the cMo to compensate for robot motion.
-	    if (compensateRobotMotion_)
-	      try
-		{
-		  tf::StampedTransform stampedTransform;
-		  listener_.lookupTransform
-		    (header_.frame_id, // camera frame name
-		     header_.stamp,    // current image time
-		     header_.frame_id, // camera frame name
-		     lastHeader.stamp, // last processed image time
-		     worldFrameId_,    // frame attached to the environment
-		     stampedTransform
-		     );
-		  vpHomogeneousMatrix newMold;
-		  transformToVpHomogeneousMatrix (newMold, stampedTransform);
-		  cMo_ = newMold * cMo_;
-		}
-	      catch(tf::TransformException& e)
-		{}
+              // If we can estimate the camera displacement using tf,
+              // we update the cMo to compensate for robot motion.
+              if (compensateRobotMotion_)
+                  try
+              {
+                  tf::StampedTransform stampedTransform;
+                  listener_.lookupTransform
+                          (header_.frame_id, // camera frame name
+                           header_.stamp,    // current image time
+                           header_.frame_id, // camera frame name
+                           lastHeader.stamp, // last processed image time
+                           worldFrameId_,    // frame attached to the environment
+                           stampedTransform
+                           );
+                  vpHomogeneousMatrix newMold;
+                  transformToVpHomogeneousMatrix (newMold, stampedTransform);
+                  cMo_ = newMold * cMo_;
+              }
+              catch(tf::TransformException& e)
+              {}
 
-	    // If we are lost but an estimation of the object position
-	    // is provided, use it to try to reinitialize the system.
-	    if (state_ == LOST)
-	      {
-		// If the last received message is recent enough,
-		// use it otherwise do nothing.
-		if (ros::Time::now () - objectPositionHint_.header.stamp
-		    < ros::Duration (1.))
-		  transformToVpHomogeneousMatrix
-		    (cMo_, objectPositionHint_.transform);
-	      }
+              // If we are lost but an estimation of the object position
+              // is provided, use it to try to reinitialize the system.
+              if (state_ == LOST)
+              {
+                  // If the last received message is recent enough,
+                  // use it otherwise do nothing.
+                  if (ros::Time::now () - objectPositionHint_.header.stamp
+                          < ros::Duration (1.))
+                      transformToVpHomogeneousMatrix
+                              (cMo_, objectPositionHint_.transform);
+              }
 
-	    // We try to track the image even if we are lost,
-	    // in the case the tracker recovers...
-	    if (state_ == TRACKING || state_ == LOST)
-	      try
-		{
-		  tracker_.initFromPose(image_, cMo_);
-		  tracker_.track(image_);
-		  tracker_.getPose(cMo_);
-		}
-	      catch(...)
-		{
-		  ROS_WARN_THROTTLE(10, "tracking lost");
-		  state_ = LOST;
-		}
+              // We try to track the image even if we are lost,
+              // in the case the tracker recovers...
+              if (state_ == TRACKING || state_ == LOST)
+                  try
+              {
+                  mutex_.lock();
+                  tracker_->setPose(image_, cMo_);
+                  tracker_->track(image_);
+                  tracker_->getPose(cMo_);
+                  mutex_.unlock();
+              }
+              catch(...)
+              {
+                  ROS_WARN_THROTTLE(10, "tracking lost");
+                  state_ = LOST;
+              }
 
-	    // Publish the tracking result.
-	    if (state_ == TRACKING)
-	      {
-		geometry_msgs::Transform transformMsg;
-		vpHomogeneousMatrixToTransform(transformMsg, cMo_);
+              // Publish the tracking result.
+              if (state_ == TRACKING)
+              {
+                  geometry_msgs::Transform transformMsg;
+                  vpHomogeneousMatrixToTransform(transformMsg, cMo_);
 
-		// Publish position.
-		if (transformationPublisher_.getNumSubscribers	() > 0)
-		  {
-		    geometry_msgs::TransformStampedPtr objectPosition
-		      (new geometry_msgs::TransformStamped);
-		    objectPosition->header = header_;
-		    objectPosition->child_frame_id = childFrameId_;
-		    objectPosition->transform = transformMsg;
-		    transformationPublisher_.publish(objectPosition);
-		  }
+                  // Publish position.
+                  if (transformationPublisher_.getNumSubscribers	() > 0)
+                  {
+                      geometry_msgs::TransformStampedPtr objectPosition
+                              (new geometry_msgs::TransformStamped);
+                      objectPosition->header = header_;
+                      objectPosition->child_frame_id = childFrameId_;
+                      objectPosition->transform = transformMsg;
+                      transformationPublisher_.publish(objectPosition);
+                  }
 
-		// Publish result.
-		if (resultPublisher_.getNumSubscribers	() > 0)
-		  {
-		    geometry_msgs::PoseWithCovarianceStampedPtr result
-		      (new geometry_msgs::PoseWithCovarianceStamped);
-		    result->header = header_;
-		    result->pose.pose.position.x =
-		      transformMsg.translation.x;
-		    result->pose.pose.position.y =
-		      transformMsg.translation.y;
-		    result->pose.pose.position.z =
-		      transformMsg.translation.z;
+                  // Publish result.
+                  if (resultPublisher_.getNumSubscribers	() > 0)
+                  {
+                      geometry_msgs::PoseWithCovarianceStampedPtr result
+                              (new geometry_msgs::PoseWithCovarianceStamped);
+                      result->header = header_;
+                      result->pose.pose.position.x =
+                              transformMsg.translation.x;
+                      result->pose.pose.position.y =
+                              transformMsg.translation.y;
+                      result->pose.pose.position.z =
+                              transformMsg.translation.z;
 
-		    result->pose.pose.orientation.x =
-		      transformMsg.rotation.x;
-		    result->pose.pose.orientation.y =
-		      transformMsg.rotation.y;
-		    result->pose.pose.orientation.z =
-		      transformMsg.rotation.z;
-		    result->pose.pose.orientation.w =
-		      transformMsg.rotation.w;
-		    const vpMatrix& covariance =
-		      tracker_.getCovarianceMatrix();
-		    for (unsigned i = 0; i < covariance.getRows(); ++i)
-		      for (unsigned j = 0; j < covariance.getCols(); ++j)
-			{
-			  unsigned idx = i * covariance.getCols() + j;
-			  if (idx >= 36)
-			    continue;
-			  result->pose.covariance[idx] = covariance[i][j];
-			}
-		    resultPublisher_.publish(result);
-		  }
+                      result->pose.pose.orientation.x =
+                              transformMsg.rotation.x;
+                      result->pose.pose.orientation.y =
+                              transformMsg.rotation.y;
+                      result->pose.pose.orientation.z =
+                              transformMsg.rotation.z;
+                      result->pose.pose.orientation.w =
+                              transformMsg.rotation.w;
+                      const vpMatrix& covariance =
+                              tracker_->getCovarianceMatrix();
+                      for (unsigned i = 0; i < covariance.getRows(); ++i)
+                          for (unsigned j = 0; j < covariance.getCols(); ++j)
+                          {
+                              unsigned idx = i * covariance.getCols() + j;
+                              if (idx >= 36)
+                                  continue;
+                              result->pose.covariance[idx] = covariance[i][j];
+                          }
+                      resultPublisher_.publish(result);
+                  }
 
-		// Publish moving edge sites.
-		if (movingEdgeSitesPublisher_.getNumSubscribers	() > 0)
-		  {
-		    visp_tracker::MovingEdgeSitesPtr sites
-		      (new visp_tracker::MovingEdgeSites);
-		    updateMovingEdgeSites(sites);
-		    sites->header = header_;
-		    movingEdgeSitesPublisher_.publish(sites);
-		  }
+                  // Publish moving edge sites.
+                  if (movingEdgeSitesPublisher_.getNumSubscribers	() > 0)
+                  {
+                      visp_tracker::MovingEdgeSitesPtr sites
+                              (new visp_tracker::MovingEdgeSites);
+                      updateMovingEdgeSites(sites);
+                      sites->header = header_;
+                      movingEdgeSitesPublisher_.publish(sites);
+                  }
+                  // Publish KLT points.
+                  if (kltPointsPublisher_.getNumSubscribers	() > 0)
+                  {
+                      visp_tracker::KltPointsPtr klt
+                              (new visp_tracker::KltPoints);
+                      updateKltPoints(klt);
+                      klt->header = header_;
+                      kltPointsPublisher_.publish(klt);
+                  }
 
-		// Publish to tf.
-		transform.setOrigin
-		  (tf::Vector3(transformMsg.translation.x,
-			       transformMsg.translation.y,
-			       transformMsg.translation.z));
-		transform.setRotation
-		  (tf::Quaternion
-		   (transformMsg.rotation.x,
-		    transformMsg.rotation.y,
-		    transformMsg.rotation.z,
-		    transformMsg.rotation.w));
-		transformBroadcaster_.sendTransform
-		  (tf::StampedTransform
-		   (transform,
-		    header_.stamp,
-		    header_.frame_id,
-		    childFrameId_));
-	      }
-	  }
-	lastHeader = header_;
-
-	spinOnce();
-	loopRateTracking.sleep();
+                  // Publish to tf.
+                  transform.setOrigin
+                          (tf::Vector3(transformMsg.translation.x,
+                                       transformMsg.translation.y,
+                                       transformMsg.translation.z));
+                  transform.setRotation
+                          (tf::Quaternion
+                           (transformMsg.rotation.x,
+                            transformMsg.rotation.y,
+                            transformMsg.rotation.z,
+                            transformMsg.rotation.w));
+                  transformBroadcaster_.sendTransform
+                          (tf::StampedTransform
+                           (transform,
+                            header_.stamp,
+                            header_.frame_id,
+                            childFrameId_));
+              }
+          }
+          lastHeader = header_;
+          spinOnce();
+          loopRateTracking.sleep();
       }
   }
 

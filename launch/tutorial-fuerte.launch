@@ -22,6 +22,7 @@
  <!-- Launch the tracking node -->
   <node pkg="visp_tracker" type="tracker" name="tracker_mbt">
     <param name="camera_prefix" value="/wide_left/camera" />
+    <param name="tracker_type" value="mbt+klt" />
   </node>
 
   <!-- Launch the client (GUI).
@@ -40,6 +41,7 @@
   <node pkg="visp_tracker" type="client" name="tracker_mbt_client">
     <param name="model_path" value="package://visp_tracker/models" />
     <param name="model_name" value="laas-box" />
+    <param name="tracker_type" value="mbt+klt" />
 
     <!-- Load recommended settings for tracking initialization. They
       will be automatically forwarded to the tracking node if the

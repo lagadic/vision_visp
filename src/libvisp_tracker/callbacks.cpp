@@ -8,6 +8,9 @@
 
 #include "callbacks.hh"
 
+# include <visp/vpMbEdgeTracker.h>
+# include <visp/vpMbKltTracker.h>
+
 void imageCallback(vpImage<unsigned char>& image,
 		   const sensor_msgs::Image::ConstPtr& msg,
 		   const sensor_msgs::CameraInfoConstPtr& info)
@@ -49,29 +52,31 @@ bindImageCallback(vpImage<unsigned char>& image,
      boost::ref(image), boost::ref(header), boost::ref(info), _1, _2);
 }
 
-void reconfigureCallback(vpMbEdgeTracker& tracker,
+void reconfigureCallback(vpMbTracker* tracker,
 			 vpImage<unsigned char>& I,
 			 vpMe& moving_edge,
+       vpKltOpencv& kltTracker,
+       const std::string &trackerType,
 			 boost::recursive_mutex& mutex,
-			 visp_tracker::MovingEdgeConfig& config,
+			 visp_tracker::ModelBasedSettingsConfig& config,
 			 uint32_t level)
 {
   mutex.lock ();
   try
     {
       ROS_INFO("Reconfigure request received.");
-      convertMovingEdgeConfigToVpMe(config, moving_edge, tracker);
-
-      //FIXME: not sure if this is needed.
-      moving_edge.initMask();
-
+      
+      if(trackerType != "klt"){
+        convertModelBasedSettingsConfigToVpMe(config, moving_edge, tracker);
+//         moving_edge.print();
+      }
+      
+      if(trackerType != "mbt")
+        convertModelBasedSettingsConfigToVpKltOpencv(config, kltTracker, tracker); 
+      
       vpHomogeneousMatrix cMo;
-      tracker.getPose(cMo);
-
-      tracker.setMovingEdge(moving_edge);
-      tracker.initFromPose(I, cMo);
-
-      moving_edge.print();
+      tracker->getPose(cMo);
+      tracker->initFromPose(I, cMo);      
     }
   catch (...)
     {

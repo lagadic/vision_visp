@@ -54,13 +54,15 @@ namespace visp_tracker
       cameraInfoSubscriber_(),
       trackingResultSubscriber_(),
       movingEdgeSitesSubscriber_(),
+      kltPointsSubscriber_(),
       synchronizer_(syncPolicy_t(queueSize_)),
       timer_(),
       countAll_(0u),
       countImages_(0u),
       countCameraInfo_(0u),
       countTrackingResult_(0u),
-      countMovingEdgeSites_(0u)
+      countMovingEdgeSites_(0u),
+      countKltPoints_(0u)
   {
     // Compute topic and services names.
     std::string cameraPrefix;
@@ -136,12 +138,14 @@ namespace visp_tracker
        queueSize_);
     movingEdgeSitesSubscriber_.subscribe
       (nodeHandle_, visp_tracker::moving_edge_sites_topic, queueSize_);
+    kltPointsSubscriber_.subscribe
+      (nodeHandle_, visp_tracker::klt_points_topic, queueSize_);
 
     synchronizer_.connectInput
       (imageSubscriber_, cameraInfoSubscriber_,
-       trackingResultSubscriber_, movingEdgeSitesSubscriber_);
+       trackingResultSubscriber_, movingEdgeSitesSubscriber_, kltPointsSubscriber_);
     synchronizer_.registerCallback(boost::bind(&TrackerViewer::callback,
-					       this, _1, _2, _3, _4));
+                 this, _1, _2, _3, _4, _5));
 
     // Check for synchronization every 30s.
     synchronizer_.registerCallback(boost::bind(increment, &countAll_));
@@ -152,6 +156,8 @@ namespace visp_tracker
       (boost::bind(increment, &countTrackingResult_));
     movingEdgeSitesSubscriber_.registerCallback
       (boost::bind(increment, &countMovingEdgeSites_));
+    kltPointsSubscriber_.registerCallback
+      (boost::bind(increment, &countKltPoints_));
 
     timer_ = nodeHandle_.createWallTimer
       (ros::WallDuration(30.),
@@ -167,7 +173,6 @@ namespace visp_tracker
     // Load camera parameters.
     initializeVpCameraFromCameraInfo(cameraParameters_, info_);
     tracker_.setCameraParameters(cameraParameters_);
-    tracker_.setDisplayMovingEdges(true);
   }
 
   void
@@ -189,12 +194,12 @@ namespace visp_tracker
 
     boost::format fmtCameraTopic("camera topic = %s");
     fmtCameraTopic % rectifiedImageTopic_;
-
     while (!exiting())
       {
 	vpDisplay::display(image_);
-	displayMovingEdgeSites();
-	if (cMo_)
+  displayMovingEdgeSites();
+  displayKltPoints();
+  if (cMo_)
 	  {
 	    try
 	      {
@@ -207,7 +212,7 @@ namespace visp_tracker
 		ROS_DEBUG_STREAM_THROTTLE(10, "failed to display cmo");
 	      }
 
-	    ROS_DEBUG_STREAM_THROTTLE(10, "cMo:\n" << *cMo_);
+        ROS_DEBUG_STREAM_THROTTLE(10, "cMo viewer:\n" << *cMo_);
 
 	    fmt % (*cMo_)[0][3] % (*cMo_)[1][3] % (*cMo_)[2][3];
 	    vpDisplay::displayCharString
@@ -223,7 +228,7 @@ namespace visp_tracker
 	  vpDisplay::displayCharString
 	    (image_, point, "tracking failed", vpColor::red);
 	vpDisplay::flush(image_);
-	ros::spinOnce();
+    ros::spinOnce();
 	loop_rate.sleep();
       }
   }
@@ -249,6 +254,7 @@ namespace visp_tracker
     topics.push_back(cameraInfoTopic_);
     topics.push_back(visp_tracker::object_position_topic);
     topics.push_back(visp_tracker::moving_edge_sites_topic);
+    topics.push_back(visp_tracker::klt_points_topic);
     checkInputs_.start(topics, 60.0);
   }
 
@@ -274,7 +280,8 @@ namespace visp_tracker
   (const sensor_msgs::ImageConstPtr& image,
    const sensor_msgs::CameraInfoConstPtr& info,
    const geometry_msgs::PoseWithCovarianceStamped::ConstPtr& trackingResult,
-   const visp_tracker::MovingEdgeSites::ConstPtr& sites)
+   const visp_tracker::MovingEdgeSites::ConstPtr& sites,
+   const visp_tracker::KltPoints::ConstPtr& klt)
   {
     // Copy image.
     try
@@ -286,9 +293,10 @@ namespace visp_tracker
 	ROS_ERROR_STREAM("dropping frame: " << e.what());
       }
 
-    // Copy moving camera infos and edges sites.
+    // Copy moving camera infos, edges sites and optional KLT points.
     info_ = info;
     sites_ = sites;
+    klt_ = klt;
 
     // Copy cMo.
     cMo_ = vpHomogeneousMatrix();
@@ -329,6 +337,31 @@ namespace visp_tracker
       }
   }
 
+
+  void
+  TrackerViewer::displayKltPoints()
+  {
+    if (!klt_)
+      return;
+    vpImagePoint pos;
+
+    for (unsigned i = 0; i < klt_->klt_points_positions.size(); ++i)
+    {
+      double ii = klt_->klt_points_positions[i].i;
+      double jj = klt_->klt_points_positions[i].j;
+      int id = klt_->klt_points_positions[i].id;
+      vpColor color = vpColor::red;
+
+      vpDisplay::displayCross(image_, vpImagePoint(ii, jj), 15, color, 1);
+
+      pos.set_i( vpMath::round( ii + 7 ) );
+      pos.set_j( vpMath::round( jj + 7 ) );
+      char ide[10];
+      sprintf(ide, "%d", id);
+      vpDisplay::displayCharString(image_, pos, ide, vpColor::red);
+    }
+  }
+
   void
   TrackerViewer::timerCallback()
   {
@@ -337,7 +370,8 @@ namespace visp_tracker
     if (countImages_ < threshold
 	|| countCameraInfo_ < threshold
 	|| countTrackingResult_ < threshold
-	|| countMovingEdgeSites_ < threshold)
+  || countMovingEdgeSites_ < threshold
+  || countKltPoints_ < threshold)
       {
 	boost::format fmt
 	  ("[visp_tracker] Low number of synchronized tuples received.\n"
