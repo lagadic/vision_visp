@@ -112,7 +112,6 @@ vpImage<vpRGBa> toVispImageRGBa(const sensor_msgs::Image& src)
   if (src.encoding == MONO8)
     for (unsigned i = 0; i < dst.getWidth(); ++i){
       for (unsigned j = 0; j < dst.getHeight(); ++j){
-        int acc = 0;
 
         dst[j][i] = vpRGBa(src.data[j * src.step + i],src.data[j * src.step + i],src.data[j * src.step + i]);
       }
