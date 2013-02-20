@@ -13,6 +13,9 @@
 #include "libauto_tracker/threading.h"
 #include "libauto_tracker/events.h"
 
+#include "visp_tracker/MovingEdgeSites.h"
+#include "visp_tracker/KltPoints.h"
+
 //visp includes
 #include <visp/vpDisplayX.h>
 #include <visp/vpMbEdgeKltTracker.h>
@@ -27,7 +30,6 @@
 #include "libauto_tracker/tracking.h"
 
 #include "resource_retriever/retriever.h"
-#include "visp_tracker/MovingEdgeSites.h"
 
 #include "std_msgs/Int8.h"
 
@@ -75,6 +77,8 @@ namespace visp_auto_tracker{
                 boost::mutex::scoped_lock(lock_);
                 image_header_ = image->header;
                 I_ = visp_bridge::toVispImageRGBa(*image); //make sure the image isn't worked on by locking a mutex
+                cam_ = visp_bridge::toVispCameraParameters(*cam_info);
+
                 got_image_ = true;
         }
 
@@ -87,13 +91,7 @@ namespace visp_auto_tracker{
 
                 vpMbTracker* tracker; //mb-tracker will be chosen according to config
 
-                vpCameraParameters cam = cmd.get_cam_calib_params(); //retrieve camera parameters
-                if(cmd.get_verbose())
-                        std::cout << "loaded camera parameters:" << cam << std::endl;
-
-
                 //create display
-
                 vpDisplayX* d = NULL;
                 if(debug_display_)
                   d = new vpDisplayX();
@@ -105,6 +103,7 @@ namespace visp_auto_tracker{
                 else if(cmd.get_detector_type() == CmdLine::DMTX)
                         detector = new detectors::datamatrix::Detector;
 
+#if 0
                 //init tracker based on user preference
                 if(cmd.get_tracker_type() == CmdLine::KLT)
                         tracker = new vpMbKltTracker();
@@ -112,9 +111,15 @@ namespace visp_auto_tracker{
                         tracker = new vpMbEdgeKltTracker();
                 else if(cmd.get_tracker_type() == CmdLine::MBT)
                         tracker = new vpMbEdgeTracker();
+#else
+                // Use the best tracker
+                tracker = new vpMbEdgeKltTracker();
+#endif
+                tracker->setCameraParameters(cam_);
+                tracker->setDisplayFeatures(true);
 
                 //compile detectors and paramters into the automatic tracker.
-                t_ = new tracking::Tracker(cmd,detector,tracker,debug_display_);
+                t_ = new tracking::Tracker(cmd, detector, tracker, debug_display_);
                 t_->start(); //start the state machine
 
                 //subscribe to ros topics and prepare a publisher that will publish the pose
@@ -125,6 +130,7 @@ namespace visp_auto_tracker{
                 ros::Publisher object_pose_publisher = n_.advertise<geometry_msgs::PoseStamped>(object_position_topic, queue_size_);
                 ros::Publisher object_pose_covariance_publisher = n_.advertise<geometry_msgs::PoseWithCovarianceStamped>(object_position_covariance_topic, queue_size_);
                 ros::Publisher moving_edge_sites_publisher = n_.advertise<visp_tracker::MovingEdgeSites>(moving_edge_sites_topic, queue_size_);
+                ros::Publisher klt_points_publisher = n_.advertise<visp_tracker::KltPoints>(klt_points_topic, queue_size_);
                 ros::Publisher status_publisher = n_.advertise<std_msgs::Int8>(status_topic, queue_size_);
 
                 //wait for an image to be ready
@@ -143,43 +149,69 @@ namespace visp_auto_tracker{
                 unsigned int iter=0;
                 geometry_msgs::PoseStamped ps;
                 geometry_msgs::PoseWithCovarianceStamped ps_cov;
-                visp_tracker::MovingEdgeSites me;
 
-                ros::Rate rate(25); //init 25fps publishing frequency
+                ros::Rate rate(30); //init 25fps publishing frequency
                 while(ros::ok()){
                   double t = vpTime::measureTimeMs();
                         boost::mutex::scoped_lock(lock_);
                         //process the new frame with the tracker
-                        t_->process_event(tracking::input_ready(I_,cam,iter));
+                        t_->process_event(tracking::input_ready(I_,cam_,iter));
                         //When the tracker is tracking, it's in the tracking::TrackModel state
                         //Access this state and broadcast the pose
                         tracking::TrackModel& track_model = t_->get_state<tracking::TrackModel&>();
+
                         ps.pose = visp_bridge::toGeometryMsgsPose(track_model.cMo); //convert
 
-                        //if(*(t_->current_state())==3 /*TrackModel*/){
-                          ps_cov.pose.pose = ps.pose;
-                          //header isn't necessarily timestamped to now (not in rosbag case)
-                          ps.header = image_header_;
-                          me.header = image_header_;
-                          ps_cov.header = image_header_;
-                          ps.header.frame_id = tracker_ref_frame;
-						  ps_cov.header.frame_id = tracker_ref_frame;
-						  me.header.frame_id = tracker_ref_frame;
-                          std_msgs::Int8 status;
-                          status.data = (unsigned char)(*(t_->current_state()));
+                        // Publish resulting pose.
+                        if (object_pose_publisher.getNumSubscribers	() > 0)
+                        {
+                            ps.header = image_header_;
+                            ps.header.frame_id = tracker_ref_frame;
+                            object_pose_publisher.publish(ps);
+                        }
 
-                          object_pose_publisher.publish(ps); //publish
-                          object_pose_covariance_publisher.publish(ps_cov); //publish
-                          moving_edge_sites_publisher.publish(me);
-                          status_publisher.publish(status);
+                        // Publish resulting pose covariance matrix.
+                        if (object_pose_covariance_publisher.getNumSubscribers	() > 0)
+                        {
+                            ps_cov.pose.pose = ps.pose;
+                            ps_cov.header = image_header_;
+                            ps_cov.header.frame_id = tracker_ref_frame;
+                            object_pose_covariance_publisher.publish(ps_cov);
+                        }
 
-                        //}
+                        // Publish state machine status.
+                        if (status_publisher.getNumSubscribers	() > 0)
+                        {
+                            std_msgs::Int8 status;
+                            status.data = (unsigned char)(*(t_->current_state()));
+                            status_publisher.publish(status);
+                        }
+
+                        // Publish moving edge sites.
+                        if (moving_edge_sites_publisher.getNumSubscribers	() > 0)
+                        {
+                            visp_tracker::MovingEdgeSitesPtr sites
+                                    (new visp_tracker::MovingEdgeSites);
+                            t_->updateMovingEdgeSites(sites);
+                            sites->header = image_header_;
+                            moving_edge_sites_publisher.publish(sites);
+                        }
+
+                        // Publish KLT points.
+                        if (klt_points_publisher.getNumSubscribers	() > 0)
+                        {
+                            visp_tracker::KltPointsPtr klt
+                                    (new visp_tracker::KltPoints);
+                            t_->updateKltPoints(klt);
+                            klt->header = image_header_;
+                            klt_points_publisher.publish(klt);
+                        }
+
                         ros::spinOnce();
                         rate.sleep();
                         if (cmd.show_fps())
                           std::cout << "Tracking done in " << vpTime::measureTimeMs() - t << " ms" << std::endl;
                 }
                 t_->process_event(tracking::finished());
-
         }
 }

@@ -29,6 +29,7 @@ namespace visp_auto_tracker{
                 vpImage<vpRGBa> I_;
                 std_msgs::Header image_header_;
                 bool got_image_;
+                vpCameraParameters cam_;
 
                 tracking::Tracker* t_;
 
@@ -36,6 +37,7 @@ namespace visp_auto_tracker{
             void waitForImage();
 
             void frameCallback(const sensor_msgs::ImageConstPtr& image, const sensor_msgs::CameraInfoConstPtr& cam_info);
+
         public:
                 Node();
                 void spin();
