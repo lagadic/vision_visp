@@ -146,7 +146,7 @@ namespace visp_tracker
       {
 	vpMbtDistanceLine* line = *linesIterator;
 
-	if (line && line->isVisible())
+  if (line && line->isVisible() && line->meline)
 	  {
 	    std::list<vpMeSite>::const_iterator sitesIterator =
 	      line->meline->list.begin();
@@ -173,21 +173,30 @@ namespace visp_tracker
     if (!klt)
       return;
 
-    std::vector<vpImagePoint> kltVec;
+    vpMbHiddenFaces<vpMbtKltPolygon> *poly_lst;
+    std::map<int, vpImagePoint> *map_klt;
 
     if(trackerType_!="mbt") // For klt and hybrid
-        kltVec = dynamic_cast<vpMbKltTracker*>(tracker_)->getKltImagePoints();
+      poly_lst = &dynamic_cast<vpMbKltTracker*>(tracker_)->getFaces();
 
-    if (kltVec.empty())
-      ROS_DEBUG_THROTTLE(10, "no KLT points");
-
-    for (unsigned int i=0; i<kltVec.size(); i++)
+    for(unsigned int i = 0 ; i < poly_lst->size() ; i++)
     {
-      visp_tracker::KltPoint kltPoint;
-      kltPoint.x = kltVec[i].get_i();
-      kltPoint.y = kltVec[i].get_j();
+      if((*poly_lst)[i])
+      {
+        map_klt = &((*poly_lst)[i]->getCurrentPoints());
 
-      klt->klt_points_positions.push_back (kltPoint);
+        if(map_klt->size() > 3)
+        {
+          for (std::map<int, vpImagePoint>::iterator it=map_klt->begin(); it!=map_klt->end(); ++it)
+          {
+            visp_tracker::KltPoint kltPoint;
+            kltPoint.id = it->first;
+            kltPoint.i = it->second.get_i();
+            kltPoint.j = it->second.get_j();
+            klt->klt_points_positions.push_back (kltPoint);
+          }
+        }
+      }
     }
   }
 
@@ -223,8 +232,8 @@ namespace visp_tracker
       initService_(),
       header_(),
       info_(),
-      movingEdge_(),
       kltTracker_(),
+      movingEdge_(),
       cameraParameters_(),
       lastTrackedImage_(),
       checkInputs_(nodeHandle_, ros::this_node::getName()),
