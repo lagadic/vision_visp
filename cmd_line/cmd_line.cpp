@@ -142,7 +142,7 @@ CmdLine:: CmdLine(int argc,char**argv) : should_exit_(false) {
 
 }
 
-vpCameraParameters CmdLine::get_cam_calib_params(){
+vpCameraParameters CmdLine::get_cam_calib_params() const{
   vpCameraParameters cam;
   vpMbEdgeTracker tmptrack;
   tmptrack.loadConfigFile(get_xml_file().c_str() ); // Load the configuration of the tracker
@@ -150,39 +150,39 @@ vpCameraParameters CmdLine::get_cam_calib_params(){
   return cam;
 }
 
-std::string CmdLine::get_log_file_pattern(){
+std::string CmdLine::get_log_file_pattern() const{
   return log_file_pattern_;
 }
 
-std::string CmdLine::get_input_file_pattern(){
+std::string CmdLine::get_input_file_pattern() const{
   return input_file_pattern_;
 }
 
-bool CmdLine:: show_plot(){
+bool CmdLine:: show_plot() const{
   return show_plot_;
 }
 
-bool CmdLine:: using_hinkley(){
+bool CmdLine:: using_hinkley() const{
   return vm_.count("hinkley-range")>0 && hinkley_range_.size()==2;
 }
 
-double CmdLine:: get_hinkley_alpha(){
+double CmdLine:: get_hinkley_alpha() const{
   if(!using_hinkley())
     throw std::exception();
   return hinkley_range_[0];
 }
 
-double CmdLine:: get_hinkley_delta(){
+double CmdLine:: get_hinkley_delta() const{
   if(!using_hinkley())
       throw std::exception();
   return hinkley_range_[1];
 }
 
-int CmdLine:: get_mbt_convergence_steps(){
+int CmdLine:: get_mbt_convergence_steps() const{
   return mbt_convergence_steps_;
 }
 
-double CmdLine:: get_mbt_dynamic_range(){
+double CmdLine:: get_mbt_dynamic_range() const{
   return mbt_dynamic_range_;
 }
 
@@ -190,114 +190,114 @@ bool CmdLine:: using_mbt_dynamic_range(){
   return vm_.count("mbt-dynamic-range")>0;
 }
 
-double CmdLine:: get_var_limit(){
+double CmdLine:: get_var_limit() const{
   return var_limit_;
 }
 
-bool CmdLine:: using_var_limit(){
+bool CmdLine:: using_var_limit() const{
   return vm_.count("variance-limit")>0;
 }
 
-std::string CmdLine:: get_var_file(){
+std::string CmdLine:: get_var_file() const{
   return var_file_;
 }
 
-bool CmdLine:: using_var_file(){
+bool CmdLine:: using_var_file() const{
   return vm_.count("variance-file")>0;
 }
 
-bool CmdLine:: logging_video(){
+bool CmdLine:: logging_video() const{
   return vm_.count("video-output-path")>0;
 }
 
-bool CmdLine:: dmtx_only(){
+bool CmdLine:: dmtx_only() const{
   return vm_.count("dmtxonly")>0;
 }
 
-bool CmdLine:: should_exit(){
+bool CmdLine:: should_exit() const{
   return should_exit_;
 }
 
-std::string CmdLine:: get_video_channel(){
+std::string CmdLine:: get_video_channel() const{
   return video_channel_;
 }
 
-bool CmdLine:: show_fps(){
+bool CmdLine:: show_fps() const{
   return show_fps_;
 }
 
-bool CmdLine:: get_verbose(){
+bool CmdLine:: get_verbose() const{
   return verbose_;
 }
 
-int CmdLine:: get_dmx_timeout(){
+int CmdLine:: get_dmx_timeout() const{
   return dmx_timeout_;
 }
 
-double CmdLine:: get_inner_ratio(){
+double CmdLine:: get_inner_ratio() const{
   return inner_ratio_;
 }
 
-double CmdLine:: get_outer_ratio(){
+double CmdLine:: get_outer_ratio() const{
   return outer_ratio_;
 }
 
-bool CmdLine:: using_data_dir(){
+bool CmdLine:: using_data_dir() const{
   return vm_.count("data-directory")>0;
 }
 
-bool CmdLine:: using_video_camera(){
+bool CmdLine:: using_video_camera() const{
   return vm_.count("video-camera")>0;
 }
 
-std::string CmdLine:: get_data_dir(){
+std::string CmdLine:: get_data_dir() const{
   return data_dir_;
 }
 
-std::string CmdLine:: get_pattern_name(){
+std::string CmdLine:: get_pattern_name() const{
   return pattern_name_;
 }
 
-std::string CmdLine:: get_wrl_file(){
+std::string CmdLine:: get_wrl_file() const{
   return get_data_dir() + get_pattern_name() + std::string(".wrl");
 }
 
-std::string CmdLine:: get_xml_file(){
+std::string CmdLine:: get_xml_file() const{
   return get_data_dir() + get_pattern_name() + std::string(".xml");
 }
 
-std::string CmdLine:: get_init_file(){
+std::string CmdLine:: get_init_file() const{
   return get_data_dir() + get_pattern_name() + std::string(".init");
 }
 
-bool CmdLine:: using_single_image(){
+bool CmdLine:: using_single_image() const{
   return vm_.count("single-image")>0;
 }
 
-std::string CmdLine:: get_single_image_path(){
+std::string CmdLine:: get_single_image_path() const{
   return get_data_dir() + single_image_name_;
 }
 
-std::vector<vpPoint>& CmdLine:: get_flashcode_points_3D(){
+std::vector<vpPoint>& CmdLine:: get_flashcode_points_3D() {
   return flashcode_points_3D_;
 }
 
-std::vector<vpPoint>& CmdLine:: get_inner_points_3D(){
+std::vector<vpPoint>& CmdLine:: get_inner_points_3D() {
   return inner_points_3D_;
 }
 
-std::vector<vpPoint>& CmdLine:: get_outer_points_3D(){
+std::vector<vpPoint>& CmdLine:: get_outer_points_3D() {
   return outer_points_3D_;
 }
 
-CmdLine::DETECTOR_TYPE CmdLine:: get_detector_type(){
+CmdLine::DETECTOR_TYPE CmdLine:: get_detector_type() const{
   if(vm_["detector-type"].as<std::string>()=="zbar")
     return CmdLine::ZBAR;
   else
     return CmdLine::DMTX;
 }
 
-CmdLine::TRACKER_TYPE CmdLine:: get_tracker_type(){
+CmdLine::TRACKER_TYPE CmdLine:: get_tracker_type() const{
   if(vm_["tracker-type"].as<std::string>()=="mbt")
     return CmdLine::MBT;
   else if(vm_["tracker-type"].as<std::string>()=="klt")
@@ -307,31 +307,31 @@ CmdLine::TRACKER_TYPE CmdLine:: get_tracker_type(){
 }
 
 
-double CmdLine:: get_adhoc_recovery_size(){
+double CmdLine:: get_adhoc_recovery_size() const{
   return adhoc_recovery_size_;
 }
 
-double CmdLine:: get_adhoc_recovery_ratio(){
+double CmdLine:: get_adhoc_recovery_ratio() const{
   return adhoc_recovery_ratio_;
 }
 
-unsigned int CmdLine:: get_adhoc_recovery_treshold(){
+unsigned int CmdLine:: get_adhoc_recovery_treshold() const{
   return adhoc_recovery_treshold_;
 }
 
-bool CmdLine:: get_adhoc_recovery_display() {
+bool CmdLine:: get_adhoc_recovery_display() const {
   return adhoc_recovery_display_;
 }
 
-bool CmdLine:: using_adhoc_recovery(){
+bool CmdLine:: using_adhoc_recovery() const{
   return adhoc_recovery_;
 }
 
-bool CmdLine:: log_checkpoints(){
+bool CmdLine:: log_checkpoints() const{
   return vm_.count("log-checkpoints")>0;
 }
 
-bool CmdLine:: log_pose(){
+bool CmdLine:: log_pose() const{
   return log_pose_;
 }
 

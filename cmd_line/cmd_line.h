@@ -54,90 +54,90 @@ class CmdLine{
   CmdLine(int argc,char**argv);
   CmdLine(std::string& config_file);
 
-  bool show_plot();
+  bool show_plot() const;
 
-  bool using_hinkley();
+  bool using_hinkley() const;
 
-  vpCameraParameters get_cam_calib_params();
+  vpCameraParameters get_cam_calib_params() const;
 
-  double get_hinkley_alpha();
+  double get_hinkley_alpha() const;
 
-  double get_hinkley_delta();
+  double get_hinkley_delta() const;
 
-  bool dmtx_only();
+  bool dmtx_only() const;
 
-  bool should_exit();
+  bool should_exit() const;
 
-  std::string get_log_file_pattern();
+  std::string get_log_file_pattern() const;
 
-  std::string get_input_file_pattern();
+  std::string get_input_file_pattern() const;
 
-  std::string get_video_channel();
+  std::string get_video_channel() const;
 
-  bool show_fps();
+  bool show_fps() const;
 
-  int get_mbt_convergence_steps();
+  int get_mbt_convergence_steps() const;
 
-  double get_mbt_dynamic_range();
+  double get_mbt_dynamic_range() const;
 
-  double get_adhoc_recovery_size();
+  double get_adhoc_recovery_size() const;
 
-  bool log_checkpoints();
+  bool log_checkpoints() const;
 
-  bool log_pose();
+  bool log_pose() const;
 
   bool using_mbt_dynamic_range();
 
-  bool get_verbose();
+  bool get_verbose() const;
 
-  int get_dmx_timeout();
+  int get_dmx_timeout() const;
 
-  double get_inner_ratio();
+  double get_inner_ratio() const;
 
-  double get_outer_ratio();
+  double get_outer_ratio() const;
 
-  bool using_data_dir();
+  bool using_data_dir() const;
 
-  bool using_video_camera();
+  bool using_video_camera() const;
 
-  std::string get_data_dir();
+  std::string get_data_dir() const;
 
-  std::string get_pattern_name();
+  std::string get_pattern_name() const;
 
-  std::string get_wrl_file();
+  std::string get_wrl_file() const;
 
-  std::string get_xml_file();
+  std::string get_xml_file() const;
 
-  std::string get_init_file();
+  std::string get_init_file() const;
 
-  std::string get_var_file();
+  std::string get_var_file() const;
 
-  bool using_single_image();
+  bool using_single_image() const;
 
-  bool using_var_file();
+  bool using_var_file() const;
 
-  double get_var_limit();
+  double get_var_limit() const;
 
-  double get_adhoc_recovery_ratio();
+  double get_adhoc_recovery_ratio() const;
 
-  unsigned int get_adhoc_recovery_treshold();
-  bool get_adhoc_recovery_display();
+  unsigned int get_adhoc_recovery_treshold() const;
+  bool get_adhoc_recovery_display() const;
 
-  bool using_adhoc_recovery();
+  bool using_adhoc_recovery() const;
 
-  bool using_var_limit();
+  bool using_var_limit() const;
 
-  bool logging_video();
+  bool logging_video() const;
 
-  std::string get_single_image_path();
+  std::string get_single_image_path() const;
 
   std::vector<vpPoint>& get_flashcode_points_3D();
   std::vector<vpPoint>& get_inner_points_3D();
   std::vector<vpPoint>& get_outer_points_3D();
 
-  DETECTOR_TYPE get_detector_type();
+  DETECTOR_TYPE get_detector_type() const;
 
-  TRACKER_TYPE get_tracker_type();
+  TRACKER_TYPE get_tracker_type() const;
 
   void set_data_directory(std::string dir);
 };
