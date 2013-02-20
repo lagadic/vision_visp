@@ -343,13 +343,22 @@ namespace visp_tracker
   {
     if (!klt_)
       return;
+    vpImagePoint pos;
+
     for (unsigned i = 0; i < klt_->klt_points_positions.size(); ++i)
     {
-      double x = klt_->klt_points_positions[i].x;
-      double y = klt_->klt_points_positions[i].y;
+      double ii = klt_->klt_points_positions[i].i;
+      double jj = klt_->klt_points_positions[i].j;
+      int id = klt_->klt_points_positions[i].id;
       vpColor color = vpColor::red;
 
-      vpDisplay::displayCross(image_, vpImagePoint(x, y), 15, color, 1);
+      vpDisplay::displayCross(image_, vpImagePoint(ii, jj), 15, color, 1);
+
+      pos.set_i( vpMath::round( ii + 7 ) );
+      pos.set_j( vpMath::round( jj + 7 ) );
+      char ide[10];
+      sprintf(ide, "%d", id);
+      vpDisplay::displayCharString(image_, pos, ide, vpColor::red);
     }
   }
 
