@@ -176,24 +176,25 @@ namespace visp_tracker
     vpMbHiddenFaces<vpMbtKltPolygon> *poly_lst;
     std::map<int, vpImagePoint> *map_klt;
 
-    if(trackerType_!="mbt") // For klt and hybrid
+    if(trackerType_!="mbt") { // For klt and hybrid
       poly_lst = &dynamic_cast<vpMbKltTracker*>(tracker_)->getFaces();
 
-    for(unsigned int i = 0 ; i < poly_lst->size() ; i++)
-    {
-      if((*poly_lst)[i])
+      for(unsigned int i = 0 ; i < poly_lst->size() ; i++)
       {
-        map_klt = &((*poly_lst)[i]->getCurrentPoints());
-
-        if(map_klt->size() > 3)
+        if((*poly_lst)[i])
         {
-          for (std::map<int, vpImagePoint>::iterator it=map_klt->begin(); it!=map_klt->end(); ++it)
+          map_klt = &((*poly_lst)[i]->getCurrentPoints());
+
+          if(map_klt->size() > 3)
           {
-            visp_tracker::KltPoint kltPoint;
-            kltPoint.id = it->first;
-            kltPoint.i = it->second.get_i();
-            kltPoint.j = it->second.get_j();
-            klt->klt_points_positions.push_back (kltPoint);
+            for (std::map<int, vpImagePoint>::iterator it=map_klt->begin(); it!=map_klt->end(); ++it)
+            {
+              visp_tracker::KltPoint kltPoint;
+              kltPoint.id = it->first;
+              kltPoint.i = it->second.get_i();
+              kltPoint.j = it->second.get_j();
+              klt->klt_points_positions.push_back (kltPoint);
+            }
           }
         }
       }
