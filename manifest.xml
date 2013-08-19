@@ -24,6 +24,9 @@
     <rosdoc config="rosdoc.yaml" />
   </export>
 
+  <rosdep name="zbar"/>
+  <rosdep name="libdmtx-dev"/>
+
   <depend package="roscpp"/>
   <depend package="rospy"/>
   <depend package="visp_bridge"/>
