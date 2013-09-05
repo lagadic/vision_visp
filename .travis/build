@@ -9,15 +9,8 @@ install_dir="$root_dir/_travis/install"
 # Shortcuts.
 git_clone="git clone --quiet --recursive"
 
-if [test x`git symbolic-ref --short -q HEAD` = xmaster];
-then
-    export ROS_VERSION=hydro
-else
-    export ROS_VERSION=`git symbolic-ref --short -q HEAD`
-fi
-
 # Source ROS setup file
-. /opt/ros/$ROS_VERSION/setup.sh
+. /opt/ros/*/setup.sh
 
 # Create layout.
 rm -rf "$build_dir" "$install_dir"
