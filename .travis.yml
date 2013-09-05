@@ -17,7 +17,7 @@ before_install:
 - wget http://packages.ros.org/ros.key -O - | sudo apt-key add -
 - sudo apt-get update -qq
 - sudo apt-get install -qq doxygen doxygen-latex libboost-all-dev libeigen3-dev liblapack-dev libblas-dev gfortran python-dev python-sphinx python-numpy
-- sudo apt-get install ros-groovy-ros-base ros-groovy-common-rosdeps ros-groovy-opencv2 ros-groovy-image-common ros-groovy-image-pipeline ros-groovy-dynamic-reconfigure ros-groovy-nodelet ros-groovy-bullet ros-groovy-tf ros-groovy-resource-retriever ros-groovy-rosbag ros-groovy-message-filters ros-groovy-common-msgs ros-groovy-rosdoc-lite
+- sudo apt-get install ros-groovy-ros-base ros-groovy-common-rosdeps ros-groovy-opencv2 ros-groovy-image-common ros-groovy-image-pipeline ros-groovy-dynamic-reconfigure ros-groovy-nodelet ros-groovy-bullet ros-groovy-tf ros-groovy-resource-retriever ros-groovy-angles ros-groovy-rosbag ros-groovy-message-filters ros-groovy-common-msgs ros-groovy-rosdoc-lite
 - sudo rosdep init
 - rosdep update
 language: cpp
