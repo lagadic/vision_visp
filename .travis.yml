@@ -1,0 +1,31 @@
+branches:
+  only:
+  - master
+matrix:
+  allow_failures:
+  - compiler: clang
+notifications:
+  email:
+  - hpp-source@laas.fr
+env:
+  global:
+    secure: ldI5kV88XCBoLIVeA8sFAeDX+OwAfHpEvfB0cwuSdRKAnhcK4DRsfIYPkQoibZ70AzuWF6OfD84QNcq90hGgDeUFnhnmFy1J5IrPtT3YawYfxvM75jQECgwGPb4v8RSBzzVZEYxGFVJMm8xiBZ7jiN8GjaV2gr22C3dtgOS6HNY=
+script: ./.travis/build
+before_install:
+- git submodule update --init --recursive
+- sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu precise main" > /etc/apt/sources.list.d/ros-latest.list'
+- wget http://packages.ros.org/ros.key -O - | sudo apt-key add -
+- sudo apt-get update -qq
+- sudo apt-get install -qq doxygen doxygen-latex libboost-all-dev libeigen3-dev liblapack-dev libblas-dev gfortran python-dev python-sphinx python-numpy
+- sudo apt-get install ros-groovy-ros-base ros-groovy-common-rosdeps ros-groovy-opencv2 ros-groovy-image-common ros-groovy-image-pipeline ros-groovy-dynamic-reconfigure ros-groovy-nodelet ros-groovy-bullet ros-groovy-tf ros-groovy-resource-retriever ros-groovy-rosbag ros-groovy-message-filters ros-groovy-common-msgs ros-groovy-rosdoc-lite
+- sudo rosdep init
+- rosdep update
+language: cpp
+compiler:
+- clang
+- gcc
+after_success:
+- git config --global user.name "Travis CI"
+- git config --global user.email "thomas.moulard+travis@gmail.com"
+- git remote set-url origin https://thomas-moulard:${GH_TOKEN}@github.com/laas/vision_visp.git
+- git fetch origin gh-pages:gh-pages
