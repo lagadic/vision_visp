@@ -7,10 +7,10 @@ branch_name="$(git symbolic-ref HEAD 2>/dev/null)" ||
 branch_name="(unnamed branch)"     # detached HEAD
 branch_name=${branch_name##refs/heads/}
 
-if [ x${branch_name} = xmaster ]; then
+if [ x$branch_name = xmaster ]; then
     export ROS_VERSION=hydro
 else
-    export ROS_VERSION=${branch_name}
+    export ROS_VERSION=$branch_name
 fi
 echo "Ubuntu codename: $UBUNTU_CODENAME"
 echo "ROS version: $ROS_VERSION"
