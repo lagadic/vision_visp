@@ -14,9 +14,9 @@ if [ x`git symbolic-ref --short -q HEAD` = xmaster ]; then
 else
     export ROS_VERSION=`git symbolic-ref --short -q HEAD`
 fi
-echo "detected ros version: ${ROS_VERSION}"
+echo "detected ros version: $ROS_VERSION"
 
-sudo apt-get install ros-${ROS_VERSION}-ros-base ros-${ROS_VERSION}-common-rosdeps ros-${ROS_VERSION}-opencv2 ros-${ROS_VERSION}-image-common ros-${ROS_VERSION}-image-pipeline ros-${ROS_VERSION}-dynamic-reconfigure ros-${ROS_VERSION}-nodelet ros-${ROS_VERSION}-bullet ros-${ROS_VERSION}-tf ros-${ROS_VERSION}-resource-retriever ros-${ROS_VERSION}-angles ros-${ROS_VERSION}-rosbag ros-${ROS_VERSION}-message-filters ros-${ROS_VERSION}-common-msgs ros-${ROS_VERSION}-rosdoc-lite
+sudo apt-get install ros-$ROS_VERSION-ros-base ros-$ROS_VERSION-common-rosdeps ros-$ROS_VERSION-opencv2 ros-$ROS_VERSION-image-common ros-$ROS_VERSION-image-pipeline ros-$ROS_VERSION-dynamic-reconfigure ros-$ROS_VERSION-nodelet ros-$ROS_VERSION-bullet ros-$ROS_VERSION-tf ros-$ROS_VERSION-resource-retriever ros-$ROS_VERSION-angles ros-$ROS_VERSION-rosbag ros-$ROS_VERSION-message-filters ros-$ROS_VERSION-common-msgs ros-$ROS_VERSION-rosdoc-lite
 
 sudo rosdep init
 rosdep update
