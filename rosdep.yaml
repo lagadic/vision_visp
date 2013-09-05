@@ -25,6 +25,14 @@ libdc1394-dev:
   fedora: libdc1394-devel
   macports: libdc1394
 
+libdmtx-dev:
+  fedora: libdmtx-devel
+  ubuntu: libdmtx-dev
+
+zbar:
+  debian: libzbar-dev
+  fedora: zbar
+  ubuntu: libzbar-dev
 
 # Add rdmanifest to allow to depend on visp as a system dependency.
 # This will not replace the visp ROS package as long as rosdeb
