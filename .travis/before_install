@@ -1,20 +1,39 @@
 #!/bin/sh
 set -ev
 
+export UBUNTU_CODENAME=`lsb_release -s -c`
+
+branch_name="$(git symbolic-ref HEAD 2>/dev/null)" ||
+branch_name="(unnamed branch)"     # detached HEAD
+branch_name=${branch_name##refs/heads/}
+
+if [ x${branch_name} = xmaster ]; then
+    export ROS_VERSION=hydro
+else
+    export ROS_VERSION=${branch_name}
+fi
+echo "Ubuntu codename: $UBUNTU_CODENAME"
+echo "ROS version: $ROS_VERSION"
+
+if [ x$UBUNTU_CODENAME = x ]; then
+    echo "failed to determine Ubuntu codename"
+    return 1
+fi
+if [ x$UBUNTU_CODENAME = x ]; then
+    echo "failed to determine ROS version"
+    return 1
+fi
+
+
+
 git submodule update --init --recursive
 
-sudo sh -c 'echo "deb http://packages.ros.org/ros/ubuntu precise main" > /etc/apt/sources.list.d/ros-latest.list'
+sudo sh -c "echo \"deb http://packages.ros.org/ros/ubuntu $UBUNTU_CODENAME main\" > /etc/apt/sources.list.d/ros-latest.list"
 wget http://packages.ros.org/ros.key -O - | sudo apt-key add -
 
 sudo apt-get update -qq
 sudo apt-get install -qq doxygen doxygen-latex libboost-all-dev libeigen3-dev liblapack-dev libblas-dev gfortran python-dev python-sphinx python-numpy
 
-if [ x`git symbolic-ref --short -q HEAD` = xmaster ]; then
-    export ROS_VERSION=hydro
-else
-    export ROS_VERSION=`git symbolic-ref --short -q HEAD`
-fi
-echo "detected ros version: $ROS_VERSION"
 
 sudo apt-get install ros-$ROS_VERSION-ros-base ros-$ROS_VERSION-common-rosdeps ros-$ROS_VERSION-opencv2 ros-$ROS_VERSION-image-common ros-$ROS_VERSION-image-pipeline ros-$ROS_VERSION-dynamic-reconfigure ros-$ROS_VERSION-nodelet ros-$ROS_VERSION-bullet ros-$ROS_VERSION-tf ros-$ROS_VERSION-resource-retriever ros-$ROS_VERSION-angles ros-$ROS_VERSION-rosbag ros-$ROS_VERSION-message-filters ros-$ROS_VERSION-common-msgs ros-$ROS_VERSION-rosdoc-lite
 
