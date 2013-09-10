@@ -10,7 +10,7 @@ install_dir="$root_dir/_travis/install"
 git_clone="git clone --quiet --recursive"
 
 # Source ROS setup file
-. /opt/ros/*/setup.sh
+. "$root_dir/setup.sh"
 
 # Create layout.
 rm -rf "$build_dir" "$install_dir"
