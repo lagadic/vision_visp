@@ -40,4 +40,4 @@ install_dependency()
 
 cd "$root_dir"
 # only build visp_tracker for now
-rosmake visp_tracker
+VERBOSE=1 rosmake visp_tracker -V
