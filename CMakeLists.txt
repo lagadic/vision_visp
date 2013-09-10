@@ -12,6 +12,11 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 rosbuild_genmsg()
 rosbuild_gensrv()
 
+# Look for Bullet
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(BULLET bullet)
+include_directories(${BULLET_INCLUDE_DIRS})
+
 # Dynamic reconfigure.
 rosbuild_find_ros_package(dynamic_reconfigure)
 include(${dynamic_reconfigure_PACKAGE_PATH}/cmake/cfgbuild.cmake)
@@ -39,6 +44,7 @@ rosbuild_add_library(visp_tracker
   src/libvisp_tracker/tracker-viewer.cpp
   src/libvisp_tracker/names.cpp)
 target_link_libraries(visp_tracker visp)
+target_link_libraries(visp_tracker ${BULLET_LIBRARIES})
 rosbuild_link_boost(visp_tracker
   filesystem system signals regex date_time program_options thread)
 

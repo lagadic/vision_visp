@@ -22,6 +22,7 @@
   </export>
 
   <rosdep name="boost"/>
+  <rosdep name="bullet"/>
 
   <depend package="std_msgs"/>
   <depend package="roscpp"/>
@@ -33,7 +34,6 @@
   <depend package="dynamic_reconfigure"/>
   <depend package="tf"/>
   <depend package="opencv2"/>
-  <depend package="bullet"/>
   <depend package="visp"/>
   <depend package="resource_retriever"/>
   <depend package="nodelet"/>
