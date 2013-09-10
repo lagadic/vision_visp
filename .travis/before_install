@@ -31,4 +31,6 @@ sudo apt-get install ros-$ROS_VERSION-ros-base ros-$ROS_VERSION-opencv2 ros-$ROS
 
 sudo rosdep init
 rosdep update
+
+export ROS_PACKAGE_PATH="`pwd`:$ROS_PACKAGE_PATH"
 rosdep install vision_visp
