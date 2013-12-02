@@ -13,7 +13,7 @@ To date, the supported functionnality sums up to:
 Setup
 -----
 
-This package can be compiled like any other ROS package using `rosmake`.
+This package can be compiled like any other catkin package using `catkin_make`.
 
 Documentation
 -------------

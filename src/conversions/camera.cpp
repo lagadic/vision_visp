@@ -49,7 +49,7 @@
 
 #include <sensor_msgs/distortion_models.h>
 
-#include "camera.h"
+#include "visp_bridge/camera.h"
 
 namespace visp_bridge{
 
