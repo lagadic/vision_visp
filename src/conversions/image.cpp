@@ -47,13 +47,11 @@
  \brief Implements conversions between ViSP and ROS image types
  */
 
-#include <stdexcept>
-
+#include "image.h"
 #include <sensor_msgs/Image.h>
 #include <sensor_msgs/image_encodings.h>
 #include <boost/format.hpp>
-
-#include "visp_bridge/image.h"
+#include <stdexcept>
 
 namespace visp_bridge
 {
