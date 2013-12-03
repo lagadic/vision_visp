@@ -39,13 +39,13 @@
  *
  *****************************************************************************/
 
-
-#include "vpQuaternionVector.h"
-#include <visp/vpMath.h>
 #include <stdio.h>
 #include <string.h>
 #include <algorithm>
 
+#include <visp/vpMath.h>
+
+#include "visp_bridge/vpQuaternionVector.h"
 
 // minimum value of sine
 const double vpQuaternionVector::minimum = 0.0001;

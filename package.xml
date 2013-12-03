@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<package>
+  <name>visp_bridge</name>
+  <version>0.0.1</version>
+  <description>
+    The visp_bridge package converts between ROS structures and ViSP structures.
+  </description>
+
+  <author>Filip Novotny</author>
+  <maintainer email="Fabien.Spindler@inria.fr">Fabien Spindler</maintainer>
+
+  <license>GPLv2</license>
+
+  <url>http://ros.org/wiki/visp_bridge</url>
+ 
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>geometry_msgs</build_depend>
+  <build_depend>roscpp</build_depend>
+  <build_depend>sensor_msgs</build_depend>
+  <build_depend>std_msgs</build_depend>
+  <build_depend>visp</build_depend>
+
+  <run_depend>geometry_msgs</run_depend>
+  <run_depend>roscpp</run_depend>
+  <run_depend>sensor_msgs</run_depend>
+  <run_depend>std_msgs</run_depend>
+  <run_depend>visp</run_depend>
+
+</package>
