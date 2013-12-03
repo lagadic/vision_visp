@@ -9,7 +9,7 @@ find_package(VISP REQUIRED)
 # Look for bullet.
 find_path(BULLET_INCLUDE_DIRS
   btBulletCollisionCommon.h
-  PATHS /opt/ros/groovy/stacks/bullet/include
+  PATHS /opt/ros/groovy/stacks/bullet/include /usr/include/bullet
   DOC "Bullet library include directory")
 if(NOT BULLET_INCLUDE_DIRS)
   message(FATAL_ERROR
@@ -45,7 +45,6 @@ include_directories(SYSTEM
 link_directories(
   ${catkin_LIBRARY_DIRS}
   ${VISP_LIBRARY_DIRS}
-  ${catkin_LIBRARY_DIRS}
   )
 
 include_directories(
@@ -76,14 +75,15 @@ catkin_package(
 
    CATKIN_DEPENDS
    geometry_msgs
-   message_generation
+   message_runtime
    roscpp
    nodelet
    sensor_msgs
    std_msgs
+   dynamic_reconfigure
 
    DEPENDS
-   visp
+   VISP
    )
 
 # Add package definitions
@@ -122,6 +122,17 @@ target_link_libraries(visp_tracker
   ${tf_LIBRARIES}
   )
 
+add_dependencies(visp_tracker ${PROJECT_NAME}_gencpp visp_tracker_bag)
+add_dependencies(visp_tracker ${${PROJECT_NAME}_EXPORTED_TARGETS})
+
+install(DIRECTORY src/lib${PROJECT_NAME}/
+  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+  FILES_MATCHING PATTERN "*.h"
+)
+install(DIRECTORY cfg/cpp/${PROJECT_NAME}/
+  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+  FILES_MATCHING PATTERN "*.h"
+)
 
 
 ############
@@ -165,10 +176,17 @@ target_link_libraries(viewer
   ${roscpp_LIBRARIES}
   ${nodelet_LIBRARIES})
 
+add_dependencies(tracker ${${PROJECT_NAME}_EXPORTED_TARGETS})
+add_dependencies(client ${${PROJECT_NAME}_EXPORTED_TARGETS})
+
 install(TARGETS tracker client viewer
    ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
    LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
    RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+
+install(DIRECTORY launch/
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
 )
 
 #############
@@ -176,7 +194,14 @@ install(TARGETS tracker client viewer
 #############
 
 # Tutorial
-download_test_data(
+catkin_download_test_data(
+  visp_tracker_bag
   https://github.com/downloads/laas/visp_tracker/tutorial-static-box.bag
-  bag/tutorial-static-box.bag
-  1578dedd48d3f9f5515a8737845ae882)
+  DESTINATION ${CATKIN_DEVEL_PREFIX}/${CATKIN_PACKAGE_SHARE_DESTINATION}/bag
+  MD5 1578dedd48d3f9f5515a8737845ae882)
+
+install(DIRECTORY ${CATKIN_DEVEL_PREFIX}/${CATKIN_PACKAGE_SHARE_DESTINATION}/bag/
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/bag
+)
+
+
