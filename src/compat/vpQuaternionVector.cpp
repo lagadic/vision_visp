@@ -43,7 +43,11 @@
 #include <string.h>
 #include <algorithm>
 
+#include <ros/ros.h>
+#include <visp/vpConfig.h>
 #include <visp/vpMath.h>
+
+#if VISP_VERSION_INT <= (2<<16 | 6<<8 | 1)
 
 #include "visp_bridge/vpQuaternionVector.h"
 
@@ -54,7 +58,7 @@ const double vpQuaternionVector::minimum = 0.0001;
   \file vpQuaternionVector.cpp
   \brief Defines a quaternion and common operations on it.
 */
-vpQuaternionVector::vpQuaternionVector() : vpColVector(4) {  }
+vpQuaternionVector::vpQuaternionVector() : vpColVector(4) { }
 
 //! Constructor from doubles.
 vpQuaternionVector::vpQuaternionVector(const double x, const double y, 
@@ -193,3 +197,5 @@ void vpQuaternionVector::buildFrom(const vpRotationMatrix &R)
       cos(theta));
 
 }
+
+#endif

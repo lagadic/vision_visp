@@ -53,6 +53,9 @@
 */
 
 #include <visp/vpConfig.h>
+
+#if VISP_VERSION_INT <= (2<<16 | 6<<8 | 1)
+
 #include <visp/vpRotationMatrix.h>
 #include <visp/vpColVector.h>
 
@@ -109,6 +112,7 @@ public:
     
 } ;
 
+#endif
 #endif
 
 /*
