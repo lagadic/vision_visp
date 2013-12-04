@@ -51,11 +51,11 @@
 #include "camera.h"
 #include "names.h"
 #include <sstream>
-#include "conversions/image.h"
+#include <visp_bridge/image.h>
 #include "visp_camera_calibration/calibrate.h"
-#include "visp/vpImage.h"
-#include "visp/vpDot2.h"
-#include "visp/vpCalibration.h"
+#include <visp/vpImage.h>
+#include <visp/vpDot2.h>
+#include <visp/vpCalibration.h>
 #include "camera_calibration_parsers/parse.h"
 #include "camera_calibration_parsers/parse_ini.h"
 

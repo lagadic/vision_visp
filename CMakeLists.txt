@@ -1,51 +1,75 @@
-cmake_minimum_required(VERSION 2.4.6)
-include($ENV{ROS_ROOT}/core/rosbuild/rosbuild.cmake)
+cmake_minimum_required(VERSION 2.8.3)
+project(visp_camera_calibration)
 
-# Set the build type.  Options are:
-#  Coverage       : w/ debug symbols, w/o optimization, w/ code-coverage
-#  Debug          : w/ debug symbols, w/o optimization
-#  Release        : w/o debug symbols, w/ optimization
-#  RelWithDebInfo : w/ debug symbols, w/ optimization
-#  MinSizeRel     : w/o debug symbols, w/ optimization, stripped binaries
-set(ROS_BUILD_TYPE RelWithDebInfo)
+find_package(catkin REQUIRED COMPONENTS
+  visp_bridge
+  message_generation
+  camera_calibration_parsers
+)
 
-rosbuild_init()
-
-#set the default path for built executables to the "bin" directory
-set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
-#set the default path for built libraries to the "lib" directory
-set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
-
-#uncomment if you have defined messages
-#rosbuild_genmsg()
-#uncomment if you have defined services
-#rosbuild_gensrv()
-
-#common commands for building c++ executables and libraries
-#rosbuild_add_library(${PROJECT_NAME} src/example.cpp)
-#target_link_libraries(${PROJECT_NAME} another_library)
-#rosbuild_add_boost_directories()
-#rosbuild_link_boost(${PROJECT_NAME} thread)
-#rosbuild_add_executable(example examples/example.cpp)
-#target_link_libraries(example ${PROJECT_NAME})
-
-#uncomment if you have defined messages
-rosbuild_genmsg()
-#uncomment if you have defined services
-rosbuild_gensrv()
-
-#common commands for building c++ executables and libraries
-rosbuild_add_library(visp_camera_calibration_common src/names.cpp)
+# TO FIX, VISP_DEFINITIONS should come from visp_bridge dependency
+find_package(VISP REQUIRED)
+add_definitions(${VISP_DEFINITIONS})
 
 
+include_directories(
+  ${catkin_INCLUDE_DIRS}
+)
 
+# Generate messages and services.
+add_message_files(
+  DIRECTORY 
+    msg
+  FILES
+    CalibPointArray.msg
+    CalibPoint.msg
+    ImageAndPoints.msg  
+    ImagePoint.msg
+  )
+add_service_files(
+  DIRECTORY 
+    srv
+  FILES
+    calibrate.srv
+  )
+generate_messages(DEPENDENCIES geometry_msgs sensor_msgs std_msgs)
 
-rosbuild_add_executable(visp_camera_calibration_calibrator src/calibrator.cpp src/calibrator_main.cpp)
-target_link_libraries(visp_camera_calibration_calibrator visp_camera_calibration_common visp_bridge visp)
+catkin_package()
 
-rosbuild_add_executable(visp_camera_calibration_image_processing src/image_processing.cpp src/image_processing_main.cpp)
-target_link_libraries(visp_camera_calibration_image_processing visp_camera_calibration_common visp_bridge visp)
+add_library(visp_camera_calibration_common src/names.cpp src/names.h)
 
+add_executable(visp_camera_calibration_calibrator
+  src/calibrator.cpp
+  src/calibrator.h
+  src/calibrator_main.cpp)
+target_link_libraries(visp_camera_calibration_calibrator visp_camera_calibration_common ${catkin_LIBRARIES})
+add_dependencies(visp_camera_calibration_calibrator ${catkin_EXPORTED_TARGETS} ${PROJECT_NAME}_gencpp)
 
-rosbuild_add_executable(visp_camera_calibration_camera src/camera.cpp src/camera_main.cpp)
-target_link_libraries(visp_camera_calibration_camera visp_camera_calibration_common visp_bridge visp)
+add_executable(visp_camera_calibration_image_processing
+  src/image_processing.cpp
+  src/image_processing.h
+  src/image_processing_main.cpp)
+target_link_libraries(visp_camera_calibration_image_processing visp_camera_calibration_common ${catkin_LIBRARIES})
+add_dependencies(visp_camera_calibration_image_processing ${catkin_EXPORTED_TARGETS} ${PROJECT_NAME}_gencpp)
+
+add_executable(visp_camera_calibration_camera
+  src/camera.cpp
+  src/camera.h
+  src/camera_main.cpp)
+target_link_libraries(visp_camera_calibration_camera visp_camera_calibration_common ${catkin_LIBRARIES})
+add_dependencies(visp_camera_calibration_camera ${catkin_EXPORTED_TARGETS} ${PROJECT_NAME}_gencpp)
+
+install(
+  TARGETS
+    visp_camera_calibration_common
+    visp_camera_calibration_calibrator
+    visp_camera_calibration_image_processing
+    visp_camera_calibration_camera
+  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+
+install(DIRECTORY launch
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+)
