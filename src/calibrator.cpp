@@ -49,8 +49,8 @@
 
 #include "calibrator.h"
 #include "names.h"
-#include "conversions/image.h"
-#include "conversions/camera.h"
+#include <visp_bridge/image.h>
+#include <visp_bridge/camera.h>
 #include "sensor_msgs/SetCameraInfo.h"
 #include "sensor_msgs/CameraInfo.h"
 #include "visp_camera_calibration/CalibPoint.h"

@@ -55,7 +55,7 @@
 #include "visp/vpMouseButton.h"
 
 #include "names.h"
-#include "conversions/image.h"
+#include <visp_bridge/image.h>
 #include "sensor_msgs/SetCameraInfo.h"
 #include "camera_calibration_parsers/parse.h"
 

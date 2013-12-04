@@ -1,7 +1,7 @@
 <launch>	
 	<arg name="calibration_path" default="calibration.ini" />
 
-	<node pkg="rxtools" name="rxconsole" type="rxconsole"/>
+	<node pkg="rqt_console" name="rqt_console" type="rqt_console"/>
 	<group ns="visp_camera_calibration">
 
 		<node pkg="visp_camera_calibration" name="visp_camera_calibration_calibrator" type="visp_camera_calibration_calibrator"/>

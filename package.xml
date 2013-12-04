@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<package>
+  <name>visp_camera_calibration</name>
+  <version>0.0.0</version>
+
+  <description>
+     visp_camera_calibration allows easy calibration of 
+     cameras using a customizable pattern and ViSP library.
+  </description>
+  <author>Filip Novotny</author>
+  <maintainer email="Fabien.Spindler@inria.fr">Fabien Spindler</maintainer>
+  <license>GPLv2</license>
+  <url>http://ros.org/wiki/visp_camera_calibration</url>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>visp_bridge</build_depend>
+  <build_depend>message_generation</build_depend>
+  <build_depend>camera_calibration_parsers</build_depend> <!-- Write camera data to ini file -->
+
+  <run_depend>visp_bridge</run_depend>
+  <run_depend>message_generation</run_depend>
+  <run_depend>camera_calibration_parsers</run_depend>
+</package>
