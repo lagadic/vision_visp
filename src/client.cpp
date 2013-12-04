@@ -48,13 +48,13 @@
 */
 
 #include "client.h"
-#include "geometry_msgs/Transform.h"
+#include <geometry_msgs/Transform.h>
 #include "visp_hand2eye_calibration/TransformArray.h"
-#include "conversions/3dpose.h"
+#include <visp_bridge/3dpose.h>
 #include "names.h"
 
-#include "visp/vpCalibration.h"
-#include "visp/vpExponentialMap.h"
+#include <visp/vpCalibration.h>
+#include <visp/vpExponentialMap.h>
 
 namespace visp_hand2eye_calibration
 {
@@ -134,6 +134,7 @@ void Client::initAndSimulate()
       wMe = wMe * eMc * cMc * eMc.inverse();
 
     }
+
     geometry_msgs::Transform pose_c_o;
     pose_c_o = visp_bridge::toGeometryMsgsTransform(cMo);
     geometry_msgs::Transform pose_w_e;
@@ -145,6 +146,7 @@ void Client::initAndSimulate()
 
   }
   ros::Duration(1.).sleep();
+
 }
 
 void Client::computeUsingQuickService()

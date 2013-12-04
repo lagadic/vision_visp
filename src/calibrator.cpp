@@ -48,10 +48,10 @@
 */
 
 #include "calibrator.h"
-#include "conversions/3dpose.h"
+#include <visp_bridge/3dpose.h>
 #include "names.h"
-#include "visp/vpCalibration.h"
-#include "visp/vpHomogeneousMatrix.h"
+#include <visp/vpCalibration.h>
+#include <visp/vpHomogeneousMatrix.h>
 
 
 namespace visp_hand2eye_calibration
