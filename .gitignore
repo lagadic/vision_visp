@@ -10,7 +10,7 @@ src/visp_tracker/
 srv/lisp/
 srv_gen/
 models/*/*.0.pos
-
+*~
 *.cfgc
 
 # Retrieved from internet.

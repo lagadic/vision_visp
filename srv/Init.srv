@@ -9,8 +9,11 @@
 # Object initial pose.
 geometry_msgs/Transform initial_cMo
 
-# Tracking parameters
-MovingEdge moving_edge
+# Moving Edge parameters
+MovingEdgeSettings moving_edge
+
+# Klt Parameters
+KltSettings klt_param
 ---
 # Did the initialization succeed?
 bool initialization_succeed

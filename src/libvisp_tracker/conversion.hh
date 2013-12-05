@@ -11,11 +11,12 @@
 
 # include <visp/vpHomogeneousMatrix.h>
 # include <visp/vpCameraParameters.h>
-# include <visp/vpMbEdgeTracker.h>
+# include <visp/vpMbTracker.h>
 # include <visp/vpMe.h>
+# include <visp/vpKltOpencv.h>
 
 # include <visp_tracker/Init.h>
-# include <visp_tracker/MovingEdgeConfig.h>
+# include <visp_tracker/ModelBasedSettingsConfig.h>
 
 /// \brief Convert a ROS image into a ViSP one.
 ///
@@ -56,21 +57,37 @@ void transformToVpHomogeneousMatrix(vpHomogeneousMatrix& dst,
 void transformToVpHomogeneousMatrix(vpHomogeneousMatrix& dst,
 				    const geometry_msgs::Pose& src);
 
-void convertMovingEdgeConfigToVpMe(const visp_tracker::MovingEdgeConfig& config,
+void convertModelBasedSettingsConfigToVpMe(const visp_tracker::ModelBasedSettingsConfig& config,
 				   vpMe& moving_edge,
-				   vpMbEdgeTracker& tracker);
+				   vpMbTracker* tracker);
 
-void convertVpMeToMovingEdgeConfig(const vpMe& moving_edge,
-				   const vpMbEdgeTracker& tracker,
-				   visp_tracker::MovingEdgeConfig& config);
+void convertVpMeToModelBasedSettingsConfig(const vpMe& moving_edge,
+				   const vpMbTracker* tracker,
+				   visp_tracker::ModelBasedSettingsConfig& config);
+
+void convertModelBasedSettingsConfigToVpKltOpencv(const visp_tracker::ModelBasedSettingsConfig& config,
+           vpKltOpencv& klt,
+           vpMbTracker* tracker);
+
+void convertVpKltOpencvToModelBasedSettingsConfig(const vpKltOpencv& klt,
+           const vpMbTracker* tracker,
+           visp_tracker::ModelBasedSettingsConfig& config);
 
 void convertVpMeToInitRequest(const vpMe& moving_edge,
-			      const vpMbEdgeTracker& tracker,
+			      const vpMbTracker* tracker,
 			      visp_tracker::Init& srv);
 
 void convertInitRequestToVpMe(const visp_tracker::Init::Request& req,
-			      vpMbEdgeTracker& tracker,
+			      vpMbTracker* tracker,
 			      vpMe& moving_edge);
+
+void convertVpKltOpencvToInitRequest(const vpKltOpencv& klt,
+            const vpMbTracker* tracker,
+            visp_tracker::Init& srv);
+
+void convertInitRequestToVpKltOpencv(const visp_tracker::Init::Request& req,
+            vpMbTracker* tracker,
+            vpKltOpencv& klt);
 
 void initializeVpCameraFromCameraInfo(vpCameraParameters& cam,
 				      sensor_msgs::CameraInfoConstPtr info);

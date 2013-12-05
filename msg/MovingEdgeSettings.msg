@@ -66,3 +66,4 @@ float64 lambda          # Gain used to compute the control law.
 float64 first_threshold # What proportion of points should be valid to
                         # acccept an initial pose.
 			# Value should be between 0 et 1.
+

@@ -18,6 +18,7 @@
 # include <sensor_msgs/CameraInfo.h>
 
 # include <visp_tracker/MovingEdgeSites.h>
+# include <visp_tracker/KltPoints.h>
 
 # include <visp/vpCameraParameters.h>
 # include <visp/vpImage.h>
@@ -42,7 +43,8 @@ namespace visp_tracker
     typedef message_filters::sync_policies::ApproximateTime<
       sensor_msgs::Image, sensor_msgs::CameraInfo,
       geometry_msgs::PoseWithCovarianceStamped,
-      visp_tracker::MovingEdgeSites
+      visp_tracker::MovingEdgeSites,
+      visp_tracker::KltPoints
       > syncPolicy_t;
 
     /// \brief Constructor.
@@ -70,12 +72,15 @@ namespace visp_tracker
     (const sensor_msgs::ImageConstPtr& imageConst,
      const sensor_msgs::CameraInfoConstPtr& infoConst,
      const geometry_msgs::PoseWithCovarianceStamped::ConstPtr& trackingResult,
-     const visp_tracker::MovingEdgeSites::ConstPtr& sitesConst);
+     const visp_tracker::MovingEdgeSites::ConstPtr& sitesConst,
+     const visp_tracker::KltPoints::ConstPtr& kltConst);
 
     void timerCallback();
 
     /// \brief Display moving edge sites.
     void displayMovingEdgeSites();
+    /// \brief Display KLT points that are tracked.
+    void displayKltPoints();
 
   private:
     bool exiting ()
@@ -125,6 +130,8 @@ namespace visp_tracker
     boost::optional<vpHomogeneousMatrix> cMo_;
     /// \brief Shared pointer to latest received moving edge sites.
     visp_tracker::MovingEdgeSites::ConstPtr sites_;
+    /// \brief Shared pointer to latest received KLT point positions.
+    visp_tracker::KltPoints::ConstPtr klt_;
 
     /// \name Subscribers and synchronizer.
     /// \{
@@ -135,9 +142,12 @@ namespace visp_tracker
     /// \brief Subscriber to tracking result topic.
     message_filters::Subscriber<geometry_msgs::PoseWithCovarianceStamped>
     trackingResultSubscriber_;
-    /// \brief Subscriber to moving edge sites topics..
+    /// \brief Subscriber to moving edge sites topics.
     message_filters::Subscriber<visp_tracker::MovingEdgeSites>
     movingEdgeSitesSubscriber_;
+    /// \brief Subscriber to KLT point topics.
+    message_filters::Subscriber<visp_tracker::KltPoints>
+    kltPointsSubscriber_;
 
     /// \brief Synchronizer with approximate time policy.
     message_filters::Synchronizer<syncPolicy_t> synchronizer_;
@@ -151,6 +161,7 @@ namespace visp_tracker
     unsigned countCameraInfo_;
     unsigned countTrackingResult_;
     unsigned countMovingEdgeSites_;
+    unsigned countKltPoints_;
     ///}
   };
 } // end of namespace visp_tracker

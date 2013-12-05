@@ -1,25 +1,20 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(visp_tracker)
 
+# By default set RelWithDebInfo configuration
+if(NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE "RelWithDebInfo" CACHE String "Choose the type of build, options are: None Debug Release" FORCE)
+endif()
+
 find_package(catkin REQUIRED)
 
 find_package(Boost REQUIRED COMPONENTS filesystem thread)
 find_package(VISP REQUIRED)
 
-# Look for bullet.
-find_path(BULLET_INCLUDE_DIRS
-  btBulletCollisionCommon.h
-  PATHS /opt/ros/groovy/stacks/bullet/include /usr/include/bullet
-  DOC "Bullet library include directory")
-if(NOT BULLET_INCLUDE_DIRS)
-  message(FATAL_ERROR
-    "failed to detect Bullet, please fill BULLET_INCLUDE_DIRS manually")
-endif()
-if(NOT IS_DIRECTORY "${BULLET_INCLUDE_DIRS}")
-  message(FATAL_ERROR
-    "failed to detect Bullet, please fill BULLET_INCLUDE_DIRS manually")
-endif()
-include_directories(SYSTEM ${BULLET_INCLUDE_DIRS})
+# Look for Bullet
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(BULLET bullet)
+include_directories(${BULLET_INCLUDE_DIRS})
 
 find_package(catkin REQUIRED COMPONENTS
   dynamic_reconfigure
@@ -56,7 +51,10 @@ include_directories(
 add_message_files(
   DIRECTORY msg
   FILES
-  MovingEdge.msg
+  KltPoint.msg
+  KltPoints.msg
+  KltSettings.msg
+  MovingEdgeSettings.msg
   MovingEdgeSite.msg
   MovingEdgeSites.msg
   )
@@ -68,7 +66,7 @@ add_service_files(
 generate_messages(DEPENDENCIES geometry_msgs sensor_msgs std_msgs)
 
 # Dynamic reconfigure.
-generate_dynamic_reconfigure_options(cfg/MovingEdge.cfg)
+generate_dynamic_reconfigure_options(cfg/ModelBasedSettings.cfg)
 
 catkin_package(
    LIBRARIES visp_tracker trackerNodelet
@@ -83,7 +81,7 @@ catkin_package(
    dynamic_reconfigure
 
    DEPENDS
-   VISP
+#   VISP
    )
 
 # Add package definitions
@@ -98,15 +96,24 @@ add_definitions(-DBOOST_FILESYSTEM_VERSION=2)
 
 # Library gathering libvisp_tracker used by all nodes.
 add_library(visp_tracker
-  src/libvisp_tracker/conversion.cpp
   src/libvisp_tracker/callbacks.cpp
+  src/libvisp_tracker/callbacks.hh
+  src/libvisp_tracker/conversion.cpp
+  src/libvisp_tracker/conversion.hh
   src/libvisp_tracker/file.cpp
+  src/libvisp_tracker/file.hh
+  src/libvisp_tracker/names.cpp
+  src/libvisp_tracker/names.hh
   src/libvisp_tracker/tracker.cpp
+  src/libvisp_tracker/tracker.hh
   src/libvisp_tracker/tracker-client.cpp
+  src/libvisp_tracker/tracker-client.hh
   src/libvisp_tracker/tracker-viewer.cpp
-  src/libvisp_tracker/names.cpp)
+  src/libvisp_tracker/tracker-viewer.hh)
+
 target_link_libraries(visp_tracker
-  ${Boost_LIBRARIES} ${VISP_LIBRARIES}
+  ${Boost_LIBRARIES} 
+#${VISP_LIBRARIES}
   )
 target_link_libraries(visp_tracker
   ${dynamic_reconfigure_LIBRARIES}
@@ -134,7 +141,6 @@ install(DIRECTORY cfg/cpp/${PROJECT_NAME}/
   FILES_MATCHING PATTERN "*.h"
 )
 
-
 ############
 # Nodelets #
 ############
@@ -144,6 +150,7 @@ add_library(trackerNodelet
   src/nodelets/tracker.cpp
   src/nodelets/client.cpp
   src/nodelets/viewer.cpp)
+
 target_link_libraries(trackerNodelet visp_tracker)
 target_link_libraries(trackerNodelet
   ${roscpp_LIBRARIES}
@@ -156,6 +163,7 @@ install(TARGETS visp_tracker trackerNodelet
    LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
    RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
+
 
 ########
 # Node #

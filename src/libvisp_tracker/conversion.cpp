@@ -17,6 +17,10 @@
 # include <visp/vpMbEdgeTracker.h>
 #undef protected
 
+#define protected public
+# include <visp/vpMbKltTracker.h>
+#undef protected
+
 #include "conversion.hh"
 
 void rosImageToVisp(vpImage<unsigned char>& dst,
@@ -152,10 +156,12 @@ void transformToVpHomogeneousMatrix(vpHomogeneousMatrix& dst,
   dst[3][3] = 1.;
 }
 
-void convertMovingEdgeConfigToVpMe(const visp_tracker::MovingEdgeConfig& config,
+void convertModelBasedSettingsConfigToVpMe(const visp_tracker::ModelBasedSettingsConfig& config,
 				   vpMe& moving_edge,
-				   vpMbEdgeTracker& tracker)
+				   vpMbTracker* tracker)
 {
+  vpMbEdgeTracker* t = dynamic_cast<vpMbEdgeTracker*>(tracker);
+  
   moving_edge.mask_size = config.mask_size;
   moving_edge.n_mask = config.n_mask;
   moving_edge.range = config.range;
@@ -170,14 +176,21 @@ void convertMovingEdgeConfigToVpMe(const visp_tracker::MovingEdgeConfig& config,
   moving_edge.aberration = config.aberration;
   moving_edge.init_aberration = config.init_aberration;
 
-  tracker.setLambda(config.lambda);
-  tracker.setFirstThreshold(config.first_threshold);
+  t->setLambda(config.lambda);
+  t->setFirstThreshold(config.first_threshold);
+  
+  //FIXME: not sure if this is needed.
+  moving_edge.initMask();
+  // Reset the tracker and the node state.
+  t->setMovingEdge(moving_edge);
 }
 
-void convertVpMeToMovingEdgeConfig(const vpMe& moving_edge,
-				   const vpMbEdgeTracker& tracker,
-				   visp_tracker::MovingEdgeConfig& config)
+void convertVpMeToModelBasedSettingsConfig(const vpMe& moving_edge,
+				   const vpMbTracker* tracker,
+				   visp_tracker::ModelBasedSettingsConfig& config)
 {
+  const vpMbEdgeTracker* t = dynamic_cast<const vpMbEdgeTracker*>(tracker);
+  
   config.mask_size = moving_edge.mask_size;
   config.n_mask = moving_edge.n_mask;
   config.range = moving_edge.range;
@@ -192,14 +205,56 @@ void convertVpMeToMovingEdgeConfig(const vpMe& moving_edge,
   config.aberration = moving_edge.aberration;
   config.init_aberration = moving_edge.init_aberration;
 
-  config.lambda = tracker.lambda;
-  config.first_threshold = tracker.percentageGdPt;
+  config.lambda = t->lambda;
+  config.first_threshold = t->percentageGdPt;
+}
+
+void convertModelBasedSettingsConfigToVpKltOpencv(const visp_tracker::ModelBasedSettingsConfig& config,
+           vpKltOpencv& klt,
+           vpMbTracker* tracker)
+{
+  vpMbKltTracker* t = dynamic_cast<vpMbKltTracker*>(tracker);
+  
+  klt.setMaxFeatures(config.max_features);
+  klt.setWindowSize(config.window_size);
+  klt.setQuality(config.quality);
+  klt.setMinDistance(config.min_distance);
+  klt.setHarrisFreeParameter(config.harris);
+  klt.setBlockSize(config.size_block);
+  klt.setPyramidLevels(config.pyramid_lvl);
+  
+  t->setAngleAppear(vpMath::rad(config.angle_appear));
+  t->setAngleDisappear(vpMath::rad(config.angle_disappear));
+  t->setMaskBorder((unsigned)config.mask_border);
+  
+  t->setKltOpencv(klt);
+}
+
+void convertVpKltOpencvToModelBasedSettingsConfig(const vpKltOpencv& klt,
+           const vpMbTracker* tracker,
+           visp_tracker::ModelBasedSettingsConfig& config)
+{
+  const vpMbKltTracker* t = dynamic_cast<const vpMbKltTracker*>(tracker);
+  
+  config.max_features = klt.getMaxFeatures();
+  config.window_size = klt.getWindowSize();
+  config.quality = klt.getQuality();
+  config.min_distance = klt.getMinDistance();
+  config.harris = klt.getHarrisFreeParameter();
+  config.size_block = klt.getBlockSize();
+  config.pyramid_lvl = klt.getPyramidLevels();
+  
+  config.angle_appear = vpMath::deg(t->angleAppears);
+  config.angle_disappear = vpMath::deg(t->angleDisappears);
+  config.mask_border = t->maskBorder;
 }
 
 void convertVpMeToInitRequest(const vpMe& moving_edge,
-			      const vpMbEdgeTracker& tracker,
+			      const vpMbTracker* tracker,
 			      visp_tracker::Init& srv)
 {
+  const vpMbEdgeTracker* t = dynamic_cast<const vpMbEdgeTracker*>(tracker);
+  
   srv.request.moving_edge.mask_size = moving_edge.mask_size;
   srv.request.moving_edge.n_mask = moving_edge.n_mask;
   srv.request.moving_edge.range = moving_edge.range;
@@ -214,14 +269,16 @@ void convertVpMeToInitRequest(const vpMe& moving_edge,
   srv.request.moving_edge.aberration = moving_edge.aberration;
   srv.request.moving_edge.init_aberration = moving_edge.init_aberration;
 
-  srv.request.moving_edge.lambda = tracker.lambda;
-  srv.request.moving_edge.first_threshold = tracker.percentageGdPt;
+  srv.request.moving_edge.lambda = t->lambda;
+  srv.request.moving_edge.first_threshold = t->percentageGdPt;
 }
 
 void convertInitRequestToVpMe(const visp_tracker::Init::Request& req,
-			      vpMbEdgeTracker& tracker,
+			      vpMbTracker* tracker,
 			      vpMe& moving_edge)
 {
+  vpMbEdgeTracker* t = dynamic_cast<vpMbEdgeTracker*>(tracker);
+  
   moving_edge.mask_size = req.moving_edge.mask_size;
   moving_edge.n_mask = req.moving_edge.n_mask;
   moving_edge.range = req.moving_edge.range;
@@ -236,8 +293,46 @@ void convertInitRequestToVpMe(const visp_tracker::Init::Request& req,
   moving_edge.aberration = req.moving_edge.aberration;
   moving_edge.init_aberration = req.moving_edge.init_aberration;
 
-  tracker.setLambda(req.moving_edge.lambda);
-  tracker.setFirstThreshold(req.moving_edge.first_threshold);
+  t->setLambda(req.moving_edge.lambda);
+  t->setFirstThreshold(req.moving_edge.first_threshold);
+}
+
+void convertVpKltOpencvToInitRequest(const vpKltOpencv& klt,
+            const vpMbTracker* tracker,
+            visp_tracker::Init& srv)
+{
+  const vpMbKltTracker* t = dynamic_cast<const vpMbKltTracker*>(tracker);
+  
+  srv.request.klt_param.max_features = klt.getMaxFeatures();
+  srv.request.klt_param.window_size = klt.getWindowSize();
+  srv.request.klt_param.quality = klt.getQuality();
+  srv.request.klt_param.min_distance = klt.getMinDistance();
+  srv.request.klt_param.harris = klt.getHarrisFreeParameter();
+  srv.request.klt_param.size_block = klt.getBlockSize();
+  srv.request.klt_param.pyramid_lvl = klt.getPyramidLevels();
+  
+  srv.request.klt_param.angle_appear = vpMath::deg(t->angleAppears);
+  srv.request.klt_param.angle_disappear = vpMath::deg(t->angleDisappears);
+  srv.request.klt_param.mask_border = t->maskBorder;
+}
+
+void convertInitRequestToVpKltOpencv(const visp_tracker::Init::Request& req,
+            vpMbTracker* tracker,
+            vpKltOpencv& klt)
+{
+  vpMbKltTracker* t = dynamic_cast<vpMbKltTracker*>(tracker);
+  
+  klt.setMaxFeatures(req.klt_param.max_features);
+  klt.setWindowSize(req.klt_param.window_size);
+  klt.setQuality(req.klt_param.quality);
+  klt.setMinDistance(req.klt_param.min_distance);
+  klt.setHarrisFreeParameter(req.klt_param.harris);
+  klt.setBlockSize(req.klt_param.size_block);
+  klt.setPyramidLevels(req.klt_param.pyramid_lvl);
+  
+  t->setAngleAppear(vpMath::rad(req.klt_param.angle_appear));
+  t->setAngleDisappear(vpMath::rad(req.klt_param.angle_disappear));
+  t->setMaskBorder((unsigned)req.klt_param.mask_border);
 }
 
 void initializeVpCameraFromCameraInfo(vpCameraParameters& cam,
