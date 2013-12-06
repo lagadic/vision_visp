@@ -28,8 +28,7 @@ tracking result.
 Setup
 -----
 
-This package can be compiled like any other ROS package using `rosdep`
-and `rosmake`.
+This package can be compiled like any other ROS package using `catkin_make`.
 
 For more information, refer to the [ROS tutorial]
 [ros-tutorial-building-pkg].
