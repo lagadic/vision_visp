@@ -1,31 +1,38 @@
-cmake_minimum_required(VERSION 2.4.6)
-include($ENV{ROS_ROOT}/core/rosbuild/rosbuild.cmake)
+cmake_minimum_required(VERSION 2.8.3)
+project(visp_auto_tracker)
 
-# Set the build type.  Options are:
-#  Coverage       : w/ debug symbols, w/o optimization, w/ code-coverage
-#  Debug          : w/ debug symbols, w/o optimization
-#  Release        : w/o debug symbols, w/ optimization
-#  RelWithDebInfo : w/ debug symbols, w/ optimization
-#  MinSizeRel     : w/o debug symbols, w/ optimization, stripped binaries
-set(ROS_BUILD_TYPE RelWithDebInfo)
+# By default set RelWithDebInfo configuration
+if(NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE "RelWithDebInfo" CACHE String "Choose the type of build, options are: None Debug Release" FORCE)
+endif()
 
-rosbuild_init()
+find_package(catkin REQUIRED COMPONENTS
+  visp_bridge
+  visp_tracker
+  resource_retriever
+  message_filters
+)
 
-#set the default path for built executables to the "bin" directory
-set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
-#set the default path for built libraries to the "lib" directory
-set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
+# TO FIX, VISP_DEFINITIONS and VISP_LIBRARY_DIRS should come from visp_bridge dependency
+find_package(VISP REQUIRED)
+add_definitions(${VISP_DEFINITIONS})
+link_directories(${VISP_LIBRARY_DIRS})
 
-#uncomment if you have defined messages
-#rosbuild_genmsg()
-#uncomment if you have defined services
-#rosbuild_gensrv()
+find_package(Boost REQUIRED COMPONENTS filesystem system signals regex date_time program_options thread)
 
-include_directories("${CMAKE_SOURCE_DIR}/flashcode_mbt")
-include_directories("${CMAKE_SOURCE_DIR}/flashcode_mbt/detectors")
+include_directories(
+  ${catkin_INCLUDE_DIRS}
+  ${Boost_INCLUDE_DIRS}
+)
+
+catkin_package()
+
+
+include_directories("flashcode_mbt")
+include_directories("flashcode_mbt/detectors")
 
 # Library gathering libvisp_tracker used by all nodes.
-rosbuild_add_library(auto_tracker
+add_library(auto_tracker
   flashcode_mbt/libauto_tracker/states.hpp
   flashcode_mbt/libauto_tracker/events.h
   flashcode_mbt/libauto_tracker/tracking.h
@@ -34,32 +41,52 @@ rosbuild_add_library(auto_tracker
   flashcode_mbt/libauto_tracker/threading.h
   flashcode_mbt/libauto_tracker/threading.cpp)
 
-rosbuild_add_library(cmd_line
+add_library(cmd_line
   flashcode_mbt/cmd_line/cmd_line.cpp
+  flashcode_mbt/cmd_line/cmd_line.h
 )
 
 add_subdirectory(flashcode_mbt/detectors)
 
-rosbuild_add_executable(visp_auto_tracker
+add_executable(visp_auto_tracker
   src/main.cpp
   src/node.cpp
+  src/node.h
   src/names.cpp
+  src/names.h
   )
 
-#rosbuild_add_library(controller src/controller/controller_client.cpp)
+#rosbuild_link_boost(visp_auto_tracker filesystem system signals regex date_time program_options thread)
 
-rosbuild_link_boost(visp_auto_tracker
-  filesystem system signals regex date_time program_options thread)
+add_dependencies(visp_auto_tracker visp_auto_tracker_bag)
+#target_link_libraries(visp_auto_tracker auto_tracker qrcode_detector datamatrix_detector cmd_line dmtx zbar )
+target_link_libraries(visp_auto_tracker auto_tracker qrcode_detector datamatrix_detector cmd_line dmtx zbar)
+target_link_libraries(visp_auto_tracker ${resource_retriever_LIBRARIES} ${catkin_LIBRARIES} ${Boost_LIBRARIES})
 
-target_link_libraries(visp_auto_tracker auto_tracker qrcode_detector datamatrix_detector cmd_line dmtx zbar )
+install(
+  TARGETS
+    visp_auto_tracker
+  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+
+install(DIRECTORY launch
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+)
 
 #############
 # Bag files #
 #############
 
 # Tutorial
-rosbuild_download_data(
+catkin_download_test_data(
+  visp_auto_tracker_bag
   https://github.com/downloads/lagadic/visp_auto_tracker/tutorial-qrcode.bag
-  bag/tutorial-qrcode.bag
-  0f80ceea2610b8400591ca7aff764dfa)
+  DESTINATION ${CATKIN_DEVEL_PREFIX}/${CATKIN_PACKAGE_SHARE_DESTINATION}/bag
+  MD5 0f80ceea2610b8400591ca7aff764dfa)
+
+install(DIRECTORY ${CATKIN_DEVEL_PREFIX}/${CATKIN_PACKAGE_SHARE_DESTINATION}/bag
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+)
 

@@ -23,9 +23,9 @@
 #include <visp/vpMbEdgeTracker.h>
 #include <visp/vpTime.h>
 
-#include "conversions/camera.h"
-#include "conversions/image.h"
-#include "conversions/3dpose.h"
+#include <visp_bridge/camera.h>
+#include <visp_bridge/image.h>
+#include <visp_bridge/3dpose.h>
 
 #include "libauto_tracker/tracking.h"
 
