@@ -17,8 +17,8 @@
 
   <export>
     <cpp
-       cflags="`${prefix}/install/bin/visp-config --cflags`"
-       lflags="`${prefix}/install/bin/visp-config --libs`"
+       cflags="`pkg-config ${prefix}/install/lib/pkgconfig/visp.pc --cflags`"
+       lflags="`pkg-config ${prefix}/install/lib/pkgconfig/visp.pc --libs`"
        />
 
     <rosdoc config="rosdoc.yaml" />
