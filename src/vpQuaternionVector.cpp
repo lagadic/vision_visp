@@ -40,12 +40,16 @@
  *****************************************************************************/
 
 
-#include "vpQuaternionVector.h"
-#include <visp/vpMath.h>
 #include <stdio.h>
 #include <string.h>
 #include <algorithm>
 
+#include <visp/vpConfig.h>
+
+#if VISP_VERSION_INT <= (2<<16 | 6<<8 | 1)
+
+#include <visp/vpMath.h>
+#include "vpQuaternionVector.h"
 
 // minimum value of sine
 const double vpQuaternionVector::minimum = 0.0001;
@@ -193,3 +197,5 @@ void vpQuaternionVector::buildFrom(const vpRotationMatrix &R)
       cos(theta));
 
 }
+
+#endif
