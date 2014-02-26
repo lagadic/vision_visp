@@ -1,5 +1,5 @@
-visp_auto_tracker
-=================
+# visp_auto_tracker
+
 
 visp_auto_tracker wraps model-based trackers provided by ViSP visual 
 servoing library into a ROS package. The tracked object should have a 
@@ -25,21 +25,29 @@ tracking result.
 * [Project webpage: source code download, bug report] [github-homepage]
 
 
-Setup
------
+## Setup
 
-This package can be compiled like any other ROS package using `catkin_make`.
+This package contains submodules. It can be compiled like any other ROS package using `catkin_make`. In that case you have to consider the `groovy-devel` branch.
 
-For more information, refer to the [ROS tutorial]
-[ros-tutorial-building-pkg].
+### Prerequisities
 
+visp_auto_tracker depends on visp_bridge and visp_tracker packages available from <https://github.com/lagadic> (groovy-devel branches). Install first visp_bridge and visp_tracker packages.
 
-Documentation
--------------
+### How to get and build visp_tracker 
+
+Supposed you have a catkin work space just run:
+
+	$ cd ~/catkin_ws/src 
+	$ git clone -b groovy-devel --recursive https://github.com/lagadic/visp_auto_tracker.git
+	$ catkin_make --pkg visp_auto_tracker
+
+## Documentation
 
 The documentation is available on the project [ROS homepage]
 [ros-homepage].
 
+For more information, refer to the [ROS tutorial]
+[ros-tutorial-building-pkg].
 
 [github-homepage]: https://github.com/lagadic/visp_auto_tracker
 [ros-homepage]: http://www.ros.org/wiki/visp_auto_tracker
