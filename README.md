@@ -1,5 +1,4 @@
-visp_tracker
-============
+# visp_tracker
 
 visp_tracker wraps the ViSP moving edge tracker provided by the ViSP
 visual servoing library into a ROS package.
@@ -20,21 +19,43 @@ tracking result.
 * [Project webpage: source code download, bug report] [github-homepage]
 
 
-Setup
------
+## Setup
 
-This package can be compiled like any other ROS package using `catkin_make`.
+This package can be compiled like any other catkin package using `catkin_make`. In that case you have to consider the `groovy-devel` branch.
 
-For more information, refer to the [ROS tutorial]
-[ros-tutorial-building-pkg].
+### Prerequisities
 
+First you need to install ViSP as a system dependency. This can be achived using an existing package (`ros-fuerte-visp`, `ros-groovy-visp`, `ros-hydro-visp`). For example if your computer is under Ubuntu and you are using `hydro` just run:
 
-Documentation
--------------
+	$ sudo apt-get install ros-hydro-visp
+
+If the package is not available (this is for example the case for Fedora) or if you want to use a more recent version of ViSP, you can also install ViSP from source:
+
+	$ cd ~
+	$ svn checkout svn://scm.gforge.inria.fr/svn/visp/trunk/ViSP
+	$ cd ViSP
+	$ cmake -DBUILD_SHARED_LIBS=ON .
+	$ make -j8
+
+Then to use this version you have to setup `VISP_DIR` environment variable to the folder that contains the build. In ou case it becomes:
+
+	$ export VISP_DIR=~/ViSP
+
+### How to get and build visp_tracker 
+
+Supposed you have a catkin work space just run:
+
+	$ cd ~/catkin_ws/src 
+	$ git clone -b groovy-devel https://github.com/lagadic/visp_tracker.git
+	$ catkin_make --pkg visp_tracker
+
+## Documentation
 
 The documentation is available on the project [ROS homepage]
 [ros-homepage].
 
+For more information, refer to the [ROS tutorial]
+[ros-tutorial-building-pkg].
 
 [github-homepage]: https://github.com/laas/visp_tracker
 [ros-homepage]: http://www.ros.org/wiki/visp_tracker
