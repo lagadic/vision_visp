@@ -24,8 +24,6 @@ Documentation
 
 * [Project webpage on ros.org] [ros-homepage]
 * [Project webpage: source code download, bug report] [github-homepage]
-* [API documentation][api-homepage] 
-
 
 [github-homepage]: https://github.com/lagadic/visp_camera_calibration
 [ros-homepage]: http://www.ros.org/wiki/visp_camera_calibration
