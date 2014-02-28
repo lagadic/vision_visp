@@ -7,7 +7,7 @@ Visual Servoing Platform and [ROS] [ros] a robotics middleware.
 
 ## Setup
 
-This package contains submodules. It can be compiled like any other ROS package using `catkin_make`. In that case you have to consider the `fuerte-devel` branch.
+This package contains submodules. It can be compiled like any other ROS package using `catkin_make`. In that case you have to consider the `hydro-devel` branch.
 
 Supposed you have a catkin work space just run:
 
