@@ -21,11 +21,11 @@ tracking result.
 
 ## Setup
 
-This package can be compiled like any other catkin package using `catkin_make`. In that case you have to consider the `groovy-devel` branch.
+This package can be compiled like any other catkin package using `catkin_make`. In that case you have to consider the `hydro-devel` branch.
 
 ### Prerequisities
 
-First you need to install ViSP as a system dependency. This can be achived using an existing package (`ros-fuerte-visp`, `ros-groovy-visp`, `ros-hydro-visp`). For example if your computer is under Ubuntu and you are using `hydro` just run:
+First you need to install ViSP as a system dependency. This can be achived using `ros-hydro-visp` package for Ubuntu. Just run:
 
 	$ sudo apt-get install ros-hydro-visp
 
@@ -46,7 +46,7 @@ Then to use this version you have to setup `VISP_DIR` environment variable to th
 Supposed you have a catkin work space just run:
 
 	$ cd ~/catkin_ws/src 
-	$ git clone -b groovy-devel https://github.com/lagadic/visp_tracker.git
+	$ git clone -b hydro-devel https://github.com/lagadic/visp_tracker.git
 	$ catkin_make --pkg visp_tracker
 
 ## Documentation
