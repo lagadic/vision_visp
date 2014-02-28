@@ -7,12 +7,12 @@ Visual Servoing Platform and [ROS] [ros] a robotics middleware.
 
 ## Setup
 
-This package contains submodules. It can be compiled like any other ROS package using `catkin_make`. In that case you have to consider the `groovy-devel` branch.
+This package contains submodules. It can be compiled like any other ROS package using `catkin_make`. In that case you have to consider the `fuerte-devel` branch.
 
 Supposed you have a catkin work space just run:
 
 	$ cd ~/catkin_ws/src 
-	$ git clone -b groovy-devel --recursive https://github.com/lagadic/vision_visp.git
+	$ git clone -b fuerte-devel --recursive https://github.com/lagadic/vision_visp.git
 	$ cd ..
 	$ catkin_make 
 
