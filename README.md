@@ -12,7 +12,7 @@ This package contains submodules. It can be compiled like any other ROS package 
 Supposed you have a catkin work space just run:
 
 	$ cd ~/catkin_ws/src 
-	$ git clone -b fuerte-devel --recursive https://github.com/lagadic/vision_visp.git
+	$ git clone -b hydro-devel --recursive https://github.com/lagadic/vision_visp.git
 	$ cd ..
 	$ catkin_make 
 
