@@ -1,7 +1,7 @@
 ViSP stack for ROS
 ==================
 
-[![Build Status](https://travis-ci.org/laas/vision_visp.png?branch=master)](https://travis-ci.org/laas/vision_visp)
+[![Build Status](https://travis-ci.org/lagadic/vision_visp.png?branch=master)](https://travis-ci.org/lagadic/vision_visp)
 
 This repository provides a ViSP stack for ROS. [ViSP] [visp] is the
 Visual Servoing Platform and [ROS] [ros] a robotics middleware.
