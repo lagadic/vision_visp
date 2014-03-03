@@ -9,7 +9,7 @@ Visual Servoing Platform and [ROS] [ros] a robotics middleware.
 
 This package contains a Git submodule. To clone it, run:
 
-    git clone --recursive git://github.com/laas/vision_visp.git
+    git clone --recursive git://github.com/lagadic/vision_visp.git
 
 
 [visp]: http://www.irisa.fr/lagadic/visp/visp.html
