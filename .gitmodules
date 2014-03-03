@@ -1,6 +1,6 @@
 [submodule "visp_tracker"]
 	path = visp_tracker
-	url = git://github.com/laas/visp_tracker.git
+	url = git://github.com/lagadic/visp_tracker.git
 [submodule "visp_hand2eye_calibration"]
 	path = visp_hand2eye_calibration
 	url = git://github.com/lagadic/visp_hand2eye_calibration.git
