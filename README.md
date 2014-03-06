@@ -37,6 +37,7 @@ Supposed you have a catkin work space just run:
 
 	$ cd ~/catkin_ws/src 
 	$ git clone -b hydro-devel https://github.com/lagadic/visp_bridge.git
+	$ cd ..
 	$ catkin_make --pkg visp_bridge
 
 Documentation
