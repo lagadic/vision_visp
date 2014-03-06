@@ -17,10 +17,10 @@ Supposed you have a catkin work space just run:
 
 	$ cd ~/catkin_ws/src 
 	$ git clone -b groovy-devel https://github.com/lagadic/visp_camera_calibration.git
+	$ cd ..
 	$ catkin_make --pkg visp_camera_calibration
 
-Documentation
--------------
+## Documentation
 
 * [Project webpage on ros.org] [ros-homepage]
 * [Project webpage: source code download, bug report] [github-homepage]
