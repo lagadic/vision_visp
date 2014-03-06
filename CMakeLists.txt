@@ -211,7 +211,7 @@ install(FILES nodelet_plugins.xml
 # Tutorial
 catkin_download_test_data(
   visp_tracker_bag
-  https://github.com/downloads/laas/visp_tracker/tutorial-static-box.bag
+  https://github.com/downloads/lagadic/visp_tracker/tutorial-static-box.bag
   DESTINATION ${CATKIN_DEVEL_PREFIX}/${CATKIN_PACKAGE_SHARE_DESTINATION}/bag
   MD5 1578dedd48d3f9f5515a8737845ae882)
 
