@@ -33,12 +33,17 @@ This package contains submodules. It can be compiled like any other ROS package 
 
 visp_auto_tracker depends on visp_bridge and visp_tracker packages available from <https://github.com/lagadic> (groovy-devel branches). Install first visp_bridge and visp_tracker packages.
 
+visp_auto_tracker depends also on libdmtx-dev and libzbar-dev system dependencies. To install them run:
+
+	$ sudo apt-get install libdmtx-dev libzbar-dev
+
 ### How to get and build visp_tracker 
 
 Supposed you have a catkin work space just run:
 
 	$ cd ~/catkin_ws/src 
 	$ git clone -b groovy-devel --recursive https://github.com/lagadic/visp_auto_tracker.git
+	$ cd ..
 	$ catkin_make --pkg visp_auto_tracker
 
 ## Documentation
