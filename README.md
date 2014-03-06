@@ -37,6 +37,6 @@ The documentation is available on the project [ROS homepage]
 [ros-homepage].
 
 
-[github-homepage]: https://github.com/laas/visp_tracker
+[github-homepage]: https://github.com/lagadic/visp_tracker
 [ros-homepage]: http://www.ros.org/wiki/visp_tracker
 [ros-tutorial-building-pkg]: http://www.ros.org/wiki/ROS/Tutorials/BuildingPackages "Building a ROS Package"
