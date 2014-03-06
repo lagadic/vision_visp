@@ -25,9 +25,10 @@ This package can be compiled like any other catkin package using `catkin_make`. 
 
 ### Prerequisities
 
-First you need to install ViSP as a system dependency. This can be achived using an existing package (`ros-fuerte-visp`, `ros-groovy-visp`, `ros-hydro-visp`). For example if your computer is under Ubuntu and you are using `hydro` just run:
+First you need to install ViSP as a system dependency. This can be achived using
+ `ros-groovy-visp` package for Ubuntu. Just run:
 
-	$ sudo apt-get install ros-hydro-visp
+	$ sudo apt-get install ros-groovy-visp
 
 If the package is not available (this is for example the case for Fedora) or if you want to use a more recent version of ViSP, you can also install ViSP from source:
 
@@ -47,6 +48,7 @@ Supposed you have a catkin work space just run:
 
 	$ cd ~/catkin_ws/src 
 	$ git clone -b groovy-devel https://github.com/lagadic/visp_tracker.git
+	$ cd ..
 	$ catkin_make --pkg visp_tracker
 
 ## Documentation
