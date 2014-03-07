@@ -73,6 +73,6 @@ rosbuild_add_executable(viewer src/nodes/viewer.cpp)
 
 # Tutorial
 rosbuild_download_data(
-  https://github.com/downloads/lagadic/visp_tracker/tutorial-static-box.bag
+  https://github.com/lagadic/vision_visp/releases/download/vision_visp-0.5.0/tutorial-static-box.bag
   bag/tutorial-static-box.bag
   1578dedd48d3f9f5515a8737845ae882)
