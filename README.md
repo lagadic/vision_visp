@@ -13,11 +13,11 @@ These packages are released under the [GPL-2](COPYING) license.
 Components documentation is hosted on the [vision_visp-wiki] [ros.org
 wiki].
 
-Support is provided through the [vision_visp-answers] [vision_visp-answers].
+Support is provided through [vision_visp-answers] [ROS Answers].
 
 
-What branch should I use?
--------------------------
+Which branch should I use?
+--------------------------
 
 Branches come in two flavors:
 
@@ -44,9 +44,14 @@ version-specific bug fix again older releases.
    development branch in the current branch.
 
 
-*Warning* the Fuerte branches still rely on the legacy `rosbuild`
+*Warning:* the Fuerte branches still rely on the legacy `rosbuild`
  build system. We recommend you to update to a newer ROS release. Only
  minimum maintained will be done for this release.
+
+
+Additional development guidelines are provided in
+[CONTRIBUTING.md](CONTRIBUTING.md).
+
 
 
 Build Status
