@@ -10,8 +10,7 @@ middleware.
 These packages are released under the [GPL-2](COPYING) license.
 
 
-Components documentation is hosted on the [vision_visp-wiki] [ros.org
-wiki].
+Components documentation is hosted on the [ros.org wiki] [vision_visp-wiki].
 
 Support is provided through [ROS Answers] [vision_visp-answers] .
 
