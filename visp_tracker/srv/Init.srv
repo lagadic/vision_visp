@@ -1,0 +1,19 @@
+# Initialize the tracking.
+#
+# During the initialization the tracked object is chosen and its
+# initial pose is required to start the tracking.
+#
+# The model is retrieved through the parameter server using the
+# model_description parameter.
+
+# Object initial pose.
+geometry_msgs/Transform initial_cMo
+
+# Moving Edge parameters
+MovingEdgeSettings moving_edge
+
+# Klt Parameters
+KltSettings klt_param
+---
+# Did the initialization succeed?
+bool initialization_succeed

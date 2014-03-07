@@ -1,0 +1,65 @@
+<launch>
+  <group ns="narrow_left" >
+    <node pkg="camera1394"
+	  type="camera1394_node"
+	  name="camera1394_node"
+	  machine="hrp2v"
+	  respawn="true" >
+      <param
+	 name="camera_info_url"
+	 value="file://$(find visp_tracker)/launch/$(env ROBOT)/calibration/narrow_left.yaml" />
+      <rosparam
+	 file="$(find visp_tracker)/launch/$(env ROBOT)/narrow_left.yaml" />
+    </node>
+    <include
+       file="$(find visp_tracker)/launch/$(env ROBOT)/image_pipeline.launch" />
+  </group>
+
+  <group ns="narrow_right" >
+    <node pkg="camera1394"
+	  type="camera1394_node"
+	  name="camera1394_node"
+	  machine="hrp2v"
+	  respawn="true" >
+      <param
+	 name="camera_info_url"
+	 value="file://$(find visp_tracker)/launch/$(env ROBOT)/calibration/narrow_right.yaml" />
+      <rosparam
+	 file="$(find visp_tracker)/launch/$(env ROBOT)/narrow_right.yaml" />
+    </node>
+    <include
+       file="$(find visp_tracker)/launch/$(env ROBOT)/image_pipeline.launch" />
+  </group>
+
+  <group ns="wide_left" >
+    <node pkg="camera1394"
+	  type="camera1394_node"
+	  name="camera1394_node"
+	  machine="hrp2v"
+	  respawn="true" >
+      <param
+	 name="camera_info_url"
+	 value="file://$(find visp_tracker)/launch/$(env ROBOT)/calibration/wide_left.yaml" />
+      <rosparam
+	 file="$(find visp_tracker)/launch/$(env ROBOT)/wide_left.yaml" />
+    </node>
+    <include
+       file="$(find visp_tracker)/launch/$(env ROBOT)/image_pipeline.launch" />
+  </group>
+
+  <group ns="wide_right" >
+    <node pkg="camera1394"
+	  type="camera1394_node"
+	  name="camera1394_node"
+	  machine="hrp2v"
+	  respawn="true" >
+      <param
+	 name="camera_info_url"
+	 value="file://$(find visp_tracker)/launch/$(env ROBOT)/calibration/wide_right.yaml" />
+      <rosparam
+	 file="$(find visp_tracker)/launch/$(env ROBOT)/wide_right.yaml" />
+    </node>
+    <include
+       file="$(find visp_tracker)/launch/$(env ROBOT)/image_pipeline.launch" />
+  </group>
+</launch>

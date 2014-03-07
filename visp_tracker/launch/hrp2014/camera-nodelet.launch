@@ -1,0 +1,34 @@
+<launch>
+  <group ns="wide_left" >
+    <!-- nodelet manager process -->
+    <node pkg="nodelet" type="nodelet" name="camera_nodelet_manager"
+          args="manager" />
+
+    <!-- camera driver nodelet -->
+    <node pkg="nodelet" type="nodelet" name="camera1394_nodelet"
+          args="load camera1394/driver camera_nodelet_manager">
+      <param
+	 name="camera_info_url"
+	 value="file://$(find visp_tracker)/launch/$(env ROBOT)/calibration/wide_left.yaml" />
+
+      <rosparam
+	 file="$(find visp_tracker)/launch/$(env ROBOT)/wide_left.yaml" />
+    </node>
+
+    <!-- Bayer color decoding -->
+    <node pkg="nodelet" type="nodelet" name="image_proc_debayer"
+          args="load image_proc/debayer camera_nodelet_manager">
+      <remap from="image_color" to="camera/image_color" />
+      <remap from="image_mono" to="camera/image_mono" />
+      <remap from="image_raw" to="camera/image_raw" />
+    </node>
+    
+    <!-- mono rectification -->
+    <node pkg="nodelet" type="nodelet" name="image_proc_rect"
+          args="load image_proc/rectify camera_nodelet_manager">
+      <remap from="image_mono" to="camera/image_mono" />
+      <remap from="image_rect" to="camera/image_rect" />
+    </node>
+
+  </group>
+</launch>

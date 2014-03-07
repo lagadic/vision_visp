@@ -1,0 +1,46 @@
+<package>
+  <name>visp_tracker</name>
+  <version>0.7.0</version>
+  <description>
+    Wraps the ViSP moving edge tracker provided by the ViSP visual
+    servoing library into a ROS package.
+
+    This computer vision algorithm computes the pose (i.e. position
+    and orientation) of an object in an image. It is fast enough to
+    allow object online tracking using a camera.
+  </description>
+  <maintainer email="thomas.moulard@gmail.com">Thomas Moulard</maintainer>
+  <author email="thomas.moulard@gmail.com">Thomas Moulard</author>
+  <license>BSD</license>
+  <url>http://ros.org/wiki/visp_tracker</url>
+  <url type="repository">git://github.com/laas/visp_tracker.git</url>
+
+  <export>
+    <nodelet plugin="${prefix}/nodelet_plugins.xml" />
+  </export>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <!-- FIXME: no catkin bullet for now -->
+  <build_depend>bullet</build_depend>
+  <build_depend>message_generation</build_depend>
+  <build_depend>dynamic_reconfigure</build_depend>
+  <build_depend>nodelet</build_depend>
+  <build_depend>roscpp</build_depend>
+  <build_depend>rospy</build_depend>
+  <build_depend>std_msgs</build_depend>
+  <build_depend>sensor_msgs</build_depend>
+  <build_depend>geometry_msgs</build_depend>
+
+  <!-- FIXME: no catkin bullet for now -->
+  <run_depend>bullet</run_depend>
+  <run_depend>message_runtime</run_depend>
+  <run_depend>message_generation</run_depend>
+  <run_depend>dynamic_reconfigure</run_depend>
+  <run_depend>nodelet</run_depend>
+  <run_depend>roscpp</run_depend>
+  <run_depend>rospy</run_depend>
+  <run_depend>std_msgs</run_depend>
+  <run_depend>sensor_msgs</run_depend>
+  <run_depend>geometry_msgs</run_depend>
+</package>
