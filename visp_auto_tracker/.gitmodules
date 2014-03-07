@@ -1,0 +1,3 @@
+[submodule "flashcode_mbt"]
+	path = flashcode_mbt
+	url = git://github.com/lagadic/flashcode_mbt.git
