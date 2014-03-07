@@ -1,21 +1,19 @@
 ViSP stack for ROS
 ==================
 
-Overview
---------
+![GPL-2](https://www.gnu.org/graphics/gplv3-127x51.png)
 
-This repository provides a ViSP stack for ROS. [ViSP] [visp] is the
-Visual Servoing Platform and [ROS] [ros] a robotics middleware.
+`vision_visp` provides ViSP algorithms as ROS components. [ViSP]
+[visp] is the Visual Servoing Platform and [ROS] [ros] a robotics
+middleware.
 
-
-This package contains a Git submodule. To clone it, run:
-
-    git clone --recursive git://github.com/lagadic/vision_visp.git
+These packages are released under the [GPL-2](COPYING) license.
 
 
-[visp]: http://www.irisa.fr/lagadic/visp/visp.html
-[ros]: http://www.ros.org
+Components documentation is hosted on the [vision_visp-wiki] [ros.org
+wiki].
 
+Support is provided through the ROS answers website: http://wiki.ros.org/vision_visp
 
 Build Status
 ------------
@@ -37,3 +35,7 @@ next ROS release (Indigo).
 | Groovy         | [![Build Status](https://travis-ci.org/lagadic/vision_visp.png?branch=groovy-devel)](https://travis-ci.org/lagadic/vision_visp) | [![Build Status](https://travis-ci.org/lagadic/vision_visp.png?branch=groovy)](https://travis-ci.org/lagadic/vision_visp) |
 | Fuerte         | [![Build Status](https://travis-ci.org/lagadic/vision_visp.png?branch=fuerte-devel)](https://travis-ci.org/lagadic/vision_visp) | [![Build Status](https://travis-ci.org/lagadic/vision_visp.png?branch=fuerte)](https://travis-ci.org/lagadic/vision_visp) |
 
+
+[visp]: http://www.irisa.fr/lagadic/visp/visp.html
+[ros]: http://www.ros.org
+[vision_visp-wiki]: http://wiki.ros.org/vision_visp
