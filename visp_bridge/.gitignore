@@ -1,0 +1,12 @@
+*.pyc
+*.*~
+CMakeCache.txt
+CMakeFiles
+bin
+build
+lib
+*.dox
+*_gen
+.cproject
+.project
+.pydevproject
