@@ -13,7 +13,41 @@ These packages are released under the [GPL-2](COPYING) license.
 Components documentation is hosted on the [vision_visp-wiki] [ros.org
 wiki].
 
-Support is provided through the ROS answers website: http://wiki.ros.org/vision_visp
+Support is provided through the [vision_visp-answers] [vision_visp-answers].
+
+
+What branch should I use?
+-------------------------
+
+Branches come in two flavors:
+
+ * development branch,
+ * release branch
+
+Package for each ROS release is maintained on separate
+branches. I.e. `hydro-devel` is the Hydro development branch whereas
+`hydro` is the hydro release branch.
+
+`master` means the next ROS release.
+
+If you are a user you should use a release branch as they contain
+stable and tested versions of the packages. If you are a developper
+you must provide new patches against `master`. You may also provide
+version-specific bug fix again older releases.
+
+
+ - Never implement new features in old branches (i.e. not
+   master). These Pull Requests will not be accepted. If you provide a
+   bug fix then you may ask for it to be backported. ABI/API breakage
+   prevent patches from being backported.
+ - The *only* action allowed in release branches is merging the
+   development branch in the current branch.
+
+
+*Warning* the Fuerte branches still rely on the legacy `rosbuild`
+ build system. We recommend you to update to a newer ROS release. Only
+ minimum maintained will be done for this release.
+
 
 Build Status
 ------------
@@ -39,3 +73,4 @@ next ROS release (Indigo).
 [visp]: http://www.irisa.fr/lagadic/visp/visp.html
 [ros]: http://www.ros.org
 [vision_visp-wiki]: http://wiki.ros.org/vision_visp
+[vision_visp-answers]: http://answers.ros.org/questions/scope:all/sort:activity-desc/tags:vision_visp/page:1/
