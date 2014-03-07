@@ -1,0 +1,5 @@
+int32 method
+int32 sample_width
+int32 sample_height
+---
+float64[] stdDevErrs
