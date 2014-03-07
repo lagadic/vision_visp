@@ -30,8 +30,6 @@ find_package(catkin REQUIRED COMPONENTS
   tf
   )
 
-catkin_python_setup()
-
 include_directories(SYSTEM
   ${Boost_INCLUDE_DIRS}
   ${VISP_INCLUDE_DIRS}
