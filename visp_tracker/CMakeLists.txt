@@ -112,7 +112,7 @@ add_library(visp_tracker
   src/libvisp_tracker/tracker-viewer.hh)
 
 target_link_libraries(visp_tracker
-  ${Boost_LIBRARIES} 
+  ${Boost_LIBRARIES}
 #${VISP_LIBRARIES}
   )
 target_link_libraries(visp_tracker
@@ -211,7 +211,7 @@ install(FILES nodelet_plugins.xml
 # Tutorial
 catkin_download_test_data(
   visp_tracker_bag
-  https://github.com/downloads/lagadic/visp_tracker/tutorial-static-box.bag
+  https://github.com/lagadic/vision_visp/releases/download/vision_visp-0.5.0/tutorial-static-box.bag
   DESTINATION ${CATKIN_DEVEL_PREFIX}/${CATKIN_PACKAGE_SHARE_DESTINATION}/bag
   MD5 1578dedd48d3f9f5515a8737845ae882)
 
