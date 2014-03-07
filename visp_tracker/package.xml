@@ -9,11 +9,11 @@
     and orientation) of an object in an image. It is fast enough to
     allow object online tracking using a camera.
   </description>
-  <maintainer email="thomas.moulard@gmail.com">Thomas Moulard</maintainer>
+  <maintainer email="fabien.spindler@inria.fr">Fabien Spindler</maintainer>
   <author email="thomas.moulard@gmail.com">Thomas Moulard</author>
   <license>BSD</license>
   <url>http://ros.org/wiki/visp_tracker</url>
-  <url type="repository">git://github.com/laas/visp_tracker.git</url>
+  <url type="repository">git://github.com/lagadic/vision_visp.git</url>
 
   <export>
     <nodelet plugin="${prefix}/nodelet_plugins.xml" />
