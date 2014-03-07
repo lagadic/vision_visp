@@ -1,0 +1,7 @@
+# This service computes the effector to camera transformation from 
+# data provided in parameters
+#
+visp_hand2eye_calibration/TransformArray camera_object
+visp_hand2eye_calibration/TransformArray world_effector
+---
+geometry_msgs/Transform effector_camera
