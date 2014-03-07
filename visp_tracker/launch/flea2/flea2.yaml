@@ -1,0 +1,8 @@
+guid: 00b09d01006d1bd6
+video_mode: format7_mode0
+frame_id: flea2
+frame_rate: 80
+iso_speed: 400
+format7_color_encoding: mono8
+bayer_pattern: grbg
+bayer_method: ""

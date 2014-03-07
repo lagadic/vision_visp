@@ -1,0 +1,7 @@
+guid: 00b09d01005c0721
+#video_mode:
+frame_id: camera_wide_left
+bayer_method: ""
+bayer_pattern: grbg
+frame_rate: 60
+iso_speed: 400

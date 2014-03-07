@@ -1,0 +1,50 @@
+<!-- -*- xml -*-
+
+     This tutorial relies on a recorded video sequence where the
+     camera is fixed in front of a cube. The model corresponding to
+     this cube is given into the models/laas-box directoy of this
+     package.
+
+     See http://www.ros.org/wiki/visp_tracker/Tutorials for more
+     information.
+
+     This is an alternative version launching twice the same tracker.
+     It illustrates the use of ROS namespace to track several objects
+     at the same time.
+
+  -->
+
+<launch>
+  <!-- FIXME: do not use the timestamps from the bag file,
+    it makes the tracker hang for some reason. -->
+  <param name="use_sim_time" value="false" />
+
+  <node pkg="rosbag" type="play" name="rosbag" args="--clock -l
+        $(find visp_tracker)/bag/tutorial-static-box.bag"/>
+
+  <group ns="tracker1">
+    <node pkg="visp_tracker" type="tracker" name="tracker_mbt">
+      <param name="camera_prefix" value="/wide_left/camera" />
+      <param name="child_frame_id" value="box1" />
+    </node>
+
+    <node pkg="visp_tracker" type="client" name="tracker_mbt_client">
+      <param name="model_path" value="package://visp_tracker/models" />
+      <param name="model_name" value="laas-box" />
+      <rosparam file="$(find visp_tracker)/models/laas-box/tracker.yaml" />
+    </node>
+  </group>
+
+  <group ns="tracker2">
+    <node pkg="visp_tracker" type="tracker" name="tracker_mbt">
+      <param name="camera_prefix" value="/wide_left/camera" />
+      <param name="child_frame_id" value="box2" />
+    </node>
+
+    <node pkg="visp_tracker" type="client" name="tracker_mbt_client">
+      <param name="model_path" value="package://visp_tracker/models" />
+      <param name="model_name" value="laas-box" />
+      <rosparam file="$(find visp_tracker)/models/laas-box/tracker.yaml" />
+    </node>
+  </group>
+</launch>

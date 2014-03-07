@@ -1,0 +1,23 @@
+<library path="lib/libtrackerNodelet">
+  <class name="visp_tracker/Tracker"
+	 type="visp_tracker::TrackerNodelet"
+	 base_class_type="nodelet::Nodelet">
+    <description>
+      ViSP MBT Tracker nodelet
+    </description>
+  </class>
+  <class name="visp_tracker/TrackerClient"
+	 type="visp_tracker::TrackerClientNodelet"
+	 base_class_type="nodelet::Nodelet">
+    <description>
+      ViSP MBT Client nodelet
+    </description>
+  </class>
+  <class name="visp_tracker/TrackerViewer"
+	 type="visp_tracker::TrackerViewerNodelet"
+	 base_class_type="nodelet::Nodelet">
+    <description>
+      ViSP MBT Viewer nodelet
+    </description>
+  </class>
+</library>
