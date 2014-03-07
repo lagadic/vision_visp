@@ -1,0 +1,103 @@
+This is a hybrid tracker using two libraries:
+- visp for model-based tracking (http://www.irisa.fr/lagadic/visp/visp.html)
+- libdtmx for flashcode detection (http://www.libdmtx.org/)
+
+This should work on ubuntu but the CMake for this project is not very sophisticated. 
+Therefore, to run this project you'll need to install:
+* v4l2
+* visp 
+* libdtmx
+* opencv
+* boost. More specifically these parts:
+	- program options
+	- msm
+
+The tracker is able to initialize itself without any prior information from this kind of patterns:
+https://github.com/filipnovotny/flashcode_mbt/raw/master/data/pattern-1.png
+
+First, it finds the flashcode and deduces the model from it.
+Afterwards, the model is tracked.
+The whole state machine is defined in tracking.h. 
+This is also the most interesting file to look at to understand the code.  
+General options:
+  -d [ --dmtxonly ]                     only detect the datamatrix
+  -C [ --video-camera ]                 video from camera
+  -s [ --video-source ] arg (=/dev/video1)
+                                        video source. For example /dev/video1
+  -D [ --data-directory ] arg (=./data/)
+                                        directory from which to load images
+  -J [ --video-input-path ] arg (=/images/%08d.jpg)
+                                        input video file path relative to the 
+                                        data directory
+  -L [ --video-output-path ] arg        output video file path relative to the 
+                                        data directory
+  -I [ --single-image ] arg             load this single image (relative to 
+                                        data dir)
+  -P [ --pattern-name ] arg (=pattern)  name of xml,init and wrl files
+  -r [ --detector-type ] arg (=zbar)    Type of your detector that will be used
+                                        for initialisation/recovery. zbar for 
+                                        QRcodes and more, dtmx for flashcodes.
+  -t [ --tracker-type ] arg (=klt_mbt)  Type of tracker. mbt_klt for hybrid: 
+                                        mbt+klt, mbt for model based, klt for 
+                                        klt-based
+  -v [ --verbose ]                      show states of the tracker
+  -T [ --dmx-detector-timeout ] arg (=1000)
+                                        timeout for datamatrix detection in ms
+  -c [ --config-file ] arg (=./data/config.cfg)
+                                        config file for the program
+  -p [ --show-plot ]                    show variances graph
+  --help                                produce help message
+
+Configuration:
+  -F [ --flashcode-coordinates ] arg    3D coordinates of the flashcode in 
+                                        clockwise order
+  -i [ --inner-coordinates ] arg        3D coordinates of the inner region in 
+                                        clockwise order
+  -o [ --outer-coordinates ] arg        3D coordinates of the outer region in 
+                                        clockwise order
+  -V [ --variance-file ] arg            file to store variance values
+  -l [ --variance-limit ] arg           above this limit the tracker will be 
+                                        considered lost and the pattern will be
+                                        detected with the flascode
+  -S [ --mbt-convergence-steps ] arg (=100)
+                                        when a new model is found, how many 
+                                        tracking iterations should the tracker 
+                                        perform so the model matches the 
+                                        projection.
+  -H [ --hinkley-range ] arg            pair of alpha, delta values describing 
+                                        the two hinkley tresholds
+  -R [ --mbt-dynamic-range ] arg        Adapt mbt range to symbol size. The 
+                                        width of the outer black corner is 
+                                        multiplied by this value to get the mbt
+                                        range. Try 0.2
+  -W [ --ad-hoc-recovery ]              use ad-hoc recovery
+  -y [ --ad-hoc-recovery-ratio ] arg (=0.5)
+                                        use ad-hoc recovery based on the model.
+                                        The tracker will look for black pixels 
+                                        at ratio*[pattern size] from the center
+  -w [ --ad-hoc-recovery-size ] arg (=0.5)
+                                        fraction of the black outer band size. 
+                                        The control points (those that should 
+                                        be black and in that way check tracking
+                                        is still there).
+  -Y [ --ad-hoc-recovery-threshold ] arg (=100)
+                                        Treshold over which the point is 
+                                        considered out of the black area of the
+                                        object
+  -g [ --log-checkpoints ]              log checkpoints in the log file
+  -q [ --log-pose ]                     log pose in the log file
+
+
+A typical command line is something line:
+- To track from camera:  
+./tracking -c "/path/config.cfg" -v -D ../flashcode_mbt/data/ -p -H 0.2 0.02 -C
+
+- To track from recording in [data path]/images/%08d.jpg:  
+./tracking -c "/path/config.cfg" -v -D ../flashcode_mbt/data/ -p -H 0.2 0.02 -C
+
+- To track a single image in the data directory
+./tracking -c "/path/config.cfg" -v -D ../flashcode_mbt/data/ -p -H 0.2 0.02 -I image.png
+
+This will launch tracking with a graphical plot of variances and tracker recovery using hinkley (alpha=0.2, delta=0.02).
+Some options (like model definition) are specified in the config file (config.cfg).
+You don't need that config file but you'll have to specify everything from command line which can be very exhausting.
