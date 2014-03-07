@@ -1,8 +1,11 @@
 branches:
   only:
   - fuerte
+  - fuerte-devel
   - groovy
+  - groovy-devel
   - hydro
+  - hydro-devel
   - master
 matrix:
   allow_failures:
