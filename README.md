@@ -13,7 +13,7 @@ These packages are released under the [GPL-2](COPYING) license.
 Components documentation is hosted on the [vision_visp-wiki] [ros.org
 wiki].
 
-Support is provided through [vision_visp-answers] [ROS Answers].
+Support is provided through [ROS Answers] [vision_visp-answers] .
 
 
 Which branch should I use?
