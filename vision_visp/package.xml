@@ -4,7 +4,7 @@
   <description>
     Virtual package providing ViSP related packages.
   </description>
-  <maintainer email="thomas.moulard@gmail.com">Thomas Moulard</maintainer>
+  <maintainer email="fabien.spindler@inria.fr">Fabien Spindler</maintainer>
   <author email="thomas.moulard@gmail.com">Thomas Moulard</author>
   <license>BSD</license>
   <url>http://ros.org/wiki/vision_visp</url>
