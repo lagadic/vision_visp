@@ -1,0 +1,18 @@
+<!--
+   To use this launch file, the environment variable ROBOT must be
+   defined.
+
+   Values can be:
+   - hrp2014: HRP-2 robot at LAAS
+   - flea2:   Flea2 firewire camera
+   - uvc:     USB camera
+
+   These profiles contains calibration data which will *not* be usable
+   on your camera. Depending on your setup, create a new profile based
+   on these templates and calibrate your camera using ROS.
+  -->
+<launch>
+  <include file="$(find visp_tracker)/launch/$(env ROBOT)/config.launch"/>
+  <include
+     file="$(find visp_tracker)/launch/$(env ROBOT)/camera-nodelet.launch"/>
+</launch>

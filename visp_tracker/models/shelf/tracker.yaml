@@ -1,0 +1,10 @@
+{
+mask_size: 3,
+mu1: 0.5,
+mu2: 0.5,
+n_mask: 180,
+ntotal_sample: 800,
+range: 10,
+sample_step: 3.,
+threshold: 2000.0
+}

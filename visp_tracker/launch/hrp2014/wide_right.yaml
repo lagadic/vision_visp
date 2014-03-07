@@ -1,0 +1,5 @@
+guid: 00b09d01005c0722
+#video_mode:
+frame_id: camera_wide_right
+bayer_method: ""
+bayer_pattern: grbg
