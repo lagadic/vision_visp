@@ -3,11 +3,8 @@ set -ev
 
 # Directories.
 root_dir=`pwd`
-build_dir="$root_dir/_travis/build"
-install_dir="$root_dir/_travis/install"
-
-# Shortcuts.
-git_clone="git clone --quiet --recursive"
+build_dir="/tmp/_travis/build"
+install_dir="/tmp/_travis/install"
 
 # Source ROS setup file
 . "$root_dir/setup.sh"
@@ -25,19 +22,10 @@ export PKG_CONFIG_PATH="$install_dir/lib/`dpkg-architecture -qDEB_BUILD_MULTIARC
 
 export ROS_PACKAGE_PATH="$root_dir:$ROS_PACKAGE_PATH"
 
-install_dependency()
-{
-    echo "--> Compiling $1"
-    mkdir -p "$build_dir/$1"
-    cd "$build_dir"
-    $git_clone "git://github.com/$1" "$1"
-    cd "$build_dir/$1"
-    cmake . -DCMAKE_INSTALL_PREFIX:STRING="$install_dir"
-    make install
-}
-
-# Retrieve dependencies.
-
 cd "$root_dir"
-# only build visp_tracker for now
-VERBOSE=1 rosmake visp_tracker -V
+catkin_init_workspace
+cd "$build_dir"
+cmake "$root_dir" -DCMAKE_INSTALL_PREFIX="$install_dir"
+make
+make install
+make test
