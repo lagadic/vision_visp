@@ -1,0 +1,24 @@
+<package>
+  <name>vision_visp</name>
+  <version>0.7.0</version>
+  <description>
+    Virtual package providing ViSP related packages.
+  </description>
+  <maintainer email="fabien.spindler@inria.fr">Fabien Spindler</maintainer>
+  <author email="thomas.moulard@gmail.com">Thomas Moulard</author>
+  <license>BSD</license>
+  <url>http://ros.org/wiki/vision_visp</url>
+  <url type="repository">git://github.com/lagadic/vision_visp.git</url>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <run_depend>visp_auto_tracker</run_depend>
+  <run_depend>visp_bridge</run_depend>
+  <run_depend>visp_camera_calibration</run_depend>
+  <run_depend>visp_hand2eye_calibration</run_depend>
+  <run_depend>visp_tracker</run_depend>
+
+  <export>
+    <metapackage/>
+  </export>
+</package>
