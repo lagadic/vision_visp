@@ -16,10 +16,6 @@ if `test x$UBUNTU_CODENAME = x`; then
     return 1
 fi
 
-
-
-git submodule update --init --recursive
-
 sudo sh -c "echo \"deb http://packages.ros.org/ros/ubuntu $UBUNTU_CODENAME main\" > /etc/apt/sources.list.d/ros-latest.list"
 wget http://packages.ros.org/ros.key -O - | sudo apt-key add -
 
