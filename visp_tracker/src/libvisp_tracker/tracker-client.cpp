@@ -360,12 +360,12 @@ namespace visp_tracker
     try
       {
 	ROS_DEBUG_STREAM("Trying to load the model "
-			 << vrmlPath_.external_file_string());
+			 << vrmlPath_.native());
 
 	std::string modelPath;
 	boost::filesystem::ofstream modelStream;
 	if (!makeModelFile(modelStream,
-			   vrmlPath_.external_file_string(),
+			   vrmlPath_.native(),
 			   modelPath))
 	  throw std::runtime_error ("failed to retrieve model");
 
@@ -687,7 +687,7 @@ namespace visp_tracker
     path /= "model.wrl";
     free(tmpname);
 
-    fullModelPath = path.external_file_string();
+    fullModelPath = path.native();
 
     modelStream.open(path);
     if (!modelStream.good())
