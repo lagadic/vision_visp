@@ -78,8 +78,8 @@ catkin_package(
 # Add package definitions
 add_definitions(${VISP_DEFINITIONS})
 
-# Make sure Boost.Filesystem v2 is used.
-add_definitions(-DBOOST_FILESYSTEM_VERSION=2)
+# Make sure Boost.Filesystem v3 is used.
+add_definitions(-DBOOST_FILESYSTEM_VERSION=3)
 
 #############
 # Libraries #

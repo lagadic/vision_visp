@@ -74,7 +74,7 @@ makeModelFile(boost::filesystem::ofstream& modelStream,
   path /= "model.wrl";
   free(tmpname);
 
-  fullModelPath = path.external_file_string();
+  fullModelPath = path.native();
 
   modelStream.open(path);
   if (!modelStream.good())

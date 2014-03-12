@@ -264,7 +264,7 @@ namespace visp_tracker
     try
       {
 	ROS_DEBUG_STREAM("Trying to load the model " << vrmlPath_);
-	tracker_.loadModel(vrmlPath_.external_file_string().c_str());
+	tracker_.loadModel(vrmlPath_.native().c_str());
       }
     catch(...)
       {
