@@ -21,8 +21,6 @@
 
   <buildtool_depend>catkin</buildtool_depend>
 
-  <!-- FIXME: no catkin bullet for now -->
-  <build_depend>bullet</build_depend>
   <build_depend>message_generation</build_depend>
   <build_depend>dynamic_reconfigure</build_depend>
   <build_depend>nodelet</build_depend>
@@ -32,8 +30,6 @@
   <build_depend>sensor_msgs</build_depend>
   <build_depend>geometry_msgs</build_depend>
 
-  <!-- FIXME: no catkin bullet for now -->
-  <run_depend>bullet</run_depend>
   <run_depend>message_runtime</run_depend>
   <run_depend>message_generation</run_depend>
   <run_depend>dynamic_reconfigure</run_depend>
