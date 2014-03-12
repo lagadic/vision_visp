@@ -25,9 +25,14 @@
   <buildtool_depend>catkin</buildtool_depend>
   <build_depend>visp_bridge</build_depend>
   <build_depend>visp_tracker</build_depend>
+  <build_depend>resource_retriever</build_depend>
+  <build_depend>message_filters</build_depend>
+
   <!-- to fix: add zbar and libdmtx-dev dependencies -->
   <!-- do it manually using: sudo apt-get install libzbar-dev libdmtx-dev -->
 
   <run_depend>visp_bridge</run_depend>
   <run_depend>visp_tracker</run_depend>
+  <run_depend>resource_retriever</run_depend>
+  <run_depend>message_filters</run_depend>
 </package>
