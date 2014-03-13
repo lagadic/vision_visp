@@ -5,6 +5,9 @@ find_package(catkin REQUIRED COMPONENTS
   visp_bridge
   message_generation
   image_proc
+  sensor_msgs
+  std_msgs
+  geometry_msgs
 )
 
 # TO FIX, VISP_DEFINITIONS should come from visp_bridge dependency
@@ -32,7 +35,13 @@ add_service_files(
   )
 generate_messages(DEPENDENCIES geometry_msgs sensor_msgs std_msgs)
 
-catkin_package()
+catkin_package(
+  CATKIN_DEPENDS
+    message_runtime
+    sensor_msgs
+    std_msgs
+    geometry_msgs
+)
 
 add_library(visp_hand2eye_calibration_common 
   src/names.cpp
@@ -59,6 +68,7 @@ install(
   TARGETS
     visp_hand2eye_calibration_calibrator
     visp_hand2eye_calibration_client
+    visp_hand2eye_calibration_common
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
