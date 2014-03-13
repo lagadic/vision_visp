@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(visp_bridge)
 
+find_package(Boost REQUIRED)
+
 find_package(catkin REQUIRED COMPONENTS
   geometry_msgs
   roscpp
@@ -8,35 +10,37 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
 )
 
+# ViSP cannot be found by Catkin.
+# see https://github.com/ros/catkin/issues/606
 find_package(VISP REQUIRED)
 
-###################################
-## catkin specific configuration ##
-###################################
+
 catkin_package(
   INCLUDE_DIRS
     include
 
-  LIBRARIES 
+  LIBRARIES
     ${PROJECT_NAME}
- 
-  CATKIN_DEPENDS 
-    geometry_msgs 
+
+  CATKIN_DEPENDS
+    geometry_msgs
     roscpp
-    sensor_msgs 
+    sensor_msgs
     std_msgs
 
-  DEPENDS 
-    VISP  
+  DEPENDS
+    VISP
 )
 
-###########
-## Build ##
-###########
-include_directories(
-  include
+include_directories(include)
+
+include_directories(SYSTEM
   ${VISP_INCLUDE_DIRS}
   ${catkin_INCLUDE_DIRS}
+)
+link_directories(
+  ${VISP_LIBRARY_DIRS}
+  ${catkin_LIBRARY_DIRS}
 )
 
 # Add package definitions
@@ -48,16 +52,12 @@ add_library(visp_bridge
   include/visp_bridge/image.h
   include/visp_bridge/camera.h
   include/visp_bridge/vpQuaternionVector.h
-  src/conversions/3dpose.cpp 
-  src/conversions/image.cpp 
-  src/conversions/camera.cpp 
-  src/compat/vpQuaternionVector.cpp 
+  src/conversions/3dpose.cpp
+  src/conversions/image.cpp
+  src/conversions/camera.cpp
+  src/compat/vpQuaternionVector.cpp
 )
-
-
-#############
-## Install ##
-#############
+target_link_libraries(visp_bridge ${VISP_LIBRARY})
 
 ## Mark executables and/or libraries for installation
 install(TARGETS ${PROJECT_NAME}
