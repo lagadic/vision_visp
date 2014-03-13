@@ -4,7 +4,7 @@
   <version>0.7.0</version>
 
   <description>
-     visp_hand2eye_calibration estimates the camera position with respect 
+     visp_hand2eye_calibration estimates the camera position with respect
      to its effector using the ViSP library.
   </description>
   <author>Filip Novotny</author>
