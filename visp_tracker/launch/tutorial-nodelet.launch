@@ -18,8 +18,8 @@
 
   <!-- Play the video sequence, publish the clock topic to preserve
        the original timestamps. -->
- <node pkg="rosbag" type="rosbag" name="rosbag" args="play --clock -l
-  $(find visp_tracker)/bag/tutorial-static-box.bag"/>
+  <node pkg="rosbag" type="play" name="rosbag" args="--clock -l
+        $(find visp_tracker)/bag/tutorial-static-box.bag"/>
 
   <!-- nodelet manager process -->
   <node pkg="nodelet" type="nodelet" name="$(arg manager)" args="manager" />
@@ -43,7 +43,7 @@
        See http://ros.org/wiki/resource_retriever
 
     -->
-  <node pkg="nodelet" type="nodelet" name="client"
+  <node pkg="nodelet" type="nodelet" name="visp_tracker_client"
         args="load visp_tracker/TrackerClient $(arg manager)">
     <param name="model_path" value="package://visp_tracker/models" />
     <param name="model_name" value="laas-box" />
@@ -62,6 +62,6 @@
        ~image_transport parameter to do so, see the image_transport
        package documentation for more information.
   -->
-  <node pkg="nodelet" type="nodelet" name="viewer"
+  <node pkg="nodelet" type="nodelet" name="visp_tracker_viewer"
         args="load visp_tracker/TrackerViewer $(arg manager)" />
 </launch>
