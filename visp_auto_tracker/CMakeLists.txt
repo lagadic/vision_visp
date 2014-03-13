@@ -1,11 +1,6 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(visp_auto_tracker)
 
-# By default set RelWithDebInfo configuration
-if(NOT CMAKE_BUILD_TYPE)
-  set(CMAKE_BUILD_TYPE "RelWithDebInfo" CACHE String "Choose the type of build, options are: None Debug Release" FORCE)
-endif()
-
 find_package(catkin REQUIRED COMPONENTS
   visp_bridge
   visp_tracker
@@ -31,7 +26,7 @@ catkin_package()
 include_directories("flashcode_mbt")
 include_directories("flashcode_mbt/detectors")
 
-# Library gathering libvisp_tracker used by all nodes.
+# Library gathering libauto_tracker used by all nodes.
 add_library(auto_tracker
   flashcode_mbt/libauto_tracker/states.hpp
   flashcode_mbt/libauto_tracker/events.h
@@ -41,12 +36,24 @@ add_library(auto_tracker
   flashcode_mbt/libauto_tracker/threading.h
   flashcode_mbt/libauto_tracker/threading.cpp)
 
-add_library(cmd_line
+add_library(${PROJECT_NAME}_cmd_line
   flashcode_mbt/cmd_line/cmd_line.cpp
   flashcode_mbt/cmd_line/cmd_line.h
 )
 
-add_subdirectory(flashcode_mbt/detectors)
+add_library(${PROJECT_NAME}_datamatrix_detector 
+  flashcode_mbt/detectors/detector_base.h
+  flashcode_mbt/detectors/detector_base.cpp
+  flashcode_mbt/detectors/datamatrix/detector.h
+  flashcode_mbt/detectors/datamatrix/detector.cpp
+)
+
+add_library(${PROJECT_NAME}_qrcode_detector 
+  flashcode_mbt/detectors/detector_base.h
+  flashcode_mbt/detectors/detector_base.cpp
+  flashcode_mbt/detectors/qrcode/detector.h
+  flashcode_mbt/detectors/qrcode/detector.cpp
+)
 
 add_executable(visp_auto_tracker
   src/main.cpp
@@ -59,13 +66,12 @@ add_executable(visp_auto_tracker
 #rosbuild_link_boost(visp_auto_tracker filesystem system signals regex date_time program_options thread)
 
 add_dependencies(visp_auto_tracker visp_auto_tracker_bag)
-#target_link_libraries(visp_auto_tracker auto_tracker qrcode_detector datamatrix_detector cmd_line dmtx zbar )
-target_link_libraries(visp_auto_tracker auto_tracker qrcode_detector datamatrix_detector cmd_line dmtx zbar)
+target_link_libraries(visp_auto_tracker auto_tracker ${PROJECT_NAME}_qrcode_detector ${PROJECT_NAME}_datamatrix_detector ${PROJECT_NAME}_cmd_line dmtx zbar)
 target_link_libraries(visp_auto_tracker ${resource_retriever_LIBRARIES} ${catkin_LIBRARIES} ${Boost_LIBRARIES})
 
 install(
   TARGETS
-    visp_auto_tracker
+    visp_auto_tracker auto_tracker ${PROJECT_NAME}_qrcode_detector ${PROJECT_NAME}_datamatrix_detector ${PROJECT_NAME}_cmd_line 
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
