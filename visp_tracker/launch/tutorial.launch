@@ -16,12 +16,13 @@
 
   <!-- Play the video sequence, publish the clock topic to preserve
        the original timestamps. -->
-  <node pkg="rosbag" type="play" name="play"
-	args="--clock -l $(find visp_tracker)/bag/tutorial-static-box.bag"/>
+  <node pkg="rosbag" type="play" name="rosbag" args="--clock -l
+  $(find visp_tracker)/bag/tutorial-static-box.bag"/>
 
  <!-- Launch the tracking node -->
   <node pkg="visp_tracker" type="tracker" name="tracker_mbt">
     <param name="camera_prefix" value="/wide_left/camera" />
+    <param name="tracker_type" value="mbt+klt" />
   </node>
 
   <!-- Launch the client (GUI).
@@ -37,9 +38,10 @@
        See http://ros.org/wiki/resource_retriever
 
     -->
-  <node pkg="visp_tracker" type="client" name="tracker_mbt_client">
+  <node pkg="visp_tracker" type="visp_tracker_client" name="tracker_mbt_client">
     <param name="model_path" value="package://visp_tracker/models" />
     <param name="model_name" value="laas-box" />
+    <param name="tracker_type" value="mbt+klt" />
 
     <!-- Load recommended settings for tracking initialization. They
       will be automatically forwarded to the tracking node if the
@@ -56,7 +58,7 @@
        ~image_transport parameter to do so, see the image_transport
        package documentation for more information.
   -->
-    <node pkg="visp_tracker" type="viewer" name="tracker_mbt_viewer"/>
+    <node pkg="visp_tracker" type="visp_tracker_viewer" name="tracker_mbt_viewer"/>
 
 
 
