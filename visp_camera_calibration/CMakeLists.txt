@@ -5,6 +5,9 @@ find_package(catkin REQUIRED COMPONENTS
   visp_bridge
   message_generation
   camera_calibration_parsers
+  sensor_msgs
+  std_msgs
+  geometry_msgs
 )
 
 # TO FIX, VISP_DEFINITIONS should come from visp_bridge dependency
@@ -34,7 +37,13 @@ add_service_files(
   )
 generate_messages(DEPENDENCIES geometry_msgs sensor_msgs std_msgs)
 
-catkin_package()
+catkin_package(
+  CATKIN_DEPENDS
+    message_runtime
+    sensor_msgs
+    std_msgs
+    geometry_msgs
+)
 
 add_library(visp_camera_calibration_common src/names.cpp src/names.h)
 

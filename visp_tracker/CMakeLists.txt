@@ -1,13 +1,6 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(visp_tracker)
 
-# By default set RelWithDebInfo configuration
-if(NOT CMAKE_BUILD_TYPE)
-  set(CMAKE_BUILD_TYPE "RelWithDebInfo" CACHE String "Choose the type of build, options are: None Debug Release" FORCE)
-endif()
-
-find_package(catkin REQUIRED)
-
 find_package(Boost REQUIRED COMPONENTS filesystem thread)
 find_package(VISP REQUIRED)
 
@@ -28,6 +21,7 @@ find_package(catkin REQUIRED COMPONENTS
   sensor_msgs
   std_msgs
   tf
+  rospy
   )
 
 include_directories(SYSTEM
@@ -42,8 +36,7 @@ link_directories(
 
 include_directories(
   "${CMAKE_CURRENT_SOURCE_DIR}/src"
-  "${CMAKE_CURRENT_SOURCE_DIR}/src/libvisp_tracker"
-  "${CMAKE_CURRENT_SOURCE_DIR}/cfg/cpp")
+  "${CMAKE_CURRENT_SOURCE_DIR}/src/libvisp_tracker")
 
 # Generate messages and services.
 add_message_files(
@@ -172,20 +165,20 @@ target_link_libraries(tracker
   ${roscpp_LIBRARIES}
   ${nodelet_LIBRARIES})
 
-add_executable(client src/nodes/client.cpp)
-target_link_libraries(client
+add_executable(${PROJECT_NAME}_client src/nodes/client.cpp)
+target_link_libraries(${PROJECT_NAME}_client
   ${roscpp_LIBRARIES}
   ${nodelet_LIBRARIES})
 
-add_executable(viewer src/nodes/viewer.cpp)
-target_link_libraries(viewer
+add_executable(${PROJECT_NAME}_viewer src/nodes/viewer.cpp)
+target_link_libraries(${PROJECT_NAME}_viewer
   ${roscpp_LIBRARIES}
   ${nodelet_LIBRARIES})
 
 add_dependencies(tracker ${${PROJECT_NAME}_EXPORTED_TARGETS})
-add_dependencies(client ${${PROJECT_NAME}_EXPORTED_TARGETS})
+add_dependencies(${PROJECT_NAME}_client ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
-install(TARGETS tracker client viewer
+install(TARGETS tracker ${PROJECT_NAME}_client ${PROJECT_NAME}_viewer
    ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
    LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
    RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}

@@ -1,0 +1,3 @@
+[submodule "visp_auto_tracker/flashcode_mbt"]
+	path = visp_auto_tracker/flashcode_mbt
+	url = git://github.com/lagadic/flashcode_mbt.git
