@@ -2,12 +2,10 @@ cmake_minimum_required(VERSION 2.8.3)
 project(visp_tracker)
 
 find_package(Boost REQUIRED COMPONENTS filesystem thread)
-find_package(VISP REQUIRED)
 
 # Look for Bullet
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(BULLET bullet)
-include_directories(${BULLET_INCLUDE_DIRS})
 
 find_package(catkin REQUIRED COMPONENTS
   dynamic_reconfigure
@@ -24,19 +22,10 @@ find_package(catkin REQUIRED COMPONENTS
   rospy
   )
 
-include_directories(SYSTEM
-  ${Boost_INCLUDE_DIRS}
-  ${VISP_INCLUDE_DIRS}
-  ${catkin_INCLUDE_DIRS}
-  )
-link_directories(
-  ${catkin_LIBRARY_DIRS}
-  ${VISP_LIBRARY_DIRS}
-  )
+# ViSP cannot be found by Catkin.
+# see https://github.com/ros/catkin/issues/606
+find_package(VISP REQUIRED)
 
-include_directories(
-  "${CMAKE_CURRENT_SOURCE_DIR}/src"
-  "${CMAKE_CURRENT_SOURCE_DIR}/src/libvisp_tracker")
 
 # Generate messages and services.
 add_message_files(
@@ -59,6 +48,7 @@ generate_messages(DEPENDENCIES geometry_msgs sensor_msgs std_msgs)
 # Dynamic reconfigure.
 generate_dynamic_reconfigure_options(cfg/ModelBasedSettings.cfg)
 
+
 catkin_package(
    LIBRARIES visp_tracker trackerNodelet
 
@@ -72,14 +62,31 @@ catkin_package(
    dynamic_reconfigure
 
    DEPENDS
-#   VISP
+   VISP
    )
+
+include_directories(SYSTEM
+  ${BULLET_INCLUDE_DIRS}
+  ${Boost_INCLUDE_DIRS}
+  ${VISP_INCLUDE_DIRS}
+  ${catkin_INCLUDE_DIRS}
+  )
+link_directories(SYSTEM
+  ${BULLET_LIBRARY_DIRS}
+  ${Boost_LIBRARY_DIRS}
+  ${VISP_LIBRARY_DIRS}
+  ${catkin_LIBRARY_DIRS}
+  )
+
+include_directories(
+  "${CMAKE_CURRENT_SOURCE_DIR}/src"
+  "${CMAKE_CURRENT_SOURCE_DIR}/src/libvisp_tracker")
 
 # Add package definitions
 add_definitions(${VISP_DEFINITIONS})
 
-# Make sure Boost.Filesystem v2 is used.
-add_definitions(-DBOOST_FILESYSTEM_VERSION=2)
+# Make sure Boost.Filesystem v3 is used.
+add_definitions(-DBOOST_FILESYSTEM_VERSION=3)
 
 #############
 # Libraries #
@@ -104,7 +111,7 @@ add_library(visp_tracker
 
 target_link_libraries(visp_tracker
   ${Boost_LIBRARIES}
-#${VISP_LIBRARIES}
+  ${VISP_LIBRARIES}
   )
 target_link_libraries(visp_tracker
   ${dynamic_reconfigure_LIBRARIES}

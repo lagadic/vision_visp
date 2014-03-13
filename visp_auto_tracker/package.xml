@@ -23,19 +23,28 @@
   <url>http://ros.org/wiki/visp_auto_tracker</url>
 
   <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>geometry_msgs</build_depend>
+  <build_depend>libdmtx-dev</build_depend>
+  <build_depend>message_filters</build_depend>
+  <build_depend>resource_retriever</build_depend>
+  <build_depend>roscpp</build_depend>
+  <build_depend>sensor_msgs</build_depend>
+  <build_depend>std_msgs</build_depend>
+  <build_depend>visp</build_depend>
   <build_depend>visp_bridge</build_depend>
   <build_depend>visp_tracker</build_depend>
-  <build_depend>resource_retriever</build_depend>
-  <build_depend>message_filters</build_depend>
-  <build_depend>visp</build_depend>
   <build_depend>zbar</build_depend>
-  <build_depend>libdmtx-dev</build_depend>
 
+  <run_depend>geometry_msgs</run_depend>
+  <run_depend>libdmtx-dev</run_depend>
+  <run_depend>message_filters</run_depend>
+  <run_depend>resource_retriever</run_depend>
+  <run_depend>roscpp</run_depend>
+  <run_depend>sensor_msgs</run_depend>
+  <run_depend>std_msgs</run_depend>
+  <run_depend>visp</run_depend>
   <run_depend>visp_bridge</run_depend>
   <run_depend>visp_tracker</run_depend>
-  <run_depend>resource_retriever</run_depend>
-  <run_depend>message_filters</run_depend>
-  <run_depend>visp</run_depend>
   <run_depend>zbar</run_depend>
-  <run_depend>libdmtx-dev</run_depend>
 </package>
