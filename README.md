@@ -66,12 +66,13 @@ The master branch holds the development that will be available in the
 next ROS release (Indigo).
 
 
-| ROS Release   | Development Branch           | Release Branch |
-| ------------- | ---------------------------- | -------------- |
-| Master        | [![Build Status](https://travis-ci.org/lagadic/vision_visp.png?branch=master)](https://travis-ci.org/lagadic/vision_visp) | N/A |
-| Hydro         | [![Build Status](https://travis-ci.org/lagadic/vision_visp.png?branch=hydro-devel)](https://travis-ci.org/lagadic/vision_visp) | [![Build Status](https://travis-ci.org/lagadic/vision_visp.png?branch=hydro)](https://travis-ci.org/lagadic/vision_visp) |
-| Groovy         | [![Build Status](https://travis-ci.org/lagadic/vision_visp.png?branch=groovy-devel)](https://travis-ci.org/lagadic/vision_visp) | [![Build Status](https://travis-ci.org/lagadic/vision_visp.png?branch=groovy)](https://travis-ci.org/lagadic/vision_visp) |
-| Fuerte         | [![Build Status](https://travis-ci.org/lagadic/vision_visp.png?branch=fuerte-devel)](https://travis-ci.org/lagadic/vision_visp) | [![Build Status](https://travis-ci.org/lagadic/vision_visp.png?branch=fuerte)](https://travis-ci.org/lagadic/vision_visp) |
+| ROS Release   | Development Branch           | Development branch (ros.org) | Release Branch | Documentation (ros.org) |
+| ------------- | ---------------------------- | ---------------------------- | -------------- | ----------------------- |
+| Master        | [![Build Status](https://travis-ci.org/lagadic/vision_visp.png?branch=master)](https://travis-ci.org/lagadic/vision_visp) | N/A | N/A | N/A |
+| Hydro         | [![Build Status](https://travis-ci.org/lagadic/vision_visp.png?branch=hydro-devel)](https://travis-ci.org/lagadic/vision_visp) | [![Build Status](http://jenkins.ros.org/buildStatus/icon?job=devel-hydro-vision_visp)](http://jenkins.ros.org/job/devel-hydro-vision_visp/) | [![Build Status](https://travis-ci.org/lagadic/vision_visp.png?branch=hydro)](https://travis-ci.org/lagadic/vision_visp) | [![Build Status](http://jenkins.ros.org/buildStatus/icon?job=doc-hydro-vision_visp)](http://jenkins.ros.org/job/doc-hydro-vision_visp/) |
+| Groovy         | [![Build Status](https://travis-ci.org/lagadic/vision_visp.png?branch=groovy-devel)](https://travis-ci.org/lagadic/vision_visp) | [![Build Status](http://jenkins.ros.org/buildStatus/icon?job=devel-groovy-vision_visp)](http://jenkins.ros.org/job/devel-groovy-vision_visp/) | [![Build Status](https://travis-ci.org/lagadic/vision_visp.png?branch=groovy)](https://travis-ci.org/lagadic/vision_visp) | [![Build Status](http://jenkins.ros.org/buildStatus/icon?job=doc-groovy-vision_visp)](http://jenkins.ros.org/job/doc-groovy-vision_visp/) |
+| Fuerte         | [![Build Status](https://travis-ci.org/lagadic/vision_visp.png?branch=fuerte-devel)](https://travis-ci.org/lagadic/vision_visp) | N/A | [![Build Status](https://travis-ci.org/lagadic/vision_visp.png?branch=fuerte)](https://travis-ci.org/lagadic/vision_visp) | N/A |
+
 
 
 [visp]: http://www.irisa.fr/lagadic/visp/visp.html
