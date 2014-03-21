@@ -2,6 +2,14 @@
 Changelog for package visp_bridge
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.7.2 (2014-03-21)
+------------------
+* Fix various dependency issues in the CMakeLists.txt and package.xml files
+* Merge branch 'groovy-devel' into groovy
+* Add missing dependency to ViSP
+* groovy-0.7.1
+* Prepare changelogs
+
 0.7.1 (2014-03-13)
 ------------------
 * Fix errors detected with catkin_lint
