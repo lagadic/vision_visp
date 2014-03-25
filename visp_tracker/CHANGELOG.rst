@@ -14,7 +14,7 @@ Changelog for package visp_tracker
 * Add missing dependency to ViSP
 * groovy-0.7.1
 * Prepare changelogs
-* Contributors: Benjamin Chrétien, Fabien Spindler, Thomas Moulard
+* Contributors: Benjamin Chretien, Fabien Spindler, Thomas Moulard
 
 0.7.1 (2014-03-13)
 ------------------
