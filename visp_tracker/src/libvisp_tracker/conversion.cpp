@@ -3,8 +3,6 @@
 
 #include <boost/format.hpp>
 
-#include <LinearMath/btMatrix3x3.h>
-#include <LinearMath/btQuaternion.h>
 #include <tf/transform_datatypes.h>
 
 #include <sensor_msgs/Image.h>
@@ -12,6 +10,8 @@
 #include <sensor_msgs/distortion_models.h>
 
 #include <visp/vpImage.h>
+#include <visp/vpTranslationVector.h>
+#include <visp/vpQuaternionVector.h>
 
 #define protected public
 # include <visp/vpMbEdgeTracker.h>
@@ -88,12 +88,8 @@ void vispImageToRos(sensor_msgs::Image& dst,
 void vpHomogeneousMatrixToTransform(geometry_msgs::Transform& dst,
 				    const vpHomogeneousMatrix& src)
 {
-  btMatrix3x3 rotation;
-  btQuaternion quaternion;
-  for(unsigned i = 0; i < 3; ++i)
-    for(unsigned j = 0; j < 3; ++j)
-      rotation[i][j] = src[i][j];
-  rotation.getRotation(quaternion);
+  vpQuaternionVector quaternion;
+  src.extract(quaternion);
 
   dst.translation.x = src[0][3];
   dst.translation.y = src[1][3];
@@ -108,28 +104,18 @@ void vpHomogeneousMatrixToTransform(geometry_msgs::Transform& dst,
 void transformToVpHomogeneousMatrix(vpHomogeneousMatrix& dst,
 				    const geometry_msgs::Transform& src)
 {
-  btQuaternion quaternion
-    (src.rotation.x, src.rotation.y, src.rotation.z, src.rotation.w);
-  btMatrix3x3 rotation(quaternion);
-
-  // Copy the rotation component.
-  for(unsigned i = 0; i < 3; ++i)
-    for(unsigned j = 0; j < 3; ++j)
-      dst[i][j] = rotation[i][j];
-
-  // Copy the translation component.
-  dst[0][3] = src.translation.x;
-  dst[1][3] = src.translation.y;
-  dst[2][3] = src.translation.z;
+  vpTranslationVector translation(src.translation.x,src.translation.y,src.translation.z);
+  vpQuaternionVector quaternion(src.rotation.x,src.rotation.y,src.rotation.z,src.rotation.w);
+  dst.buildFrom(translation, quaternion);
 }
 
 void transformToVpHomogeneousMatrix(vpHomogeneousMatrix& dst,
 				    const geometry_msgs::Pose& src)
 {
-  btQuaternion quaternion
+  vpQuaternionVector quaternion
     (src.orientation.x, src.orientation.y, src.orientation.z,
      src.orientation.w);
-  btMatrix3x3 rotation(quaternion);
+  vpRotationMatrix rotation(quaternion);
 
   // Copy the rotation component.
   for(unsigned i = 0; i < 3; ++i)

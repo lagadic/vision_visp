@@ -3,10 +3,6 @@ project(visp_tracker)
 
 find_package(Boost REQUIRED COMPONENTS filesystem thread)
 
-# Look for Bullet
-find_package(PkgConfig REQUIRED)
-pkg_check_modules(BULLET bullet)
-
 find_package(catkin REQUIRED COMPONENTS
   dynamic_reconfigure
   geometry_msgs
@@ -66,13 +62,11 @@ catkin_package(
    )
 
 include_directories(SYSTEM
-  ${BULLET_INCLUDE_DIRS}
   ${Boost_INCLUDE_DIRS}
   ${VISP_INCLUDE_DIRS}
   ${catkin_INCLUDE_DIRS}
   )
 link_directories(SYSTEM
-  ${BULLET_LIBRARY_DIRS}
   ${Boost_LIBRARY_DIRS}
   ${VISP_LIBRARY_DIRS}
   ${catkin_LIBRARY_DIRS}
