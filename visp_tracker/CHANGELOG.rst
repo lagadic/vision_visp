@@ -4,6 +4,7 @@ Changelog for package visp_tracker
 
 0.7.2 (2014-03-25)
 ------------------
+* Remove bullet usage and dependency by using ViSP instead. This was done to avoid errors when releasing vision_visp on oneiric/groovy where bullet is not packaged.
 * Reorganize launch files and fix since viewer and client nodes where renamed due to catkin_lint errors
 * Merge branch 'groovy-devel' into groovy
 * Fix various dependency issues in the CMakeLists.txt and package.xml files
