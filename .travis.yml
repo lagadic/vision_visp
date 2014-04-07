@@ -6,6 +6,8 @@ branches:
   - groovy-devel
   - hydro
   - hydro-devel
+  - indigo
+  - indigo-devel
   - master
 matrix:
   allow_failures:
