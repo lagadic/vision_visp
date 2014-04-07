@@ -1,81 +1,57 @@
-ViSP stack for ROS
-==================
+# ViSP stack for ROS
 
-![GPL-2](https://www.gnu.org/graphics/gplv3-127x51.png)
+[![Build Status](https://travis-ci.org/lagadic/vision_visp.png?branch=indigo-devel)](https://travis-ci.org/lagadic/vision_visp)
 
-`vision_visp` provides ViSP algorithms as ROS components. [ViSP]
-[visp] is the Visual Servoing Platform and [ROS] [ros] a robotics
-middleware.
+This repository provides a ViSP stack for ROS. [ViSP] [visp] is the
+Visual Servoing Platform and [ROS] [ros] a robotics middleware.
 
-These packages are released under the [GPL-2](COPYING) license.
+## Setup
 
+This package can be compiled like any other ROS package using `catkin_make`. In that case you have to consider the `indigo-devel` branch.
 
-Components documentation is hosted on the [ros.org wiki] [vision_visp-wiki].
+### Prerequisities
 
-Support is provided through [ROS Answers] [vision_visp-answers] .
+1/ First you need to install ViSP as a system dependency. This can be achived using `ros-indigo-visp` package available for Ubuntu. Just run:
 
+	$ sudo apt-get install ros-indigo-visp
 
-Which branch should I use?
---------------------------
+If the package is not available (this is for example the case for Fedora) or if you want to use a more recent version of ViSP, you can also install ViSP from source:
 
-Branches come in two flavors:
+	$ cd ~
+	$ svn checkout svn://scm.gforge.inria.fr/svn/visp/trunk/ViSP
+	$ cd ViSP
+	$ cmake -DBUILD_SHARED_LIBS=ON .
+	$ make -j8
 
- * development branch,
- * release branch
+Then to use this version of ViSP build from source you have to setup `VISP_DIR` environment variable to the folder that contains the build. In our case it becomes:
 
-Package for each ROS release is maintained on separate
-branches. I.e. `hydro-devel` is the Hydro development branch whereas
-`hydro` is the hydro release branch.
+	$ export VISP_DIR=~/ViSP
 
-`master` means the next ROS release.
+2/ vision_visp stack contains visp_auto_tracker package that depends on libdmtx-dev and libzbar-dev system dependencies. To install them run:
 
-If you are a user you should use a release branch as they contain
-stable and tested versions of the packages. If you are a developper
-you must provide new patches against `master`. You may also provide
-version-specific bug fix again older releases.
+	$ sudo apt-get install libdmtx-dev libzbar-dev
 
 
- - Never implement new features in old branches (i.e. not
-   master). These Pull Requests will not be accepted. If you provide a
-   bug fix then you may ask for it to be backported. ABI/API breakage
-   prevent patches from being backported.
- - The *only* action allowed in release branches is merging the
-   development branch in the current branch.
+### How to get and build vision_visp 
+
+Supposed you have a catkin work space, if you want to build all the packages just run:
+
+	$ cd ~/catkin_ws/src 
+	$ git clone -b indigo-devel https://github.com/lagadic/vision_visp.git
+	$ cd ..
+	$ catkin_make -DCMAKE_BUILD_TYPE=Release
+
+If you want to build a specific package (like visp_bridge) run either:
+
+	$ catkin_make -DCMAKE_BUILD_TYPE=Release --pkg visp_bridge
 
 
-*Warning:* the Fuerte branches still rely on the legacy `rosbuild`
- build system. We recommend you to update to a newer ROS release. Only
- minimum maintained will be done for this release.
+## Documentation
 
+The documentation is available on the project [ROS homepage]
+[ros-homepage].
 
-Additional development guidelines are provided in
-[CONTRIBUTING.md](CONTRIBUTING.md).
-
-
-
-Build Status
-------------
-
-This stack supports the following ROS releases:
-
- * Hydro
- * Groovy
- * Fuerte
-
-The master branch holds the development that will be available in the
-next ROS release (Indigo).
-
-
-| ROS Release   | Development Branch           | Development branch (ros.org) | Release Branch | Documentation (ros.org) |
-| ------------- | ---------------------------- | ---------------------------- | -------------- | ----------------------- |
-| Master        | [![Build Status](https://travis-ci.org/lagadic/vision_visp.png?branch=master)](https://travis-ci.org/lagadic/vision_visp) | N/A | N/A | N/A |
-| Hydro         | [![Build Status](https://travis-ci.org/lagadic/vision_visp.png?branch=hydro-devel)](https://travis-ci.org/lagadic/vision_visp) | [![Build Status](http://jenkins.ros.org/buildStatus/icon?job=devel-hydro-vision_visp)](http://jenkins.ros.org/job/devel-hydro-vision_visp/) | [![Build Status](https://travis-ci.org/lagadic/vision_visp.png?branch=hydro)](https://travis-ci.org/lagadic/vision_visp) | [![Build Status](http://jenkins.ros.org/buildStatus/icon?job=doc-hydro-vision_visp)](http://jenkins.ros.org/job/doc-hydro-vision_visp/) |
-| Groovy         | [![Build Status](https://travis-ci.org/lagadic/vision_visp.png?branch=groovy-devel)](https://travis-ci.org/lagadic/vision_visp) | [![Build Status](http://jenkins.ros.org/buildStatus/icon?job=devel-groovy-vision_visp)](http://jenkins.ros.org/job/devel-groovy-vision_visp/) | [![Build Status](https://travis-ci.org/lagadic/vision_visp.png?branch=groovy)](https://travis-ci.org/lagadic/vision_visp) | [![Build Status](http://jenkins.ros.org/buildStatus/icon?job=doc-groovy-vision_visp)](http://jenkins.ros.org/job/doc-groovy-vision_visp/) |
-| Fuerte         | [![Build Status](https://travis-ci.org/lagadic/vision_visp.png?branch=fuerte-devel)](https://travis-ci.org/lagadic/vision_visp) | N/A | [![Build Status](https://travis-ci.org/lagadic/vision_visp.png?branch=fuerte)](https://travis-ci.org/lagadic/vision_visp) | N/A |
-
-
-
-[visp]: http://www.irisa.fr/lagadic/visp/visp.html
+[github-homepage]: https://github.com/lagadic/vision_visp
+[ros-homepage]: http://www.ros.org/wiki/vision_visp
+[visp]: http://team.inria.fr/lagadic/visp/visp.html
 [ros]: http://www.ros.org
-[vision_visp-wiki]: http://wiki.ros.org/vision_visp
-[vision_visp-answers]: http://answers.ros.org/questions/scope:all/sort:activity-desc/tags:vision_visp/page:1/
