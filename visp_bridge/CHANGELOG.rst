@@ -14,8 +14,8 @@ Changelog for package visp_bridge
 * Fix errors detected with catkin_lint
 * Contributors: Fabien Spindler, Thomas Moulard
 
-Forthcoming
------------
+0.7.3 (2014-04-10)
+------------------
 * indigo-0.7.2
 * Prepare changelogs
 * Contributors: Fabien Spindler

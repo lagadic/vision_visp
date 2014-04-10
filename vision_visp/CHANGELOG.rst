@@ -12,8 +12,8 @@ Changelog for package vision_visp
 0.7.2 (2014-04-07)
 ------------------
 
-Forthcoming
------------
+0.7.3 (2014-04-10)
+------------------
 * indigo-0.7.2
 * Prepare changelogs
 * Contributors: Fabien Spindler

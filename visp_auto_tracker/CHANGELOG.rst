@@ -17,8 +17,8 @@ Changelog for package visp_auto_tracker
 * Fix errors detected with catkin_lint
 * Contributors: Fabien Spindler, Thomas Moulard
 
-Forthcoming
------------
+0.7.3 (2014-04-10)
+------------------
 * Fix to install models folder
 * indigo-0.7.2
 * Prepare changelogs

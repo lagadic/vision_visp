@@ -22,8 +22,8 @@ Changelog for package visp_tracker
 * Fix errors detected with catkin_lint
 * Contributors: Benjamin Chrétien, Fabien Spindler, Thomas Moulard
 
-Forthcoming
------------
+0.7.3 (2014-04-10)
+------------------
 * Prepare changelogs
 * Contributors: Fabien Spindler
 
