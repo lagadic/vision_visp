@@ -2,6 +2,17 @@
 Changelog for package visp_tracker
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.7.2 (2014-04-07)
+------------------
+* Remove bullet usage and dependency by using ViSP instead. This was done to avoid errors when releasing vision_visp on oneiric/groovy where bullet is not packaged.
+* Reorganize launch files and fix since viewer and client nodes where renamed due to catkin_lint errors
+* Fix various dependency issues in the CMakeLists.txt and package.xml files
+* Use Boost Filesystem V3.
+* [visp_tracker] package.xml: add back Bullet dependency
+* Add missing dependency to ViSP
+* Fix errors detected with catkin_lint
+* Contributors: Benjamin Chrétien, Fabien Spindler, Thomas Moulard
+
 0.7.0 (2014-03-12)
 ------------------
 * visp_tracker/package.xml: swithc license to GPLv2 to match the other packages.
