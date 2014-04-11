@@ -2,6 +2,12 @@
 Changelog for package visp_tracker
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.7.3 (2014-04-11)
+------------------
+* Remove unicode character that makes bloom-release failing
+* Update changelog
+* Contributors: Fabien Spindler
+
 0.7.2 (2014-03-25)
 ------------------
 * Remove bullet usage and dependency by using ViSP instead. This was done to avoid errors when releasing vision_visp on oneiric/groovy where bullet is not packaged.

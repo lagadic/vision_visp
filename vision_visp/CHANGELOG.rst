@@ -2,6 +2,12 @@
 Changelog for package vision_visp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.7.3 (2014-04-11)
+------------------
+* groovy-0.7.2
+* Prepare changelogs
+* Contributors: Fabien Spindler
+
 0.7.2 (2014-03-25)
 ------------------
 * groovy-0.7.1

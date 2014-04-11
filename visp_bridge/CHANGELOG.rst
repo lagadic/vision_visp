@@ -2,6 +2,12 @@
 Changelog for package visp_bridge
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.7.3 (2014-04-11)
+------------------
+* groovy-0.7.2
+* Prepare changelogs
+* Contributors: Fabien Spindler
+
 0.7.2 (2014-03-25)
 ------------------
 * Fix various dependency issues in the CMakeLists.txt and package.xml files
