@@ -2,6 +2,13 @@
 Changelog for package visp_auto_tracker
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.7.3 (2014-04-11)
+------------------
+* Install visp_auto_tracker/models folder
+* groovy-0.7.2
+* Prepare changelogs
+* Contributors: Fabien Spindler
+
 0.7.2 (2014-03-25)
 ------------------
 * Merge branch 'groovy-devel' into groovy
