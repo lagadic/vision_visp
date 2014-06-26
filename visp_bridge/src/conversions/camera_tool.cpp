@@ -89,15 +89,14 @@ int main(int argc, const char ** argv)
         return 0;
     }
 
-//    if (vm.count("input")) {
-//        std::cout << "Input file was set to " << vm["input"].as<std::string>() << "." << std::endl;
     if (!(vm.count("input") && vm.count("camera") && vm.count("width") && vm.count("height"))) {
-        std::cout << "Missing options." << std::endl;
+        std::cout << "Missing options" << std::endl;
         std::cout << desc << std::endl;
         return 1;
     }
 
     const fs::path inPath = vm["input"].as<std::string>();
+    fs::path outPath;
 
     vpXmlParserCamera parser;
     vpCameraParameters vispParam;
@@ -107,7 +106,6 @@ int main(int argc, const char ** argv)
 
     if (inPath.extension() == std::string(".xml")){
 
-        fs::path outPath;
         if (vm.count("output")){
             outPath = vm["output"].as<std::string>();
         } else {
@@ -119,7 +117,7 @@ int main(int argc, const char ** argv)
             if (vm.count("force-deleting")){
                 boost::filesystem::remove(outPath);
             } else {
-                std::cout << "Output file " << outPath.string() << " already exists. Use -f to force deleting."<< std::endl;
+                std::cout << "Output file " << outPath.string() << " already exists. Use -f to force deleting"<< std::endl;
                 return 1;
             }
         }
@@ -145,11 +143,8 @@ int main(int argc, const char ** argv)
             return 1;
         }
 
-        std::cout << "Successfully created output file: " << outPath << std::endl;
-
     } else if (inPath.extension() == std::string(".ini") || inPath.extension() == std::string(".yml")){
 
-        fs::path outPath;
         if (vm.count("output")){
             outPath = vm["output"].as<std::string>();
         } else {
@@ -161,7 +156,7 @@ int main(int argc, const char ** argv)
             if (vm.count("force-deleting")){
                 boost::filesystem::remove(outPath);
             } else {
-                std::cout << "Output file " << outPath.string() << " already exists. Use -f to force deleting."<< std::endl;
+                std::cout << "Output file " << outPath.string() << " already exists. Use -f to force deleting"<< std::endl;
                 return 1;
             }
         }
@@ -180,8 +175,13 @@ int main(int argc, const char ** argv)
             return 1;
         }
 
-        std::cout << "Successfully created output file: " << outPath << std::endl;
+    } else {
+        std::cout << "Unknown input file format" << std::endl;
+        return 1;
     }
 
+    std::cout << "Successfully created output file: " << outPath << std::endl;
+
+    return 0;
 }
 
