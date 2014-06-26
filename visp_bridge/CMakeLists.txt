@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(visp_bridge)
 
-find_package(Boost REQUIRED)
+find_package(Boost REQUIRED COMPONENTS filesystem program_options)
 
 find_package(catkin REQUIRED COMPONENTS
   geometry_msgs
@@ -32,6 +32,7 @@ catkin_package(
 
   DEPENDS
     VISP
+    Boost
 )
 
 include_directories(include)
@@ -39,11 +40,16 @@ include_directories(include)
 include_directories(SYSTEM
   ${VISP_INCLUDE_DIRS}
   ${catkin_INCLUDE_DIRS}
+  ${Boost_INCLUDE_DIRS}
 )
 link_directories(
   ${VISP_LIBRARY_DIRS}
   ${catkin_LIBRARY_DIRS}
+  ${Boost_LIBRARY_DIRS}
 )
+
+# Make sure Boost.Filesystem v3 is used.
+add_definitions(-DBOOST_FILESYSTEM_VERSION=3)
 
 # Add package definitions
 add_definitions(${VISP_DEFINITIONS})
@@ -58,7 +64,7 @@ add_library(visp_bridge
 target_link_libraries(visp_bridge ${VISP_LIBRARIES})
 
 add_executable(convert_cam_param_file src/conversions/convert_cam_param_file.cpp)
-target_link_libraries(convert_cam_param_file ${VISP_LIBRARIES} ${catkin_LIBRARIES} ${Boost_PROGRAM_OPTIONS_LIBRARY} visp_bridge)
+target_link_libraries(convert_cam_param_file ${VISP_LIBRARIES} ${catkin_LIBRARIES} ${Boost_LIBRARIES} visp_bridge)
 
 ## Mark executables and/or libraries for installation
 install(TARGETS ${PROJECT_NAME} convert_cam_param_file
