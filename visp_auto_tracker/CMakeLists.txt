@@ -154,7 +154,7 @@ install(DIRECTORY models
 # Tutorial
 catkin_download_test_data(
   visp_auto_tracker_bag
-  https://github.com/downloads/lagadic/visp_auto_tracker/tutorial-qrcode.bag
+  https://github.com/lagadic/vision_visp/releases/download/vision_visp-0.5.0/tutorial-qrcode.bag
   DESTINATION ${CATKIN_DEVEL_PREFIX}/${CATKIN_PACKAGE_SHARE_DESTINATION}/bag
   MD5 0f80ceea2610b8400591ca7aff764dfa)
 
