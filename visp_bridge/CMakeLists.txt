@@ -8,6 +8,7 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   sensor_msgs
   std_msgs
+  camera_calibration_parsers
 )
 
 # ViSP cannot be found by Catkin.
@@ -27,6 +28,7 @@ catkin_package(
     roscpp
     sensor_msgs
     std_msgs
+    camera_calibration_parsers
 
   DEPENDS
     VISP
@@ -48,16 +50,15 @@ add_definitions(${VISP_DEFINITIONS})
 
 ## Declare a cpp library
 add_library(visp_bridge
-  include/visp_bridge/3dpose.h
-  include/visp_bridge/image.h
-  include/visp_bridge/camera.h
-  include/visp_bridge/vpQuaternionVector.h
   src/conversions/3dpose.cpp
   src/conversions/image.cpp
   src/conversions/camera.cpp
   src/compat/vpQuaternionVector.cpp
 )
-target_link_libraries(visp_bridge ${VISP_LIBRARY})
+target_link_libraries(visp_bridge ${VISP_LIBRARIES})
+
+add_executable(camera_tool src/conversions/camera_tool.cpp)
+target_link_libraries(camera_tool ${VISP_LIBRARIES} ${catkin_LIBRARIES} ${Boost_PROGRAM_OPTIONS_LIBRARY} visp_bridge)
 
 ## Mark executables and/or libraries for installation
 install(TARGETS ${PROJECT_NAME}
