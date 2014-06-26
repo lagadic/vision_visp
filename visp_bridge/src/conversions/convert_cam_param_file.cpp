@@ -34,7 +34,7 @@
  * not clear to you.
  *
  * Description:
- * command line tool to convert a ViSP camera parameter file to a INI file compatible with ROS drivers
+ * command line tool to convert a ViSP camera parameter file to a INI/YAML file compatible with ROS drivers
  *
  * Authors:
  * Riccardo Spica
@@ -43,8 +43,8 @@
  *****************************************************************************/
 
 /*!
-  \file camera_tool.cpp
-  \brief command line tool to convert a ViSP camera parameter file to a INI file compatible with ROS drivers
+  \file convert_cam_param_file.cpp
+  \brief command line tool to convert a ViSP camera parameter file to a INI/YAML file compatible with ROS drivers
  */
 
 
