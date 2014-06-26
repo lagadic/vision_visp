@@ -77,6 +77,7 @@ int main(int argc, const char ** argv)
         ("width,w", po::value<unsigned int>(), "camera width")
         ("height,h", po::value<unsigned int>(), "camera height")
         ("distortion,d", "Use distortion model")
+        ("force-deleting,f", "Force deleting output file if this exists")
     ;
 
     po::variables_map vm;
@@ -114,6 +115,15 @@ int main(int argc, const char ** argv)
             outPath.replace_extension(fs::path(".ini"));
         }
 
+        if (boost::filesystem::exists(outPath)){
+            if (vm.count("force-deleting")){
+                boost::filesystem::remove(outPath);
+            } else {
+                std::cout << "Output file " << outPath.string() << " already exists. Use -f to force deleting."<< std::endl;
+                return 1;
+            }
+        }
+
         vpCameraParameters::vpCameraParametersProjType projModel;
 
         if (vm.count("distortion")){
@@ -145,6 +155,15 @@ int main(int argc, const char ** argv)
         } else {
             outPath = inPath;
             outPath.replace_extension(fs::path(".xml"));
+        }
+
+        if (boost::filesystem::exists(outPath)){
+            if (vm.count("force-deleting")){
+                boost::filesystem::remove(outPath);
+            } else {
+                std::cout << "Output file " << outPath.string() << " already exists. Use -f to force deleting."<< std::endl;
+                return 1;
+            }
         }
 
         std::string cameraName = vm["camera"].as<std::string>();
