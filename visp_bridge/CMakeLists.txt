@@ -61,7 +61,7 @@ add_executable(camera_tool src/conversions/camera_tool.cpp)
 target_link_libraries(camera_tool ${VISP_LIBRARIES} ${catkin_LIBRARIES} ${Boost_PROGRAM_OPTIONS_LIBRARY} visp_bridge)
 
 ## Mark executables and/or libraries for installation
-install(TARGETS ${PROJECT_NAME}
+install(TARGETS ${PROJECT_NAME} camera_tool
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
