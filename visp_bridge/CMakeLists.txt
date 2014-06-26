@@ -56,6 +56,10 @@ add_definitions(${VISP_DEFINITIONS})
 
 ## Declare a cpp library
 add_library(visp_bridge
+  include/visp_bridge/3dpose.h
+  include/visp_bridge/image.h
+  include/visp_bridge/camera.h
+  include/visp_bridge/vpQuaternionVector.h
   src/conversions/3dpose.cpp
   src/conversions/image.cpp
   src/conversions/camera.cpp

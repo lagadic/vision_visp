@@ -68,7 +68,12 @@ namespace fs = boost::filesystem;
 int main(int argc, const char ** argv)
 {
     // Declare the supported options.
-    po::options_description desc("Allowed options");
+    po::options_description desc("Usage examples:\n"
+            "  convert_cam_param_file -i input_cam_parameters.ini -c Dragonfly2-8mm-ccmop -w 640 -h 480\n"
+            "  convert_cam_param_file -i input_cam_parameters.yml -c Dragonfly2-8mm-ccmop -w 640 -h 480\n"
+            "  convert_cam_param_file -i input_cam_parameters.xml -c Dragonfly2-8mm-ccmop -w 640 -h 480\n"
+            "  convert_cam_param_file -i input_cam_parameters.xml -o input_cam_parameters.yml -c Dragonfly2-8mm-ccmop -w 640 -h 480\n"
+            "Allowed options");
     desc.add_options()
         ("help", "produce help message")
         ("input,i", po::value<std::string>(), "input file path")
