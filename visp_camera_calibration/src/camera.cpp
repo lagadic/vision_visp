@@ -70,7 +70,7 @@ Camera::Camera() :
             spinner(0),
             queue_size_(1000),
             nb_points_(4),
-            img_(480,640,255)
+            img_(360,480,255)
 
 {
   std::string images_path;
@@ -87,6 +87,10 @@ Camera::Camera() :
 
   ros::param::getCached(visp_camera_calibration::images_path_param,images_path);
 
+  reader_.setFileName(images_path.c_str());
+  reader_.setFirstFrameIndex(1);
+  reader_.open(img_);
+
   ROS_INFO_STREAM("str=" << images_path);
   vpDisplay* disp = new vpDisplayX();
   disp->init(img_);
@@ -96,15 +100,7 @@ Camera::Camera() :
   vpDisplay::displayCharString(img_,img_.getHeight()/2,img_.getWidth()/4,"Click to publish camera feed.",vpColor::red);
   vpDisplay::flush(img_);
 
-
-  reader_.setFileName(images_path.c_str());
-  reader_.setFirstFrameIndex(1);
-  reader_.open(img_);
-
-
   spinner.start();
-
-
 }
 
 void Camera::sendVideo(){
