@@ -78,7 +78,8 @@ ImageProcessing::ImageProcessing() :
     queue_size_(1000),
     pause_image_(false),
     img_(480,640,128),
-    cam_(600,600,0,0)
+    cam_(600,600,0,0),
+    is_initialized(false)
 {
   visp_camera_calibration::remap();
   //Setup ROS environment
@@ -94,17 +95,6 @@ ImageProcessing::ImageProcessing() :
 
   point_correspondence_publisher_ = n_.advertise<visp_camera_calibration::CalibPointArray>(visp_camera_calibration::point_correspondence_topic, queue_size_);
   set_camera_info_bis_service_ = n_.advertiseService(visp_camera_calibration::set_camera_info_bis_service,set_camera_info_bis_callback);
-
-  //init graphical interface
-  vpDisplay* disp = new vpDisplayX();
-  disp->init(img_);
-  disp->setTitle("Image processing initialisation interface");
-  vpDisplay::flush(img_);
-  vpDisplay::display(img_);
-  vpDisplay::displayCharString(img_,img_.getHeight()/2-10,img_.getWidth()/4,"Waiting for the camera feed.",vpColor::red);
-  vpDisplay::displayCharString(img_,img_.getHeight()/2+10,img_.getWidth()/4,"If you are using the example camera, you should click on it's window",vpColor::red);
-
-  vpDisplay::flush(img_);
 
   // read 3D model from parameters
   XmlRpc::XmlRpcValue model_points_x_list;
@@ -149,6 +139,21 @@ ImageProcessing::ImageProcessing() :
       p.setWorldCoordinates(X,Y,Z);
       selected_points_.push_back(p);
     }
+}
+
+void ImageProcessing::init() 
+{
+if (! is_initialized) {
+  //init graphical interface
+  vpDisplay* disp = new vpDisplayX();
+  disp->init(img_);
+  disp->setTitle("Image processing initialisation interface");
+  vpDisplay::flush(img_);
+  vpDisplay::display(img_);
+  vpDisplay::displayCharString(img_,img_.getHeight()/2-10,img_.getWidth()/4,"Waiting for the camera feed.",vpColor::red);
+  vpDisplay::displayCharString(img_,img_.getHeight()/2+10,img_.getWidth()/4,"If you are using the example camera, you should click on it's window",vpColor::red);
+
+  vpDisplay::flush(img_);
 
   //init camera
   double px = cam_.get_px();
@@ -157,6 +162,8 @@ ImageProcessing::ImageProcessing() :
   double v0 = img_.getHeight()/2;
   cam_.initPersProjWithoutDistortion(px, py, u0, v0);
 
+  is_initialized = true;
+  }
 }
 
 bool ImageProcessing::setCameraInfoBisCallback(sensor_msgs::SetCameraInfo::Request  &req,
@@ -167,6 +174,7 @@ bool ImageProcessing::setCameraInfoBisCallback(sensor_msgs::SetCameraInfo::Reque
   camera_calibration_parsers::writeCalibration(calibration_path,visp_camera_calibration::raw_image_topic,req.camera_info);
   return true;
 }
+
 void ImageProcessing::rawImageCallback(const sensor_msgs::Image::ConstPtr& image){
   ros::Rate loop_rate(200);
   double gray_level_precision;
@@ -183,6 +191,8 @@ void ImageProcessing::rawImageCallback(const sensor_msgs::Image::ConstPtr& image
   visp_camera_calibration::CalibPointArray calib_all_points;
 
   img_ = visp_bridge::toVispImage(*image);
+  
+  init();
 
   vpDisplay::display(img_);
   vpDisplay::flush(img_);

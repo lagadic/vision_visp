@@ -11,13 +11,13 @@ To date, the supported functionnality sums up to:
 
 ## Setup
 
-This package can be compiled like any other catkin package using `catkin_make`. In that case you have to consider the `hydro-devel` branch.
+This package can be compiled like any other catkin package using `catkin_make`. In that case you have to consider the `indigo-devel` branch.
 
 ### Prerequisities
 
-First you need to install ViSP as a system dependency. This can be achived using `ros-hydro-visp` package available for Ubuntu. Just run:
+First you need to install ViSP as a system dependency. This can be achived using `ros-indigo-visp` package available for Ubuntu. Just run:
 
-	$ sudo apt-get install ros-hydro-visp
+	$ sudo apt-get install ros-indigo-visp
 
 If the package is not available (this is for example the case for Fedora) or if you want to use a more recent version of ViSP, you can also install ViSP from source:
 
@@ -36,7 +36,7 @@ Then to use this version you have to setup `VISP_DIR` environment variable to th
 Supposed you have a catkin work space just run:
 
 	$ cd ~/catkin_ws/src 
-	$ git clone -b hydro-devel https://github.com/lagadic/visp_bridge.git
+	$ git clone -b indigo-devel https://github.com/lagadic/vision_visp.git
 	$ cd ..
 	$ catkin_make --pkg visp_bridge
 

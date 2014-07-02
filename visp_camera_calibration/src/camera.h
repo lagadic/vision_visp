@@ -66,13 +66,11 @@ private:
 
   ros::ServiceServer set_camera_info_service_;
 
-
   unsigned int queue_size_;
   unsigned int nb_points_;
 
   vpVideoReader reader_;
   vpImage<unsigned char> img_;
-
 
   /*!
     \brief service setting camera parameters.

@@ -19,10 +19,13 @@
   <build_depend>sensor_msgs</build_depend>
   <build_depend>std_msgs</build_depend>
   <build_depend>visp</build_depend>
+  <build_depend>camera_calibration_parsers</build_depend>
 
   <run_depend>geometry_msgs</run_depend>
   <run_depend>roscpp</run_depend>
   <run_depend>sensor_msgs</run_depend>
   <run_depend>std_msgs</run_depend>
   <run_depend>visp</run_depend>
+  <run_depend>camera_calibration_parsers</run_depend>
+  
 </package>
