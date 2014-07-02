@@ -81,6 +81,10 @@ class ImageProcessing
   std::vector<vpPoint> model_points_;
 
   vpCameraParameters cam_;
+  
+  bool is_initialized;
+  
+  void init();
   /*!
     \brief callback corresponding to the raw_image topic.
     Computes a cMo from selected points on the image.
@@ -108,8 +112,6 @@ public:
 
   ImageProcessing();
   void interface();
-
-
 
   virtual ~ImageProcessing();
 };
