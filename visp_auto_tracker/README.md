@@ -27,11 +27,11 @@ tracking result.
 
 ## Setup
 
-This package contains submodules. It can be compiled like any other ROS package using `catkin_make`. In that case you have to consider the `hydro-devel` branch.
+This package contains submodules. It can be compiled like any other ROS package using `catkin_make`. 
 
 ### Prerequisities
 
-visp_auto_tracker depends on visp_bridge and visp_tracker packages available from <https://github.com/lagadic> (hydro-devel branches). Install first visp_bridge and visp_tracker packages.
+visp_auto_tracker depends on visp_bridge and visp_tracker packages available from <https://github.com/lagadic/vision_visp> (hydro-devel branches).
 
 visp_auto_tracker depends also on libdmtx-dev and libzbar-dev system dependencies. To install them run:
 
@@ -42,7 +42,7 @@ visp_auto_tracker depends also on libdmtx-dev and libzbar-dev system dependencie
 Supposed you have a catkin work space just run:
 
 	$ cd ~/catkin_ws/src 
-	$ git clone -b hydro-devel --recursive https://github.com/lagadic/visp_auto_tracker.git
+	$ git clone -b hydro-devel --recursive https://github.com/lagadic/vision_visp.git
 	$ cd ..
 	$ catkin_make --pkg visp_auto_tracker
 

@@ -11,7 +11,7 @@ To date, the supported functionnality sums up to:
 
 ## Setup
 
-This package can be compiled like any other catkin package using `catkin_make`. In that case you have to consider the `hydro-devel` branch.
+This package can be compiled like any other catkin package using `catkin_make`. 
 
 ### Prerequisities
 
@@ -36,7 +36,7 @@ Then to use this version you have to setup `VISP_DIR` environment variable to th
 Supposed you have a catkin work space just run:
 
 	$ cd ~/catkin_ws/src 
-	$ git clone -b hydro-devel https://github.com/lagadic/visp_bridge.git
+	$ git clone -b hydro-devel https://github.com/lagadic/vision_visp.git
 	$ cd ..
 	$ catkin_make --pkg visp_bridge
 
