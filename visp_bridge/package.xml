@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>visp_bridge</name>
-  <version>0.7.0</version>
+  <version>0.7.3</version>
   <description>
     Converts between ROS structures and ViSP structures.
   </description>
@@ -19,10 +19,13 @@
   <build_depend>sensor_msgs</build_depend>
   <build_depend>std_msgs</build_depend>
   <build_depend>visp</build_depend>
+  <build_depend>camera_calibration_parsers</build_depend>
 
   <run_depend>geometry_msgs</run_depend>
   <run_depend>roscpp</run_depend>
   <run_depend>sensor_msgs</run_depend>
   <run_depend>std_msgs</run_depend>
   <run_depend>visp</run_depend>
+  <run_depend>camera_calibration_parsers</run_depend>
+  
 </package>
