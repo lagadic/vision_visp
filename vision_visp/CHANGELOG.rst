@@ -8,3 +8,13 @@ Changelog for package vision_visp
 * Identify Fabien as the principal maintainer.
 * Add vision_visp metapackage.
 * Contributors: Thomas Moulard
+
+0.7.2 (2014-04-07)
+------------------
+
+0.7.3 (2014-04-10)
+------------------
+* indigo-0.7.2
+* Prepare changelogs
+* Contributors: Fabien Spindler
+

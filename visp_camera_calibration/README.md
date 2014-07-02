@@ -8,14 +8,14 @@ This package can be compiled like any other catkin package using `catkin_make`. 
 
 ### Prerequisities
 
-visp_camera_calibration depends on visp_bridge package available from <https://github.com/lagadic> (hydro-devel branch). Install first visp_bridge package.
+visp_camera_calibration depends on visp_bridge package available from <https://github.com/lagadic/vision_visp> (indigo-devel branch). 
 
 ### How to get and build visp_camera_calibration
 
 Supposed you have a catkin work space just run:
 
 	$ cd ~/catkin_ws/src 
-	$ git clone -b hydro-devel https://github.com/lagadic/visp_camera_calibration.git
+	$ git clone -b indigo-devel https://github.com/lagadic/vision_visp.git
 	$ cd ..
 	$ catkin_make --pkg visp_camera_calibration
 
