@@ -2,6 +2,13 @@
 Changelog for package visp_hand2eye_calibration
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.7.4 (2014-07-02)
+------------------
+* Update and fix content of README files
+* 0.7.3
+* Prepare changelogs
+* Contributors: Fabien Spindler
+
 0.7.3 (2014-04-11)
 ------------------
 * groovy-0.7.2

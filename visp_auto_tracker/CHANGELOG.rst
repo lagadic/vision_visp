@@ -2,6 +2,14 @@
 Changelog for package visp_auto_tracker
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.7.4 (2014-07-02)
+------------------
+* Update and fix content of README files
+* Download the tutorial-qrcode.bag bag file from a new location that allows the download without SSL certificate
+* 0.7.3
+* Prepare changelogs
+* Contributors: Fabien Spindler
+
 0.7.3 (2014-04-11)
 ------------------
 * Install visp_auto_tracker/models folder

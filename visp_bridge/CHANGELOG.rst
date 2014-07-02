@@ -2,6 +2,21 @@
 Changelog for package visp_bridge
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.7.4 (2014-07-02)
+------------------
+* Update and fix content of README files
+* Revised with comments from fspindle
+* Changed the way boost is linked
+* Renamed conversion tool
+* Mark camera parameter converter for installation
+* minor changes
+* Support for distortion camera parameter model
+* Delete existing output file
+* tool for converting visp camera parameter files to/from ros camera  parameter files
+* 0.7.3
+* Prepare changelogs
+* Contributors: Fabien Spindler, Riccardo Spica
+
 0.7.3 (2014-04-11)
 ------------------
 * groovy-0.7.2

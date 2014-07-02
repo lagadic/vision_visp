@@ -2,6 +2,14 @@
 Changelog for package visp_camera_calibration
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.7.4 (2014-07-02)
+------------------
+* Update and fix content of README files
+* Fix to allow calibration on images that are not 640x480
+* 0.7.3
+* Prepare changelogs
+* Contributors: Fabien Spindler
+
 0.7.3 (2014-04-11)
 ------------------
 * groovy-0.7.2

@@ -2,6 +2,13 @@
 Changelog for package visp_tracker
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.7.4 (2014-07-02)
+------------------
+* Update and fix content of README files
+* 0.7.3
+* Prepare changelogs
+* Contributors: Fabien Spindler
+
 0.7.3 (2014-04-11)
 ------------------
 * Remove unicode character that makes bloom-release failing
