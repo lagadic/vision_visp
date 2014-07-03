@@ -2,15 +2,18 @@
 Changelog for package visp_auto_tracker
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.7.0 (2014-03-12)
+0.7.4 (2014-07-03)
 ------------------
+* Update and fix content of README files
+* Fixed bag dowload in tracker
+* Prepare changelogs
+* Contributors: Fabien Spindler, Riccardo Spica
 
-0.7.1 (2014-03-13)
+0.7.3 (2014-04-10)
 ------------------
-* Fix errors detected with catkin_lint
-* hydro-0.7.0
-* Run catkin_generate_changelog, catkin_tag_changelog, bump version to 0.6.0
-* Contributors: Fabien Spindler, Thomas Moulard
+* Fix to install model folder
+* hydro-0.7.2
+* Contributors: Fabien Spindler
 
 0.7.2 (2014-03-14)
 ------------------
@@ -27,9 +30,15 @@ Changelog for package visp_auto_tracker
 * Run catkin_generate_changelog, catkin_tag_changelog, bump version to 0.6.0
 * Contributors: Fabien Spindler, Thomas Moulard
 
-0.7.3 (2014-04-10)
+0.7.1 (2014-03-13)
 ------------------
-* Fix to install model folder
-* hydro-0.7.2
-* Contributors: Fabien Spindler
+* Fix errors detected with catkin_lint
+* hydro-0.7.0
+* Run catkin_generate_changelog, catkin_tag_changelog, bump version to 0.6.0
+* Contributors: Fabien Spindler, Thomas Moulard
+
+0.7.0 (2014-03-12)
+------------------
+
+
 

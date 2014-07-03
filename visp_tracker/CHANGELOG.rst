@@ -31,3 +31,9 @@ Changelog for package visp_tracker
 * Reorganize launch files and fix since viewer and client nodes where renamed due to catkin_lint errors
 * Contributors: Fabien Spindler
 
+0.7.4 (2014-07-03)
+------------------
+* Update and fix content of README files
+* Prepare changelogs
+* Contributors: Fabien Spindler
+

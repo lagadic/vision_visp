@@ -29,3 +29,10 @@ Changelog for package visp_camera_calibration
 * hydro-0.7.2
 * Contributors: Fabien Spindler
 
+0.7.4 (2014-07-03)
+------------------
+* Update and fix content of README files
+* Fix to allow calibration on images that are not 640x480
+* Prepare changelogs
+* Contributors: Fabien Spindler
+

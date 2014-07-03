@@ -28,3 +28,9 @@ Changelog for package visp_hand2eye_calibration
 * Prepare changelogs
 * Contributors: Fabien Spindler, Thomas Moulard
 
+0.7.4 (2014-07-03)
+------------------
+* Update and fix content of README files
+* Prepare changelogs
+* Contributors: Fabien Spindler
+
