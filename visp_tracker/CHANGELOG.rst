@@ -2,14 +2,15 @@
 Changelog for package visp_tracker
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.7.0 (2014-03-12)
+0.7.4 (2014-07-03)
 ------------------
-* visp_tracker/package.xml: swithc license to GPLv2 to match the other packages.
-* Remove useless call to setup.py
-* Identify Fabien as the principal maintainer.
-* CMakeLists.txt: update bag file URL (use new GitHub Release API).
-* Merge visp_tracker as our subdirectory
-* Contributors: Thomas Moulard
+* Update and fix content of README files
+* Contributors: Fabien Spindler
+
+0.7.3 (2014-04-10)
+------------------
+* Prepare changelogs
+* Contributors: Fabien Spindler
 
 0.7.2 (2014-04-07)
 ------------------
@@ -22,8 +23,12 @@ Changelog for package visp_tracker
 * Fix errors detected with catkin_lint
 * Contributors: Benjamin Chrétien, Fabien Spindler, Thomas Moulard
 
-0.7.3 (2014-04-10)
+0.7.0 (2014-03-12)
 ------------------
-* Prepare changelogs
-* Contributors: Fabien Spindler
+* visp_tracker/package.xml: swithc license to GPLv2 to match the other packages.
+* Remove useless call to setup.py
+* Identify Fabien as the principal maintainer.
+* CMakeLists.txt: update bag file URL (use new GitHub Release API).
+* Merge visp_tracker as our subdirectory
+* Contributors: Thomas Moulard
 

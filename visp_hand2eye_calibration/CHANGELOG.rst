@@ -2,10 +2,17 @@
 Changelog for package visp_hand2eye_calibration
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-0.7.0 (2014-03-12)
+0.7.4 (2014-07-03)
 ------------------
-* Merge visp_hand2eye_calibration as our subdirectory
-* Contributors: Thomas Moulard
+* Update and fix content of README files
+* Prepare changelogs
+* Contributors: Fabien Spindler
+
+0.7.3 (2014-04-10)
+------------------
+* indigo-0.7.2
+* Prepare changelogs
+* Contributors: Fabien Spindler
 
 0.7.2 (2014-04-07)
 ------------------
@@ -15,9 +22,8 @@ Changelog for package visp_hand2eye_calibration
 * Fix errors detected with catkin_lint
 * Contributors: Fabien Spindler, Thomas Moulard
 
-0.7.3 (2014-04-10)
+0.7.0 (2014-03-12)
 ------------------
-* indigo-0.7.2
-* Prepare changelogs
-* Contributors: Fabien Spindler
+* Merge visp_hand2eye_calibration as our subdirectory
+* Contributors: Thomas Moulard
 
