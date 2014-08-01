@@ -2,6 +2,12 @@
 Changelog for package visp_auto_tracker
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.7.5 (2014-08-01)
+------------------
+* 0.7.4
+* Prepare changelogs
+* Contributors: Fabien Spindler
+
 0.7.4 (2014-07-02)
 ------------------
 * Update and fix content of README files
