@@ -36,3 +36,9 @@ Changelog for package visp_camera_calibration
 * Prepare changelogs
 * Contributors: Fabien Spindler
 
+0.7.5 (2014-08-01)
+------------------
+* hydro-0.7.4
+* Prepare changelogs
+* Contributors: Fabien Spindler
+

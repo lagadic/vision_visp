@@ -52,3 +52,11 @@ Changelog for package visp_bridge
 * Prepare changelogs
 * Contributors: Fabien Spindler, Riccardo Spica
 
+0.7.5 (2014-08-01)
+------------------
+* Revert previous commit that breaks compat
+* hydro-0.7.4
+* Prepare changelogs
+* Contributors: Fabien Spindler
+
+
