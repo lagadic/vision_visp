@@ -28,11 +28,9 @@
     <param name="image_height" type="int" value="480" />
     <param name="video_device" type="string" value="/dev/video0" />      
     <param name="pixel_format" type="string" value="yuyv" />
-
-    <rosparam param="D">[-0.01484690262, 0.,0., 0., 0.000]</rosparam>
-    <rosparam param="P">[543.1594454, 0.0, 320.1025306, 0.0, 0.0, 539.1300717, 212.8181022, 0.0, 0.0, 0.0, 1.0, 0.0]</rosparam>
-    <rosparam param="R">[1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0]</rosparam>
-    <rosparam param="K">[543.1594454, 0.0, 320.1025306, 0.0, 539.1300717, 212.8181022, 0.0, 0.0, 1.0]</rosparam>
+    <!-- rename the camera name topic into /camera/image_raw to match the one in visp_auto_tracker/models/calibration.ini file --> 
+    <param name="camera_name" value="/camera/image_raw" />
+    <param name="camera_info_url" value="package://visp_auto_tracker/models/calibration.ini" type="string" />
   </node>
 
 </launch>
