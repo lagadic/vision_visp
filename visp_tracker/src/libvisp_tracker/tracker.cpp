@@ -134,37 +134,36 @@ namespace visp_tracker
 
     std::list<vpMbtDistanceLine*> linesList;
 
-    if(trackerType_!="klt") // For mbt and hybrid
+    if(trackerType_!="klt") { // For mbt and hybrid
       dynamic_cast<vpMbEdgeTracker*>(tracker_)->getLline(linesList, 0);
 
-    std::list<vpMbtDistanceLine*>::iterator linesIterator =
-      linesList.begin();
-    if (linesList.empty())
-      ROS_DEBUG_THROTTLE(10, "no distance lines");
-    bool noVisibleLine = true;
-    for (; linesIterator != linesList.end(); ++linesIterator)
-      {
-	vpMbtDistanceLine* line = *linesIterator;
+      std::list<vpMbtDistanceLine*>::iterator linesIterator = linesList.begin();
 
-  if (line && line->isVisible() && line->meline)
-	  {
-	    std::list<vpMeSite>::const_iterator sitesIterator =
-	      line->meline->list.begin();
-	    if (line->meline->list.empty())
-	      ROS_DEBUG_THROTTLE(10, "no moving edge for a line");
-	    for (; sitesIterator != line->meline->list.end(); ++sitesIterator)
-	      {
-		visp_tracker::MovingEdgeSite movingEdgeSite;
-		movingEdgeSite.x = sitesIterator->ifloat;
-		movingEdgeSite.y = sitesIterator->jfloat;
-		movingEdgeSite.suppress = sitesIterator->suppress;
-		sites->moving_edge_sites.push_back (movingEdgeSite);
-	      }
-	    noVisibleLine = false;
-	  }
+      bool noVisibleLine = true;
+      for (; linesIterator != linesList.end(); ++linesIterator)
+      {
+        vpMbtDistanceLine* line = *linesIterator;
+
+        if (line && line->isVisible() && line->meline)
+        {
+          std::list<vpMeSite>::const_iterator sitesIterator =
+              line->meline->list.begin();
+          if (line->meline->list.empty())
+            ROS_DEBUG_THROTTLE(10, "no moving edge for a line");
+          for (; sitesIterator != line->meline->list.end(); ++sitesIterator)
+          {
+            visp_tracker::MovingEdgeSite movingEdgeSite;
+            movingEdgeSite.x = sitesIterator->ifloat;
+            movingEdgeSite.y = sitesIterator->jfloat;
+            movingEdgeSite.suppress = sitesIterator->suppress;
+            sites->moving_edge_sites.push_back (movingEdgeSite);
+          }
+          noVisibleLine = false;
+        }
       }
-    if (noVisibleLine)
-      ROS_DEBUG_THROTTLE(10, "no distance lines");
+      if (noVisibleLine)
+        ROS_DEBUG_THROTTLE(10, "no distance lines");
+    }
   }
 
   void
@@ -173,6 +172,7 @@ namespace visp_tracker
     if (!klt)
       return;
 
+#if VISP_VERSION_INT < (2<<16 | 10<<8 | 0) // ViSP < 2.10.0
     vpMbHiddenFaces<vpMbtKltPolygon> *poly_lst;
     std::map<int, vpImagePoint> *map_klt;
 
@@ -199,6 +199,30 @@ namespace visp_tracker
         }
       }
     }
+#else // ViSP >= 2.10.0
+    std::list<vpMbtDistanceKltPoints*> *poly_lst;
+    std::map<int, vpImagePoint> *map_klt;
+
+    if(trackerType_!="mbt") { // For klt and hybrid
+      poly_lst = &dynamic_cast<vpMbKltTracker*>(tracker_)->getFeaturesKlt();
+
+      for(std::list<vpMbtDistanceKltPoints*>::const_iterator it=poly_lst->begin(); it!=poly_lst->end(); ++it){
+        map_klt = &((*it)->getCurrentPoints());
+        
+        if(map_klt->size() > 3)
+          {
+            for (std::map<int, vpImagePoint>::iterator it=map_klt->begin(); it!=map_klt->end(); ++it)
+            {
+              visp_tracker::KltPoint kltPoint;
+              kltPoint.id = it->first;
+              kltPoint.i = it->second.get_i();
+              kltPoint.j = it->second.get_j();
+              klt->klt_points_positions.push_back (kltPoint);
+            }
+          }
+      }
+    }
+#endif
   }
 
   void Tracker::checkInputs()
