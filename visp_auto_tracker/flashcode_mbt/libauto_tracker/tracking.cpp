@@ -481,6 +481,7 @@ namespace tracking{
     if (!klt)
       return;
 
+#if VISP_VERSION_INT < (2<<16 | 10<<8 | 0) // ViSP < 2.10.0
     vpMbHiddenFaces<vpMbtKltPolygon> *poly_lst;
     std::map<int, vpImagePoint> *map_klt;
 
@@ -506,6 +507,30 @@ namespace tracking{
         }
       }
     }
+#else // ViSP >= 2.10.0
+    std::list<vpMbtDistanceKltPoints*> *poly_lst;
+    std::map<int, vpImagePoint> *map_klt;
+
+    if(cmd.get_tracker_type() != CmdLine::MBT) { // For klt and hybrid
+      poly_lst = &dynamic_cast<vpMbKltTracker*>(tracker_)->getFeaturesKlt();
+
+      for(std::list<vpMbtDistanceKltPoints*>::const_iterator it=poly_lst->begin(); it!=poly_lst->end(); ++it){
+        map_klt = &((*it)->getCurrentPoints());
+        
+        if(map_klt->size() > 3)
+          {
+            for (std::map<int, vpImagePoint>::iterator it=map_klt->begin(); it!=map_klt->end(); ++it)
+            {
+              visp_tracker::KltPoint kltPoint;
+              kltPoint.id = it->first;
+              kltPoint.i = it->second.get_i();
+              kltPoint.j = it->second.get_j();
+              klt->klt_points_positions.push_back (kltPoint);
+            }
+          }
+      }
+    }
+#endif
   }
 }
 
