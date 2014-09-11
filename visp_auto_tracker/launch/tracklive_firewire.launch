@@ -38,6 +38,6 @@
   </node>
   
   <!-- Launch the viewer -->
-  <node pkg="visp_tracker" type="viewer" name="tracker_mbt_viewer" args="_camera_prefix:=/" output="screen" />
+  <node pkg="visp_tracker" type="visp_tracker_viewer" name="tracker_mbt_viewer" args="_camera_prefix:=/" output="screen" />
 
 </launch>
