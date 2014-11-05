@@ -562,6 +562,21 @@ namespace visp_tracker
       return;
     }
 
+    vpDisplayX initHelpDisplay;
+    std::string helpImagePath;
+    nodeHandlePrivate_.param<std::string>("help_image_path", helpImagePath, "");
+    if (!helpImagePath.empty()){
+      try {
+        vpImage<vpRGBa> initHelpImage;
+        vpImageIo::read(initHelpImage, helpImagePath);
+        initHelpDisplay.init(initHelpImage);
+        vpDisplay::display(initHelpImage);
+        vpDisplay::flush(initHelpImage);
+      } catch(vpException &e) {
+        ROS_WARN("Error diplaying tracker initialization help image file %s:\n%s", helpImagePath.c_str(), e.what());
+      }
+    }
+
     points_t points = loadInitializationPoints();
     imagePoints_t imagePoints;
 
