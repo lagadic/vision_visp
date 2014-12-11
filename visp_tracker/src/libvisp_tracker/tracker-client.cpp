@@ -18,6 +18,7 @@
 #include <visp_tracker/Init.h>
 #include <visp_tracker/ModelBasedSettingsConfig.h>
 
+#include <visp/vpImageIo.h>
 #include <visp/vpMe.h>
 #include <visp/vpPixelMeterConversion.h>
 #include <visp/vpPose.h>
