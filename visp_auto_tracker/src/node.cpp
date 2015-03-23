@@ -4,9 +4,6 @@
 //command line parameters
 #include "cmd_line/cmd_line.h"
 
-//detectors
-#include "detectors/datamatrix/detector.h"
-#include "detectors/qrcode/detector.h"
 
 //tracking
 #include "libauto_tracker/tracking.h"
@@ -19,9 +16,16 @@
 //visp includes
 #include <visp/vpDisplayX.h>
 #include <visp/vpMbEdgeKltTracker.h>
-#include <visp/vpMbKltTracker.h>
-#include <visp/vpMbEdgeTracker.h>
 #include <visp/vpTime.h>
+
+//detectors
+#if VISP_VERSION_INT < VP_VERSION_INT(2,10,0)
+#  include "detectors/datamatrix/detector.h"
+#  include "detectors/qrcode/detector.h"
+#else
+#  include <visp/vpDetectorDataMatrixCode.h>
+#  include <visp/vpDetectorQRCode.h>
+#endif
 
 #include <visp_bridge/camera.h>
 #include <visp_bridge/image.h>
@@ -97,11 +101,19 @@ namespace visp_auto_tracker{
                   d = new vpDisplayX();
 
                 //init detector based on user preference
+#if VISP_VERSION_INT < VP_VERSION_INT(2,10,0)
                 detectors::DetectorBase* detector = NULL;
                 if (cmd.get_detector_type() == CmdLine::ZBAR)
                         detector = new detectors::qrcode::Detector;
                 else if(cmd.get_detector_type() == CmdLine::DMTX)
                         detector = new detectors::datamatrix::Detector;
+#else // ViSP >= 2.10.0. In that case we use the detectors from ViSP
+                vpDetectorBase *detector = NULL;
+                if (cmd.get_detector_type() == CmdLine::ZBAR)
+                        detector = new vpDetectorQRCode;
+                else if(cmd.get_detector_type() == CmdLine::DMTX)
+                        detector = new vpDetectorDataMatrixCode;
+#endif
 
 #if 0
                 //init tracker based on user preference
