@@ -4,8 +4,6 @@
 #include <visp/vpConfig.h>
 #include <visp/vpMbEdgeTracker.h>
 
-#include <ros/ros.h>
-
 void CmdLine::common(){
   po::options_description general("General options");
 
