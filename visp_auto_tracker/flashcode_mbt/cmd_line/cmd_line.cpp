@@ -4,6 +4,8 @@
 #include <visp/vpConfig.h>
 #include <visp/vpMbEdgeTracker.h>
 
+#include <ros/ros.h>
+
 void CmdLine::common(){
   po::options_description general("General options");
 
@@ -136,7 +138,7 @@ CmdLine:: CmdLine(int argc,char**argv) : should_exit_(false) {
   po::store(po::parse_command_line(argc, argv, prog_args), vm_);
   po::notify(vm_);
   if(get_verbose())
-    std::cout << "Loading config from:" << config_file.c_str() << std::endl;
+    std::cout << "Loading config from:" << config_file << std::endl;
 
   loadConfig(config_file);
 
@@ -145,7 +147,7 @@ CmdLine:: CmdLine(int argc,char**argv) : should_exit_(false) {
 vpCameraParameters CmdLine::get_cam_calib_params() const{
   vpCameraParameters cam;
   vpMbEdgeTracker tmptrack;
-  tmptrack.loadConfigFile(get_xml_file().c_str() ); // Load the configuration of the tracker
+  tmptrack.loadConfigFile(get_xml_file() ); // Load the configuration of the tracker
   tmptrack.getCameraParameters(cam);
   return cam;
 }
@@ -335,7 +337,10 @@ bool CmdLine:: log_pose() const{
   return log_pose_;
 }
 
-void CmdLine:: set_data_directory(std::string dir){
+void CmdLine:: set_data_directory(std::string &dir){
   data_dir_ = dir;
 }
 
+void CmdLine:: set_pattern_name(std::string &name){
+  pattern_name_ = name;
+}

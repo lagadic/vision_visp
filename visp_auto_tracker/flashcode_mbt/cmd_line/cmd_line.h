@@ -139,6 +139,7 @@ class CmdLine{
 
   TRACKER_TYPE get_tracker_type() const;
 
-  void set_data_directory(std::string dir);
+  void set_data_directory(std::string &dir);
+  void set_pattern_name(std::string &name);
 };
 #endif

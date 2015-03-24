@@ -24,6 +24,7 @@ namespace visp_auto_tracker{
                 std::string tracker_config_path_;
                 std::string model_description_;
                 std::string model_path_;
+                std::string model_name_;
                 bool debug_display_;
 
                 vpImage<vpRGBa> I_; // Image used for debug display

@@ -85,8 +85,8 @@ namespace tracking{
         std::cout << "error: could not init moving edges on tracker that doesn't support them." << std::endl;
     }
 
-    tracker_->loadConfigFile(cmd.get_xml_file().c_str() ); // Load the configuration of the tracker
-    tracker_->loadModel(cmd.get_wrl_file().c_str()); // load the 3d model, to read .wrl model the 3d party library coin is required, if coin is not installed .cao file can be used.
+    tracker_->loadConfigFile(cmd.get_xml_file() ); // Load the configuration of the tracker
+    tracker_->loadModel(cmd.get_wrl_file()); // load the 3d model, to read .wrl model the 3d party library coin is required, if coin is not installed .cao file can be used.
     tracker_->setCameraParameters(cam_); // Set the good camera parameters coming from camera_info message
   }
 
@@ -283,8 +283,8 @@ namespace tracking{
 
     try{
       tracker_->resetTracker();
-      tracker_->loadConfigFile(cmd.get_xml_file().c_str() );
-      tracker_->loadModel(cmd.get_wrl_file().c_str());
+      tracker_->loadConfigFile(cmd.get_xml_file() );
+      tracker_->loadModel(cmd.get_wrl_file());
       tracker_->setCameraParameters(cam_);
       {
           vpCameraParameters cam;

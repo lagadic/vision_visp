@@ -47,26 +47,22 @@ namespace visp_auto_tracker{
                 //this file contains all of the tracker's parameters, they are not passed to ros directly.
                 n_.param<std::string>("tracker_config_path", tracker_config_path_, "");
                 n_.param<bool>("debug_display", debug_display_, false);
-                std::string model_name;
                 std::string model_full_path;
                 n_.param<std::string>("model_path", model_path_, "");
-                n_.param<std::string>("model_name", model_name, "");
+                n_.param<std::string>("model_name", model_name_, "");
                 model_path_= model_path_[model_path_.length()-1]=='/'?model_path_:model_path_+std::string("/");
-                model_full_path = model_path_+model_name;
+                model_full_path = model_path_+model_name_;
                 tracker_config_path_ = model_full_path+".cfg";
                 ROS_INFO("model full path=%s",model_full_path.c_str());
                 resource_retriever::Retriever r;
                 resource_retriever::MemoryResource res = r.get(std::string("file://")+std::string(model_full_path+".wrl"));
-
                 model_description_.resize(res.size);
-                unsigned i = 0;
-                for (; i < res.size; ++i)
+                for (unsigned int i; i < res.size; ++i)
                         model_description_[i] = res.data.get()[i];
 
                 ROS_INFO("model content=%s",model_description_.c_str());
 
                 n_.setParam ("/model_description", model_description_);
-
         }
 
         void Node::waitForImage(){
@@ -90,6 +86,7 @@ namespace visp_auto_tracker{
                 //Parse command line arguments from config file (as ros param)
                 CmdLine cmd(tracker_config_path_);
                 cmd.set_data_directory(model_path_); //force data path
+                cmd.set_pattern_name(model_name_); //force model name
 
                 if(cmd.should_exit()) return; //exit if needed
 
