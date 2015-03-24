@@ -33,7 +33,7 @@ namespace visp_auto_tracker{
                 vpCameraParameters cam_;
 
                 tracking::Tracker* t_;
-
+                CmdLine cmd_;
 
             void waitForImage();
 

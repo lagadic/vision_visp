@@ -2,6 +2,7 @@
 #include <iostream>
 #include <fstream>
 #include <visp/vpConfig.h>
+#include <visp/vpIoTools.h>
 #include <visp/vpMbEdgeTracker.h>
 
 void CmdLine::common(){
@@ -124,6 +125,14 @@ void CmdLine::loadConfig(std::string& config_file){
   }
 }
 CmdLine:: CmdLine(std::string& config_file) : should_exit_(false) {
+  this->config_file = config_file;
+  common();
+  loadConfig(config_file);
+}
+CmdLine:: CmdLine() : should_exit_(false) {
+}
+void CmdLine:: init(std::string& config_file)
+{
   this->config_file = config_file;
   common();
   loadConfig(config_file);
@@ -258,8 +267,13 @@ std::string CmdLine:: get_pattern_name() const{
   return pattern_name_;
 }
 
-std::string CmdLine:: get_wrl_file() const{
-  return get_data_dir() + get_pattern_name() + std::string(".wrl");
+std::string CmdLine:: get_mbt_cad_file() const{
+  if(vpIoTools::checkFilename(get_data_dir() + get_pattern_name() + std::string(".wrl")))
+    return get_data_dir() + get_pattern_name() + std::string(".wrl");
+  else if (vpIoTools::checkFilename(get_data_dir() + get_pattern_name() + std::string(".cao")))
+    return get_data_dir() + get_pattern_name() + std::string(".cao");
+  else
+    return get_data_dir() + get_pattern_name() + std::string(".wrl");
 }
 
 std::string CmdLine:: get_xml_file() const{

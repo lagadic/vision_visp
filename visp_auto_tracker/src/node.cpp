@@ -54,8 +54,14 @@ namespace visp_auto_tracker{
                 model_full_path = model_path_+model_name_;
                 tracker_config_path_ = model_full_path+".cfg";
                 ROS_INFO("model full path=%s",model_full_path.c_str());
+
+                //Parse command line arguments from config file (as ros param)
+                cmd_.init(tracker_config_path_);
+                cmd_.set_data_directory(model_path_); //force data path
+                cmd_.set_pattern_name(model_name_); //force model name
+
                 resource_retriever::Retriever r;
-                resource_retriever::MemoryResource res = r.get(std::string("file://")+std::string(model_full_path+".wrl"));
+                resource_retriever::MemoryResource res = r.get(std::string("file://")+cmd_.get_mbt_cad_file());
                 model_description_.resize(res.size);
                 for (unsigned int i; i < res.size; ++i)
                         model_description_[i] = res.data.get()[i];
@@ -83,12 +89,8 @@ namespace visp_auto_tracker{
         }
 
         void Node::spin(){
-                //Parse command line arguments from config file (as ros param)
-                CmdLine cmd(tracker_config_path_);
-                cmd.set_data_directory(model_path_); //force data path
-                cmd.set_pattern_name(model_name_); //force model name
 
-                if(cmd.should_exit()) return; //exit if needed
+                if(cmd_.should_exit()) return; //exit if needed
 
                 vpMbTracker* tracker; //mb-tracker will be chosen according to config
 
@@ -100,25 +102,25 @@ namespace visp_auto_tracker{
                 //init detector based on user preference
 #if VISP_VERSION_INT < VP_VERSION_INT(2,10,0)
                 detectors::DetectorBase* detector = NULL;
-                if (cmd.get_detector_type() == CmdLine::ZBAR)
+                if (cmd_.get_detector_type() == CmdLine::ZBAR)
                         detector = new detectors::qrcode::Detector;
-                else if(cmd.get_detector_type() == CmdLine::DMTX)
+                else if(cmd_.get_detector_type() == CmdLine::DMTX)
                         detector = new detectors::datamatrix::Detector;
 #else // ViSP >= 2.10.0. In that case we use the detectors from ViSP
                 vpDetectorBase *detector = NULL;
-                if (cmd.get_detector_type() == CmdLine::ZBAR)
+                if (cmd_.get_detector_type() == CmdLine::ZBAR)
                         detector = new vpDetectorQRCode;
-                else if(cmd.get_detector_type() == CmdLine::DMTX)
+                else if(cmd_.get_detector_type() == CmdLine::DMTX)
                         detector = new vpDetectorDataMatrixCode;
 #endif
 
 #if 0
                 //init tracker based on user preference
-                if(cmd.get_tracker_type() == CmdLine::KLT)
+                if(cmd_.get_tracker_type() == CmdLine::KLT)
                         tracker = new vpMbKltTracker();
-                else if(cmd.get_tracker_type() == CmdLine::KLT_MBT)
+                else if(cmd_.get_tracker_type() == CmdLine::KLT_MBT)
                         tracker = new vpMbEdgeKltTracker();
-                else if(cmd.get_tracker_type() == CmdLine::MBT)
+                else if(cmd_.get_tracker_type() == CmdLine::MBT)
                         tracker = new vpMbEdgeTracker();
 #else
                 // Use the best tracker
@@ -128,7 +130,7 @@ namespace visp_auto_tracker{
                 tracker->setDisplayFeatures(true);
 
                 //compile detectors and paramters into the automatic tracker.
-                t_ = new tracking::Tracker(cmd, detector, tracker, debug_display_);
+                t_ = new tracking::Tracker(cmd_, detector, tracker, debug_display_);
                 t_->start(); //start the state machine
 
                 //subscribe to ros topics and prepare a publisher that will publish the pose
@@ -218,7 +220,7 @@ namespace visp_auto_tracker{
 
                         ros::spinOnce();
                         rate.sleep();
-                        if (cmd.show_fps())
+                        if (cmd_.show_fps())
                           std::cout << "Tracking done in " << vpTime::measureTimeMs() - t << " ms" << std::endl;
                 }
                 t_->process_event(tracking::finished());
