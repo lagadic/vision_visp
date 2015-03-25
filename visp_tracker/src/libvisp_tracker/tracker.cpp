@@ -89,7 +89,7 @@ namespace visp_tracker
     // Load the model.
     try
       {
-	ROS_DEBUG_STREAM("Trying to load the model: " << fullModelPath);
+    ROS_DEBUG_STREAM("Trying to load the model Tracker: " << fullModelPath);
 	tracker_->loadModel(fullModelPath.c_str());
 	modelStream.close();
       }
@@ -208,8 +208,9 @@ namespace visp_tracker
 
       for(std::list<vpMbtDistanceKltPoints*>::const_iterator it=poly_lst->begin(); it!=poly_lst->end(); ++it){
         map_klt = &((*it)->getCurrentPoints());
-        
-        if(map_klt->size() > 3)
+
+        if((*it)->polygon->isVisible()){
+          if(map_klt->size() > 3)
           {
             for (std::map<int, vpImagePoint>::iterator it=map_klt->begin(); it!=map_klt->end(); ++it)
             {
@@ -220,6 +221,7 @@ namespace visp_tracker
               klt->klt_points_positions.push_back (kltPoint);
             }
           }
+        }
       }
     }
 #endif
@@ -246,7 +248,7 @@ namespace visp_tracker
       cameraPrefix_(),
       rectifiedImageTopic_(),
       cameraInfoTopic_(),
-      vrmlPath_(),
+      modelPath_(),
       cameraSubscriber_(),
       mutex_ (),
       reconfigureSrv_(mutex_, nodeHandlePrivate_),
@@ -417,6 +419,7 @@ namespace visp_tracker
       ros::Rate loopRateTracking(100);
       tf::Transform transform;
       std_msgs::Header lastHeader;
+
       while (!exiting())
       {
           // When a camera sequence is played several times,
@@ -446,6 +449,10 @@ namespace visp_tracker
                   vpHomogeneousMatrix newMold;
                   transformToVpHomogeneousMatrix (newMold, stampedTransform);
                   cMo_ = newMold * cMo_;
+
+                  mutex_.lock();
+                  tracker_->setPose(image_, cMo_);
+                  mutex_.unlock();
               }
               catch(tf::TransformException& e)
               {}
@@ -460,6 +467,10 @@ namespace visp_tracker
                           < ros::Duration (1.))
                       transformToVpHomogeneousMatrix
                               (cMo_, objectPositionHint_.transform);
+
+                  mutex_.lock();
+                  tracker_->setPose(image_, cMo_);
+                  mutex_.unlock();
               }
 
               // We try to track the image even if we are lost,
@@ -468,7 +479,7 @@ namespace visp_tracker
                   try
               {
                   mutex_.lock();
-                  tracker_->setPose(image_, cMo_);
+                  // tracker_->setPose(image_, cMo_); // Removed as it is not necessary when the pose is not modified from outside.
                   tracker_->track(image_);
                   tracker_->getPose(cMo_);
                   mutex_.unlock();
@@ -568,9 +579,11 @@ namespace visp_tracker
                             childFrameId_));
               }
           }
+
           lastHeader = header_;
           spinOnce();
           loopRateTracking.sleep();
+
       }
   }
 
@@ -581,13 +594,13 @@ namespace visp_tracker
   {
     ros::Rate loop_rate(10);
     while (!exiting()
-	   && (!image_.getWidth() || !image_.getHeight())
-	   && (!info_ || info_->K[0] == 0.))
-      {
-	ROS_INFO_THROTTLE(1, "waiting for a rectified image...");
-	spinOnce();
-	loop_rate.sleep();
-      }
+           && (!image_.getWidth() || !image_.getHeight())
+           && (!info_ || info_->K[0] == 0.))
+    {
+      //ROS_INFO_THROTTLE(1, "waiting for a rectified image...");
+      spinOnce();
+      loop_rate.sleep();
+    }
   }
 
   void
