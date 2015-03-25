@@ -101,7 +101,7 @@ namespace visp_tracker
     std::string rectifiedImageTopic_;
     std::string cameraInfoTopic_;
 
-    boost::filesystem::path vrmlPath_;
+    boost::filesystem::path modelPath_;
 
     image_transport::CameraSubscriber cameraSubscriber_;
 
