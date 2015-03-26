@@ -304,7 +304,11 @@ namespace visp_tracker
   TrackerClient::sendcMo(const vpHomogeneousMatrix& cMo)
   {
     ros::ServiceClient client =
-      nodeHandle_.serviceClient<visp_tracker::Init>(visp_tracker::init_service);
+        nodeHandle_.serviceClient<visp_tracker::Init>(visp_tracker::init_service);
+
+
+    ros::ServiceClient clientViewer =
+        nodeHandle_.serviceClient<visp_tracker::Init>(visp_tracker::init_service_viewer);
     visp_tracker::Init srv;
 
     // Load the model and send it to the parameter server.
@@ -323,19 +327,29 @@ namespace visp_tracker
 
     ros::Rate rate (1);
     while (!client.waitForExistence ())
-      {
-	ROS_INFO
-	  ("Waiting for the initialization service to become available.");
-	rate.sleep ();
-      }
+    {
+      ROS_INFO
+          ("Waiting for the initialization service to become available.");
+      rate.sleep ();
+    }
 
     if (client.call(srv))
-      {
-	if (srv.response.initialization_succeed)
-	  ROS_INFO("Tracker initialized with success.");
-	else
-	  throw std::runtime_error("failed to initialize tracker.");
-      }
+    {
+      if (srv.response.initialization_succeed)
+        ROS_INFO("Tracker initialized with success.");
+      else
+        throw std::runtime_error("failed to initialize tracker.");
+    }
+    else
+      throw std::runtime_error("failed to call service init");
+
+    if (clientViewer.call(srv))
+    {
+      if (srv.response.initialization_succeed)
+        ROS_INFO("Tracker initialized with success.");
+      else
+        throw std::runtime_error("failed to initialize tracker.");
+    }
     else
       throw std::runtime_error("failed to call service init");
   }
