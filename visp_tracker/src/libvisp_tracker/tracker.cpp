@@ -294,6 +294,7 @@ namespace visp_tracker
 	ros::shutdown ();
 	return;
       }
+    // Create global /camera_prefix param to avoid to remap in the launch files the tracker_client and tracker_viewer nodes
     nodeHandle_.setParam("camera_prefix", cameraPrefix_);
 
     nodeHandle_.param<std::string>("frame_id", childFrameId_, "object_position");
