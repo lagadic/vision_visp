@@ -461,18 +461,18 @@ namespace visp_tracker
   TrackerClient::saveInitialPose(const vpHomogeneousMatrix& cMo)
   {
     boost::filesystem::path initialPose =
-      getInitialPoseFileFromModelName(modelName_, modelPath_);
+        getInitialPoseFileFromModelName(modelName_, modelPath_);
     boost::filesystem::ofstream file(initialPose);
     if (!file.good())
-      {
-	ROS_WARN_STREAM
-	  ("failed to save initial pose: " << initialPose
-	   <<"\n"
-	   <<"Note: this is normal is you use a remote resource."
-	   <<"\n"
-	   <<"I.e. your model path starts with http://, package://, etc.");
-	return;
-      }
+    {
+      ROS_WARN_STREAM
+          ("failed to save initial pose: " << initialPose
+           <<"\n"
+           <<"Note: this is normal is you use a remote resource."
+           <<"\n"
+           <<"I.e. your model path starts with http://, package://, etc.");
+      return;
+    }
     vpPoseVector pose;
     pose.buildFrom(cMo);
     file << pose;
@@ -484,33 +484,55 @@ namespace visp_tracker
     points_t points;
 
     std::string init =
-      getInitFileFromModelName(modelName_, modelPath_);
+        getInitFileFromModelName(modelName_, modelPath_);
     std::string resource = fetchResource(init);
     std::stringstream file;
     file << resource;
 
     if (!file.good())
-      {
-	boost::format fmt("failed to load initialization points: %1");
-	fmt % init;
-	throw std::runtime_error(fmt.str());
-      }
+    {
+      boost::format fmt("failed to load initialization points: %1");
+      fmt % init;
+      throw std::runtime_error(fmt.str());
+    }
 
-    unsigned npoints = 0;
+    char c;
+    // skip lines starting with # as comment
+    file.get(c);
+    while (!file.fail() && (c == '#')) {
+      file.ignore(256, '\n');
+      file.get(c);
+    }
+    file.unget();
+
+    unsigned int npoints;
     file >> npoints;
-    if (!file.good())
-      throw std::runtime_error("failed to read initialization file");
+    file.ignore(256, '\n'); // skip the rest of the line
+    ROS_INFO_STREAM("Number of 3D points  " << npoints << "\n");
 
-    double X = 0., Y = 0., Z = 0.;
+    if (npoints > 100000) {
+      throw vpException(vpException::badValue,
+                        "Exceed the max number of points.");
+    }
+
     vpPoint point;
-    for (unsigned i = 0; i < npoints; ++i)
-      {
-	if (!file.good())
-	  throw std::runtime_error("failed to read initialization file");
-	file >> X >> Y >> Z;
-	point.setWorldCoordinates(X,Y,Z);
-	points.push_back(point);
+    double X = 0., Y = 0., Z = 0.;
+    for (unsigned int i=0 ; i < npoints ; i++){
+      // skip lines starting with # as comment
+      file.get(c);
+      while (!file.fail() && (c == '#')) {
+        file.ignore(256, '\n');
+        file.get(c);
       }
+      file.unget();
+
+      file >> X >> Y >> Z ;
+      file.ignore(256, '\n'); // skip the rest of the line
+
+      point.setWorldCoordinates(X,Y,Z) ; // (X,Y,Z)
+      points.push_back(point);
+    }
+
     return points;
   }
 
