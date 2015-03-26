@@ -51,12 +51,13 @@ namespace visp_tracker
       imageTransport_(nodeHandle_),
       image_(),
       modelPath_(),
+      modelPathAndExt_(),
       modelName_(),
       cameraPrefix_(),
       rectifiedImageTopic_(),
       cameraInfoTopic_(),
-      vrmlPath_(),
-      initPath_(),
+      bModelPath_(),
+      bInitPath_(),
       cameraSubscriber_(),
       mutex_(),
       reconfigureSrv_(mutex_, nodeHandlePrivate_),
@@ -153,25 +154,11 @@ namespace visp_tracker
        bindImageCallback(image_, header_, info_));
 
     // Model loading.
-    vrmlPath_ = getModelFileFromModelName(modelName_, modelPath_);
-    initPath_ = getInitFileFromModelName(modelName_, modelPath_);
+    bModelPath_ = getModelFileFromModelName(modelName_, modelPath_);
+    bInitPath_ = getInitFileFromModelName(modelName_, modelPath_);
 
-    ROS_INFO_STREAM("VRML file: " << vrmlPath_);
-    ROS_INFO_STREAM("Init file: " << initPath_);
-
-    // Check that required files exist.
-    // if (!boost::filesystem::is_regular_file(vrmlPath_))
-    //   {
-    // 	boost::format fmt("VRML model %1% is not a regular file");
-    // 	fmt % vrmlPath_;
-    // 	throw std::runtime_error(fmt.str());
-    //   }
-    // if (!boost::filesystem::is_regular_file(initPath_))
-    //   {
-    // 	boost::format fmt("Initialization file %1% is not a regular file");
-    // 	fmt % initPath_;
-    // 	throw std::runtime_error(fmt.str());
-    //   }
+    ROS_INFO_STREAM("Model file: " << bModelPath_);
+    ROS_INFO_STREAM("Init file: " << bInitPath_);
 
     // Load the 3d model.
     loadModel();
@@ -321,8 +308,7 @@ namespace visp_tracker
     visp_tracker::Init srv;
 
     // Load the model and send it to the parameter server.
-    std::string modelDescription = fetchResource
-      (getModelFileFromModelName (modelName_, modelPath_));
+    std::string modelDescription = fetchResource(modelPathAndExt_);
     nodeHandle_.setParam (model_description_param, modelDescription);
 
     vpHomogeneousMatrixToTransform(srv.request.initial_cMo, cMo);
@@ -360,17 +346,17 @@ namespace visp_tracker
     try
       {
 	ROS_DEBUG_STREAM("Trying to load the model "
-			 << vrmlPath_.native());
+       << bModelPath_.native());
 
 	std::string modelPath;
 	boost::filesystem::ofstream modelStream;
 	if (!makeModelFile(modelStream,
-			   vrmlPath_.native(),
+         bModelPath_.native(),
 			   modelPath))
 	  throw std::runtime_error ("failed to retrieve model");
 
-    tracker_->loadModel(modelPath.c_str());
-	ROS_INFO("VRML model has been successfully loaded.");
+    tracker_->loadModel(modelPath);
+  ROS_INFO("Model has been successfully loaded.");
 
   if(trackerType_=="mbt"){
     vpMbEdgeTracker* t = dynamic_cast<vpMbEdgeTracker*>(tracker_);
@@ -409,7 +395,7 @@ namespace visp_tracker
 	  ("Failed to load the model %1%\n"
 	   "Do you use resource_retriever syntax?\n"
 	   "I.e. replace /my/model/path by file:///my/model/path");
-	fmt % vrmlPath_;
+  fmt % bModelPath_;
 	throw std::runtime_error(fmt.str());
       }
   }
@@ -686,11 +672,36 @@ namespace visp_tracker
 
   bool
   TrackerClient::makeModelFile(boost::filesystem::ofstream& modelStream,
-			       const std::string& resourcePath,
-			       std::string& fullModelPath)
+                               const std::string& resourcePath,
+                               std::string& fullModelPath)
   {
-    resource_retriever::MemoryResource resource =
-      resourceRetriever_.get(resourcePath);
+    std::string modelExt_ = ".wrl";
+    bool vrmlWorked = true;
+    resource_retriever::MemoryResource resource;
+
+    try{
+      resource = resourceRetriever_.get(resourcePath + modelExt_);
+    }
+    catch(...){
+      vrmlWorked = false;
+    }
+
+    if(!vrmlWorked){
+      modelExt_ = ".cao";
+
+      try{
+        resource = resourceRetriever_.get(resourcePath + modelExt_);
+      }
+      catch(...){
+        ROS_ERROR_STREAM("No .cao nor .wrl file found in: " << resourcePath);
+      }
+    }
+
+    modelPathAndExt_ = resourcePath + modelExt_;
+
+    //ROS_WARN_STREAM("Model file Make Client: " << resourcePath << modelExt_);
+
+    // Crash after when model not found
     std::string result;
     result.resize(resource.size);
     unsigned i = 0;
@@ -700,24 +711,27 @@ namespace visp_tracker
 
     char* tmpname = strdup("/tmp/tmpXXXXXX");
     if (mkdtemp(tmpname) == NULL)
-      {
-	ROS_ERROR_STREAM
-	  ("Failed to create the temporary directory: " << strerror(errno));
-	return false;
-      }
+    {
+      ROS_ERROR_STREAM
+          ("Failed to create the temporary directory: " << strerror(errno));
+      return false;
+    }
     boost::filesystem::path path(tmpname);
-    path /= "model.wrl";
+    path /= ("model" + modelExt_);
     free(tmpname);
 
     fullModelPath = path.native();
 
+
+    //ROS_WARN_STREAM("Model file Make Client Full path tmp: " << fullModelPath );
+
     modelStream.open(path);
     if (!modelStream.good())
-      {
-	ROS_ERROR_STREAM
-	  ("Failed to create the temporary file: " << path);
-	return false;
-      }
+    {
+      ROS_ERROR_STREAM
+          ("Failed to create the temporary file: " << path);
+      return false;
+    }
     modelStream << result;
     modelStream.flush();
     return true;

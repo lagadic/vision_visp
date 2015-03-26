@@ -103,6 +103,7 @@ namespace visp_tracker
     image_t image_;
 
     std::string modelPath_;
+    std::string modelPathAndExt_;
     std::string modelName_;
 
     std::string cameraPrefix_;
@@ -110,8 +111,8 @@ namespace visp_tracker
     std::string cameraInfoTopic_;
     std::string trackerType_;
 
-    boost::filesystem::path vrmlPath_;
-    boost::filesystem::path initPath_;
+    boost::filesystem::path bModelPath_;
+    boost::filesystem::path bInitPath_;
 
     image_transport::CameraSubscriber cameraSubscriber_;
 

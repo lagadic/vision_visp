@@ -26,7 +26,7 @@ std::string
 getModelFileFromModelName (const std::string& modelName,
 			   const std::string& defaultPath)
 {
-  boost::format fmt("%1%/%2%/%2%.wrl");
+  boost::format fmt("%1%/%2%/%2%");
   fmt % defaultPath % modelName;
   return fmt.str ();
 }
