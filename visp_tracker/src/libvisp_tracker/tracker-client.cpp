@@ -101,8 +101,8 @@ namespace visp_tracker
     ros::Rate rate (1);
     while (cameraPrefix_.empty ())
       {
-	if (!nodeHandle_.getParam ("camera_prefix", cameraPrefix_))
-	  {
+      if (!nodeHandle_.getParam ("camera_prefix", cameraPrefix_) && !ros::param::get ("~camera_prefix", cameraPrefix_))
+    {
 	    ROS_WARN
 	      ("the camera_prefix parameter does not exist.\n"
 	       "This may mean that:\n"
