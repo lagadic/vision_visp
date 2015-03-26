@@ -172,7 +172,8 @@ void convertModelBasedSettingsConfigToVpMe(const visp_tracker::ModelBasedSetting
   
   //FIXME: not sure if this is needed.
   moving_edge.initMask();
-  // Reset the tracker and the node state.
+  //Reset the tracker and the node state.
+  //FIXME: not sure if this is needed.
   t->setMovingEdge(moving_edge);
 }
 
@@ -217,7 +218,7 @@ void convertModelBasedSettingsConfigToVpKltOpencv(const visp_tracker::ModelBased
   t->setAngleAppear(vpMath::rad(config.angle_appear));
   t->setAngleDisappear(vpMath::rad(config.angle_disappear));
   t->setMaskBorder((unsigned)config.mask_border);
-  
+
   t->setKltOpencv(klt);
 }
 
@@ -287,10 +288,15 @@ void convertInitRequestToVpMe(const visp_tracker::Init::Request& req,
   t->setLambda(req.moving_edge.lambda);
 #if VISP_VERSION_INT >= VP_VERSION_INT(2,10,0)
   t->setGoodMovingEdgesRatioThreshold(req.moving_edge.first_threshold);
-
 #else
   t->setFirstThreshold(req.moving_edge.first_threshold);
 #endif
+
+  //FIXME: not sure if this is needed.
+  moving_edge.initMask();
+  //Reset the tracker and the node state.
+  //FIXME: not sure if this is needed.
+  t->setMovingEdge(moving_edge);
 }
 
 void convertVpKltOpencvToInitRequest(const vpKltOpencv& klt,
@@ -329,6 +335,9 @@ void convertInitRequestToVpKltOpencv(const visp_tracker::Init::Request& req,
   t->setAngleAppear(vpMath::rad(req.klt_param.angle_appear));
   t->setAngleDisappear(vpMath::rad(req.klt_param.angle_disappear));
   t->setMaskBorder((unsigned)req.klt_param.mask_border);
+
+  //FIXME: not sure if this is needed.
+  t->setKltOpencv(klt);
 }
 
 void initializeVpCameraFromCameraInfo(vpCameraParameters& cam,
