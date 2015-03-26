@@ -70,7 +70,8 @@ namespace visp_tracker
     ros::Rate rate (1);
     while (cameraPrefix.empty ())
       {
-	if (!nodeHandle_.getParam ("camera_prefix", cameraPrefix))
+      // Check for the global parameter /camera_prefix set by visp_tracker node
+      if (!nodeHandle_.getParam ("camera_prefix", cameraPrefix) && !ros::param::get ("~camera_prefix", cameraPrefix))
 	  {
 	    ROS_WARN
 	      ("the camera_prefix parameter does not exist.\n"
@@ -99,20 +100,20 @@ namespace visp_tracker
     std::string path;
 
     while (!nodeHandle_.hasParam(visp_tracker::model_description_param))
+    {
+      if (!nodeHandle_.hasParam(visp_tracker::model_description_param))
       {
-	if (!nodeHandle_.hasParam(visp_tracker::model_description_param))
-	  {
-	    ROS_WARN
-	      ("the model_description parameter does not exist.\n"
-	       "This may mean that:\n"
-	       "- the tracker is not launched or not initialized,\n"
-	       "- the tracker and viewer are not running in the same namespace."
-	       );
-	  }
-	if (this->exiting())
-	  return;
-	rate.sleep ();
+        ROS_WARN
+            ("the model_description parameter does not exist.\n"
+             "This may mean that:\n"
+             "- the tracker is not launched or not initialized,\n"
+             "- the tracker and viewer are not running in the same namespace."
+             );
       }
+      if (this->exiting())
+        return;
+      rate.sleep ();
+    }
 
     if (!makeModelFile(modelStream, path))
       throw std::runtime_error
@@ -263,8 +264,9 @@ namespace visp_tracker
   {
     try
       {
-	ROS_DEBUG_STREAM("Trying to load the model " << vrmlPath_);
-	tracker_.loadModel(vrmlPath_.native().c_str());
+      ROS_DEBUG_STREAM("Trying to load the model " << vrmlPath_);
+      ROS_INFO_STREAM("Trying to load the model " << vrmlPath_);
+  tracker_.loadModel(vrmlPath_.native().c_str());
       }
     catch(...)
       {
@@ -380,10 +382,11 @@ namespace visp_tracker
 	   "Tracking result: %d\n"
 	   "Moving edge sites: %d\n"
 	   "Synchronized tuples: %d\n"
+     "Threshold: %d\n"
 	   "Possible issues:\n"
 	   "\t* The network is too slow.");
 	fmt % countImages_ % countCameraInfo_
-	  % countTrackingResult_ % countMovingEdgeSites_ % countAll_;
+    % countTrackingResult_ % countMovingEdgeSites_ % countAll_ % threshold;
 	ROS_WARN_STREAM_THROTTLE(10, fmt.str());
       }
   }

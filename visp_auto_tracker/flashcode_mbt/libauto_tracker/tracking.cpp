@@ -18,8 +18,12 @@
 
 namespace tracking{
 
+#if VISP_VERSION_INT < VP_VERSION_INT(2,10,0)
   Tracker_:: Tracker_(CmdLine& cmd, detectors::DetectorBase* detector,vpMbTracker* tracker,bool flush_display) :
-      cmd(cmd),
+#else
+  Tracker_:: Tracker_(CmdLine& cmd, vpDetectorBase* detector,vpMbTracker* tracker,bool flush_display) :
+#endif
+  cmd(cmd),
       iter_(0),
       flashcode_center_(640/2,480/2),
       detector_(detector),
@@ -81,12 +85,16 @@ namespace tracking{
         std::cout << "error: could not init moving edges on tracker that doesn't support them." << std::endl;
     }
 
-    tracker_->loadConfigFile(cmd.get_xml_file().c_str() ); // Load the configuration of the tracker
-    tracker_->loadModel(cmd.get_wrl_file().c_str()); // load the 3d model, to read .wrl model the 3d party library coin is required, if coin is not installed .cao file can be used.
+    tracker_->loadConfigFile(cmd.get_xml_file() ); // Load the configuration of the tracker
+    tracker_->loadModel(cmd.get_mbt_cad_file()); // load the 3d model, to read .wrl model the 3d party library coin is required, if coin is not installed .cao file can be used.
     tracker_->setCameraParameters(cam_); // Set the good camera parameters coming from camera_info message
   }
 
+#if VISP_VERSION_INT < VP_VERSION_INT(2,10,0)
   detectors::DetectorBase& Tracker_:: get_detector(){
+#else
+  vpDetectorBase& Tracker_:: get_detector(){
+#endif
     return *detector_;
   }
 
@@ -143,6 +151,7 @@ namespace tracking{
   }
 
   bool Tracker_:: flashcode_detected(input_ready const& evt){
+#if VISP_VERSION_INT < VP_VERSION_INT(2,10,0)
     //this->cam_ = evt.cam_;
 
     cv::Mat rgba = cv::Mat((int)evt.I.getRows(), (int)evt.I.getCols(), CV_8UC4, (void*)evt.I.bitmap);
@@ -159,6 +168,10 @@ namespace tracking{
     //vpImageConvert::convert(evt.I,bgr);
 
     return detector_->detect(bgr,cmd.get_dmx_timeout(),0,0);
+#else
+    vpImageConvert::convert(evt.I, Igray_);
+    return detector_->detect(Igray_);
+#endif
   }
 
   /*
@@ -166,6 +179,7 @@ namespace tracking{
    * The timeout is the default timeout times the surface ratio
    */
   bool Tracker_:: flashcode_redetected(input_ready const& evt){
+#if VISP_VERSION_INT < VP_VERSION_INT(2,10,0)
     //this->cam_ = evt.cam_;
 
     //vpImageConvert::convert(evt.I,cvI);
@@ -191,11 +205,17 @@ namespace tracking{
     {
       return detector_->detect(bgr,cmd.get_dmx_timeout(),0,0);
     }
+#else
+    // TODO, use boundig box as for ViSP < 2.10.0
+    vpImageConvert::convert(evt.I, Igray_);
+    return detector_->detect(Igray_);
+#endif
   }
 
   void Tracker_:: find_flashcode_pos(input_ready const& evt){
     this->cam_ = evt.cam_;
 
+#if VISP_VERSION_INT < VP_VERSION_INT(2,10,0)
     std::vector<cv::Point> polygon = detector_->get_polygon();
     double centerX = (double)(polygon[0].x+polygon[1].x+polygon[2].x+polygon[3].x)/4.;
     double centerY = (double)(polygon[0].y+polygon[1].y+polygon[2].y+polygon[3].y)/4.;
@@ -209,6 +229,28 @@ namespace tracking{
       f_[i].set_x(x);
       f_[i].set_y(y);
     }
+#else
+    // TODO: add a parameter to be able to select the QRcode from it's message
+    // For the moment we get the position of the first code that is the largest in the image
+    std::vector< std::vector< vpImagePoint > > polygons = detector_->getPolygon();
+    std::vector< vpImagePoint > polygon(4);
+    if (polygons.size())
+      polygon = polygons[0];
+
+    // TODO: remove flashcode_center_, centerX, centerY that are not used
+    //double centerX = cog.get_u();
+    //double centerY = cog.get_v();
+    //vpPixelMeterConversion::convertPoint(cam_, flashcode_center_, centerX, centerY);
+
+    for(unsigned int i=0;i<f_.size();i++){
+      double x=0, y=0;
+
+      vpPixelMeterConversion::convertPoint(cam_, polygon[i], x, y);
+      f_[i].set_x(x);
+      f_[i].set_y(y);
+    }
+#endif
+
     I_ = _I = &(evt.I);
   }
 
@@ -241,8 +283,8 @@ namespace tracking{
 
     try{
       tracker_->resetTracker();
-      tracker_->loadConfigFile(cmd.get_xml_file().c_str() );
-      tracker_->loadModel(cmd.get_wrl_file().c_str());
+      tracker_->loadConfigFile(cmd.get_xml_file() );
+      tracker_->loadModel(cmd.get_mbt_cad_file()); // load the 3d model, to read .wrl model the 3d party library coin is required, if coin is not installed .cao file can be used.
       tracker_->setCameraParameters(cam_);
       {
           vpCameraParameters cam;
@@ -475,7 +517,7 @@ namespace tracking{
     if (!klt)
       return;
 
-#if VISP_VERSION_INT < (2<<16 | 10<<8 | 0) // ViSP < 2.10.0
+#if VISP_VERSION_INT < VP_VERSION_INT(2,10,0)// ViSP < 2.10.0
     vpMbHiddenFaces<vpMbtKltPolygon> *poly_lst;
     std::map<int, vpImagePoint> *map_klt;
 

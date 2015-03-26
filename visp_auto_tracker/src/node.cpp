@@ -4,9 +4,6 @@
 //command line parameters
 #include "cmd_line/cmd_line.h"
 
-//detectors
-#include "detectors/datamatrix/detector.h"
-#include "detectors/qrcode/detector.h"
 
 //tracking
 #include "libauto_tracker/tracking.h"
@@ -19,9 +16,16 @@
 //visp includes
 #include <visp/vpDisplayX.h>
 #include <visp/vpMbEdgeKltTracker.h>
-#include <visp/vpMbKltTracker.h>
-#include <visp/vpMbEdgeTracker.h>
 #include <visp/vpTime.h>
+
+//detectors
+#if VISP_VERSION_INT < VP_VERSION_INT(2,10,0)
+#  include "detectors/datamatrix/detector.h"
+#  include "detectors/qrcode/detector.h"
+#else
+#  include <visp/vpDetectorDataMatrixCode.h>
+#  include <visp/vpDetectorQRCode.h>
+#endif
 
 #include <visp_bridge/camera.h>
 #include <visp_bridge/image.h>
@@ -43,26 +47,28 @@ namespace visp_auto_tracker{
                 //this file contains all of the tracker's parameters, they are not passed to ros directly.
                 n_.param<std::string>("tracker_config_path", tracker_config_path_, "");
                 n_.param<bool>("debug_display", debug_display_, false);
-                std::string model_name;
                 std::string model_full_path;
                 n_.param<std::string>("model_path", model_path_, "");
-                n_.param<std::string>("model_name", model_name, "");
+                n_.param<std::string>("model_name", model_name_, "");
                 model_path_= model_path_[model_path_.length()-1]=='/'?model_path_:model_path_+std::string("/");
-                model_full_path = model_path_+model_name;
+                model_full_path = model_path_+model_name_;
                 tracker_config_path_ = model_full_path+".cfg";
                 ROS_INFO("model full path=%s",model_full_path.c_str());
-                resource_retriever::Retriever r;
-                resource_retriever::MemoryResource res = r.get(std::string("file://")+std::string(model_full_path+".wrl"));
 
+                //Parse command line arguments from config file (as ros param)
+                cmd_.init(tracker_config_path_);
+                cmd_.set_data_directory(model_path_); //force data path
+                cmd_.set_pattern_name(model_name_); //force model name
+
+                resource_retriever::Retriever r;
+                resource_retriever::MemoryResource res = r.get(std::string("file://")+cmd_.get_mbt_cad_file());
                 model_description_.resize(res.size);
-                unsigned i = 0;
-                for (; i < res.size; ++i)
+                for (unsigned int i; i < res.size; ++i)
                         model_description_[i] = res.data.get()[i];
 
                 ROS_INFO("model content=%s",model_description_.c_str());
 
                 n_.setParam ("/model_description", model_description_);
-
         }
 
         void Node::waitForImage(){
@@ -83,11 +89,8 @@ namespace visp_auto_tracker{
         }
 
         void Node::spin(){
-                //Parse command line arguments from config file (as ros param)
-                CmdLine cmd(tracker_config_path_);
-                cmd.set_data_directory(model_path_); //force data path
 
-                if(cmd.should_exit()) return; //exit if needed
+                if(cmd_.should_exit()) return; //exit if needed
 
                 vpMbTracker* tracker; //mb-tracker will be chosen according to config
 
@@ -97,19 +100,27 @@ namespace visp_auto_tracker{
                   d = new vpDisplayX();
 
                 //init detector based on user preference
+#if VISP_VERSION_INT < VP_VERSION_INT(2,10,0)
                 detectors::DetectorBase* detector = NULL;
-                if (cmd.get_detector_type() == CmdLine::ZBAR)
+                if (cmd_.get_detector_type() == CmdLine::ZBAR)
                         detector = new detectors::qrcode::Detector;
-                else if(cmd.get_detector_type() == CmdLine::DMTX)
+                else if(cmd_.get_detector_type() == CmdLine::DMTX)
                         detector = new detectors::datamatrix::Detector;
+#else // ViSP >= 2.10.0. In that case we use the detectors from ViSP
+                vpDetectorBase *detector = NULL;
+                if (cmd_.get_detector_type() == CmdLine::ZBAR)
+                        detector = new vpDetectorQRCode;
+                else if(cmd_.get_detector_type() == CmdLine::DMTX)
+                        detector = new vpDetectorDataMatrixCode;
+#endif
 
 #if 0
                 //init tracker based on user preference
-                if(cmd.get_tracker_type() == CmdLine::KLT)
+                if(cmd_.get_tracker_type() == CmdLine::KLT)
                         tracker = new vpMbKltTracker();
-                else if(cmd.get_tracker_type() == CmdLine::KLT_MBT)
+                else if(cmd_.get_tracker_type() == CmdLine::KLT_MBT)
                         tracker = new vpMbEdgeKltTracker();
-                else if(cmd.get_tracker_type() == CmdLine::MBT)
+                else if(cmd_.get_tracker_type() == CmdLine::MBT)
                         tracker = new vpMbEdgeTracker();
 #else
                 // Use the best tracker
@@ -119,7 +130,7 @@ namespace visp_auto_tracker{
                 tracker->setDisplayFeatures(true);
 
                 //compile detectors and paramters into the automatic tracker.
-                t_ = new tracking::Tracker(cmd, detector, tracker, debug_display_);
+                t_ = new tracking::Tracker(cmd_, detector, tracker, debug_display_);
                 t_->start(); //start the state machine
 
                 //subscribe to ros topics and prepare a publisher that will publish the pose
@@ -209,7 +220,7 @@ namespace visp_auto_tracker{
 
                         ros::spinOnce();
                         rate.sleep();
-                        if (cmd.show_fps())
+                        if (cmd_.show_fps())
                           std::cout << "Tracking done in " << vpTime::measureTimeMs() - t << " ms" << std::endl;
                 }
                 t_->process_event(tracking::finished());

@@ -51,9 +51,10 @@ class CmdLine{
     KLT, MBT, KLT_MBT
   };
 
+  CmdLine();
   CmdLine(int argc,char**argv);
   CmdLine(std::string& config_file);
-
+  void init(std::string& config_file);
   bool show_plot() const;
 
   bool using_hinkley() const;
@@ -104,7 +105,7 @@ class CmdLine{
 
   std::string get_pattern_name() const;
 
-  std::string get_wrl_file() const;
+  std::string get_mbt_cad_file() const; // return wrl or cao file
 
   std::string get_xml_file() const;
 
@@ -139,6 +140,7 @@ class CmdLine{
 
   TRACKER_TYPE get_tracker_type() const;
 
-  void set_data_directory(std::string dir);
+  void set_data_directory(std::string &dir);
+  void set_pattern_name(std::string &name);
 };
 #endif

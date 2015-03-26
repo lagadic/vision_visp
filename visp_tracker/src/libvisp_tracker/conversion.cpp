@@ -163,7 +163,12 @@ void convertModelBasedSettingsConfigToVpMe(const visp_tracker::ModelBasedSetting
   moving_edge.init_aberration = config.init_aberration;
 
   t->setLambda(config.lambda);
+#if VISP_VERSION_INT >= VP_VERSION_INT(2,10,0)
+  t->setGoodMovingEdgesRatioThreshold(config.first_threshold);
+
+#else
   t->setFirstThreshold(config.first_threshold);
+#endif
   
   //FIXME: not sure if this is needed.
   moving_edge.initMask();
@@ -280,7 +285,12 @@ void convertInitRequestToVpMe(const visp_tracker::Init::Request& req,
   moving_edge.init_aberration = req.moving_edge.init_aberration;
 
   t->setLambda(req.moving_edge.lambda);
+#if VISP_VERSION_INT >= VP_VERSION_INT(2,10,0)
+  t->setGoodMovingEdgesRatioThreshold(req.moving_edge.first_threshold);
+
+#else
   t->setFirstThreshold(req.moving_edge.first_threshold);
+#endif
 }
 
 void convertVpKltOpencvToInitRequest(const vpKltOpencv& klt,

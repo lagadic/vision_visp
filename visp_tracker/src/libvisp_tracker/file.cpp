@@ -70,19 +70,37 @@ makeModelFile(boost::filesystem::ofstream& modelStream,
 	("Failed to create the temporary directory: " << strerror(errno));
       return false;
     }
+  // From the content of the model description check if the model is in vrml or in cao format
+  std::string vrml_header("#VRML #vrml");
+  std::string cao_header("V1");
   boost::filesystem::path path(tmpname);
-  path /= "model.wrl";
+  if (modelDescription.compare(0, 5, vrml_header, 0, 5) == 0) {
+    ROS_INFO_STREAM("------------- is #VRML");
+    path /= "model.wrl";
+  }
+  else if (modelDescription.compare(0, 5, vrml_header, 6, 5) == 0) {
+    ROS_INFO_STREAM("------------- is #vrml");
+    path /= "model.wrl";
+  }
+  else if (modelDescription.compare(0, 2, cao_header) == 0) {
+    ROS_INFO_STREAM("------------- is CAO");
+    path /= "model.cao";
+  }
+  else {
+    ROS_ERROR_STREAM("Failed to create the temporary model file: " << path);
+    free(tmpname);
+    return false;
+  }
   free(tmpname);
 
   fullModelPath = path.native();
 
   modelStream.open(path);
   if (!modelStream.good())
-    {
-      ROS_ERROR_STREAM
-	("Failed to create the temporary file: " << path);
-      return false;
-    }
+  {
+    ROS_ERROR_STREAM("Failed to create the temporary file: " << path);
+    return false;
+  }
   modelStream << modelDescription;
   modelStream.flush();
   return true;
