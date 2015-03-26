@@ -75,15 +75,12 @@ makeModelFile(boost::filesystem::ofstream& modelStream,
   std::string cao_header("V1");
   boost::filesystem::path path(tmpname);
   if (modelDescription.compare(0, 5, vrml_header, 0, 5) == 0) {
-    ROS_INFO_STREAM("------------- is #VRML");
     path /= "model.wrl";
   }
   else if (modelDescription.compare(0, 5, vrml_header, 6, 5) == 0) {
-    ROS_INFO_STREAM("------------- is #vrml");
     path /= "model.wrl";
   }
   else if (modelDescription.compare(0, 2, cao_header) == 0) {
-    ROS_INFO_STREAM("------------- is CAO");
     path /= "model.cao";
   }
   else {
