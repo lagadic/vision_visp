@@ -201,9 +201,13 @@ namespace visp_auto_tracker{
                         // Publish moving edge sites.
                         if (moving_edge_sites_publisher.getNumSubscribers	() > 0)
                         {
-                            visp_tracker::MovingEdgeSitesPtr sites
-                                    (new visp_tracker::MovingEdgeSites);
-                            t_->updateMovingEdgeSites(sites);
+                            visp_tracker::MovingEdgeSitesPtr sites (new visp_tracker::MovingEdgeSites);
+                            // Test if we are in the state tracking::TrackModel. In that case the pose is good;
+                            // we can send the moving edges. Otherwise we send an empty list of features
+                            if (*(t_->current_state()) == 3) {
+                              t_->updateMovingEdgeSites(sites);
+                            }
+
                             sites->header = image_header_;
                             moving_edge_sites_publisher.publish(sites);
                         }
@@ -211,9 +215,12 @@ namespace visp_auto_tracker{
                         // Publish KLT points.
                         if (klt_points_publisher.getNumSubscribers	() > 0)
                         {
-                            visp_tracker::KltPointsPtr klt
-                                    (new visp_tracker::KltPoints);
-                            t_->updateKltPoints(klt);
+                            visp_tracker::KltPointsPtr klt (new visp_tracker::KltPoints);
+                            // Test if we are in the state tracking::TrackModel. In that case the pose is good;
+                            // we can send the klt points. Otherwise we send an empty list of features
+                            if (*(t_->current_state()) == 3) {
+                              t_->updateKltPoints(klt);
+                            }
                             klt->header = image_header_;
                             klt_points_publisher.publish(klt);
                         }
