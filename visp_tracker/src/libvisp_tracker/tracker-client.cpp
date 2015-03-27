@@ -18,6 +18,7 @@
 #include <visp_tracker/Init.h>
 #include <visp_tracker/ModelBasedSettingsConfig.h>
 
+#include <visp/vpImageIo.h>
 #include <visp/vpMe.h>
 #include <visp/vpPixelMeterConversion.h>
 #include <visp/vpPose.h>
@@ -582,6 +583,21 @@ namespace visp_tracker
     {
       tracker_->initFromPose(image_, cMo);
       return;
+    }
+
+    vpDisplayX initHelpDisplay;
+    std::string helpImagePath;
+    nodeHandlePrivate_.param<std::string>("help_image_path", helpImagePath, "");
+    if (!helpImagePath.empty()){
+      try {
+        vpImage<vpRGBa> initHelpImage;
+        vpImageIo::read(initHelpImage, helpImagePath);
+        initHelpDisplay.init(initHelpImage);
+        vpDisplay::display(initHelpImage);
+        vpDisplay::flush(initHelpImage);
+      } catch(vpException &e) {
+        ROS_WARN("Error diplaying tracker initialization help image file %s:\n%s", helpImagePath.c_str(), e.what());
+      }
     }
 
     points_t points = loadInitializationPoints();

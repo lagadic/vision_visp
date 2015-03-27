@@ -242,6 +242,7 @@ namespace visp_tracker
         tracker_.initFromPose(image_, *cMo_);
 		tracker_.display(image_, *cMo_,
 				 cameraParameters_, vpColor::red);
+		vpDisplay::displayFrame(image_, *cMo_, cameraParameters_, .1, vpColor::none);
 	      }
 	    catch(...)
 	      {
