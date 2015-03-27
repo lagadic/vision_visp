@@ -218,8 +218,8 @@ namespace visp_tracker
     fmtWindowTitle % ros::this_node::getNamespace ();
 
     vpDisplayX d(image_,
-		 image_.getWidth(), image_.getHeight(),
-		 fmtWindowTitle.str().c_str());
+                 image_.getWidth(), image_.getHeight(),
+                 fmtWindowTitle.str().c_str());
     vpImagePoint point (10, 10);
     vpImagePoint pointTime (22, 10);
     vpImagePoint pointCameraTopic (34, 10);
@@ -231,44 +231,44 @@ namespace visp_tracker
     boost::format fmtCameraTopic("camera topic = %s");
     fmtCameraTopic % rectifiedImageTopic_;
     while (!exiting())
+    {
+      vpDisplay::display(image_);
+      displayMovingEdgeSites();
+      displayKltPoints();
+      if (cMo_)
       {
-	vpDisplay::display(image_);
-  displayMovingEdgeSites();
-  displayKltPoints();
-  if (cMo_)
-      {
-	    try
-	      {
-        tracker_.initFromPose(image_, *cMo_);
-		tracker_.display(image_, *cMo_,
-				 cameraParameters_, vpColor::red);
-	      }
-	    catch(...)
-	      {
-		ROS_DEBUG_STREAM_THROTTLE(10, "failed to display cmo");
-	      }
+        try
+        {
+          tracker_.initFromPose(image_, *cMo_);
+          tracker_.display(image_, *cMo_, cameraParameters_, vpColor::red);
+          vpDisplay::displayFrame(image_, *cMo_, cameraParameters_, .1, vpColor::none, 2);
+        }
+        catch(...)
+        {
+          ROS_DEBUG_STREAM_THROTTLE(10, "failed to display cmo");
+        }
 
         ROS_DEBUG_STREAM_THROTTLE(10, "cMo viewer:\n" << *cMo_);
 
-	    fmt % (*cMo_)[0][3] % (*cMo_)[1][3] % (*cMo_)[2][3];
-	    vpDisplay::displayCharString
-	      (image_, point, fmt.str().c_str(), vpColor::red);
-	    fmtTime % info_->header.stamp.toSec();
-	    vpDisplay::displayCharString
-	      (image_, pointTime, fmtTime.str().c_str(), vpColor::red);
-	    vpDisplay::displayCharString
-	      (image_, pointCameraTopic, fmtCameraTopic.str().c_str(),
-	       vpColor::red);
-	  }
-    else{
-	  vpDisplay::displayCharString
-      (image_, point, "tracking failed", vpColor::red);
-    }
+        fmt % (*cMo_)[0][3] % (*cMo_)[1][3] % (*cMo_)[2][3];
+        vpDisplay::displayCharString
+            (image_, point, fmt.str().c_str(), vpColor::red);
+        fmtTime % info_->header.stamp.toSec();
+        vpDisplay::displayCharString
+            (image_, pointTime, fmtTime.str().c_str(), vpColor::red);
+        vpDisplay::displayCharString
+            (image_, pointCameraTopic, fmtCameraTopic.str().c_str(),
+             vpColor::red);
+      }
+      else{
+        vpDisplay::displayCharString
+            (image_, point, "tracking failed", vpColor::red);
+      }
 
       vpDisplay::flush(image_);
-    ros::spinOnce();
-	loop_rate.sleep();
-      }
+      ros::spinOnce();
+      loop_rate.sleep();
+    }
   }
 
   void
