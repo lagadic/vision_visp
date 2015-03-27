@@ -57,6 +57,12 @@ void transformToVpHomogeneousMatrix(vpHomogeneousMatrix& dst,
 void transformToVpHomogeneousMatrix(vpHomogeneousMatrix& dst,
 				    const geometry_msgs::Pose& src);
 
+void convertModelBasedSettingsConfigToVpMbTracker(const visp_tracker::ModelBasedSettingsConfig& config,
+           vpMbTracker* tracker);
+
+void convertVpMbTrackerToModelBasedSettingsConfig(const vpMbTracker* tracker,
+           visp_tracker::ModelBasedSettingsConfig& config);
+
 void convertModelBasedSettingsConfigToVpMe(const visp_tracker::ModelBasedSettingsConfig& config,
 				   vpMe& moving_edge,
 				   vpMbTracker* tracker);
@@ -72,6 +78,12 @@ void convertModelBasedSettingsConfigToVpKltOpencv(const visp_tracker::ModelBased
 void convertVpKltOpencvToModelBasedSettingsConfig(const vpKltOpencv& klt,
            const vpMbTracker* tracker,
            visp_tracker::ModelBasedSettingsConfig& config);
+
+void convertVpMbTrackerToInitRequest(const vpMbTracker* tracker,
+            visp_tracker::Init& srv);
+
+void convertInitRequestToVpMbTracker(const visp_tracker::Init::Request& req,
+            vpMbTracker* tracker);
 
 void convertVpMeToInitRequest(const vpMe& moving_edge,
 			      const vpMbTracker* tracker,

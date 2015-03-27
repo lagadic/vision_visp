@@ -65,6 +65,8 @@ void reconfigureCallback(vpMbTracker* tracker,
   try
     {
       ROS_INFO("Reconfigure request received.");
+
+      convertModelBasedSettingsConfigToVpMbTracker(config, tracker);
       
       if(trackerType != "klt"){
         convertModelBasedSettingsConfigToVpMe(config, moving_edge, tracker);

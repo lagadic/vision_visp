@@ -67,6 +67,12 @@ namespace visp_tracker
     vpMe movingEdge;
     visp_tracker::ModelBasedSettingsConfig config;
     tracker_->resetTracker();
+
+    // Common parameters
+    convertInitRequestToVpMbTracker(req, tracker_);
+    // Update parameters.
+    convertVpMbTrackerToModelBasedSettingsConfig(tracker_, config);
+    reconfigureSrv_.updateConfig(config);
     
     if(trackerType_!="klt"){ // for mbt and hybrid
       convertInitRequestToVpMe(req, tracker_, movingEdge);

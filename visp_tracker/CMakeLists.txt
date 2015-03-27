@@ -27,6 +27,7 @@ find_package(VISP REQUIRED)
 add_message_files(
   DIRECTORY msg
   FILES
+  TrackerSettings.msg
   KltPoint.msg
   KltPoints.msg
   KltSettings.msg

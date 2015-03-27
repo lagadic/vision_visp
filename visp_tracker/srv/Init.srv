@@ -9,6 +9,9 @@
 # Object initial pose.
 geometry_msgs/Transform initial_cMo
 
+# Common Tracker Parameters
+TrackerSettings tracker_param
+
 # Moving Edge parameters
 MovingEdgeSettings moving_edge
 

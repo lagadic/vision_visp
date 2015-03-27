@@ -209,90 +209,92 @@ namespace visp_tracker
     fmtWindowTitle % ros::this_node::getNamespace ();
 
     vpDisplayX d(image_, image_.getWidth(), image_.getHeight(),
-		 fmtWindowTitle.str().c_str());
+                 fmtWindowTitle.str().c_str());
 
     ros::Rate loop_rate_tracking(200);
     bool ok = false;
     vpHomogeneousMatrix cMo;
     vpImagePoint point (10, 10);
     while (!ok && !exiting())
+    {
+      try
       {
-	try
-	  {
-	    // Initialize.
-	    vpDisplay::display(image_);
-	    vpDisplay::flush(image_);
-	    if (!startFromSavedPose_)
-	      init();
-	    else
-	      {
-		cMo = loadInitialPose();
-		startFromSavedPose_ = false;
-        tracker_->initFromPose(image_, cMo);
-	      }
+        // Initialize.
+        vpDisplay::display(image_);
+        vpDisplay::flush(image_);
+        if (!startFromSavedPose_)
+          init();
+        else
+        {
+          cMo = loadInitialPose();
+          startFromSavedPose_ = false;
+          tracker_->initFromPose(image_, cMo);
+        }
         tracker_->getPose(cMo);
 
-	    ROS_INFO_STREAM("initial pose [tx,ty,tz,tux,tuy,tuz]:\n"
-			    << vpPoseVector(cMo));
+        ROS_INFO_STREAM("initial pose [tx,ty,tz,tux,tuy,tuz]:\n"
+                        << vpPoseVector(cMo));
 
-	    // Track once to make sure initialization is correct.
-	    if (confirmInit_)
-	      {
-		vpImagePoint ip;
-		vpMouseButton::vpMouseButtonType button =
-		  vpMouseButton::button1;
-		do
-		  {
-		    vpDisplay::display(image_);
+        // Track once to make sure initialization is correct.
+        if (confirmInit_)
+        {
+          vpImagePoint ip;
+          vpMouseButton::vpMouseButtonType button =
+              vpMouseButton::button1;
+          do
+          {
+            vpDisplay::display(image_);
+            mutex_.lock ();
             tracker_->track(image_);
             tracker_->display(image_, cMo, cameraParameters_,
-				     vpColor::red, 2);
-		    vpDisplay::displayCharString
-		      (image_, point, "tracking, click to initialize tracker",
-		       vpColor::red);
-		    vpDisplay::flush(image_);
+                              vpColor::red, 2);
             tracker_->getPose(cMo);
+            mutex_.unlock();
+            vpDisplay::displayCharString
+                (image_, point, "tracking, click to initialize tracker",
+                 vpColor::red);
+            vpDisplay::flush(image_);
 
-		    ros::spinOnce();
-		    loop_rate_tracking.sleep();
-		    if (exiting())
-		      return;
-		  }
-		while(!vpDisplay::getClick(image_, ip, button, false));
-		ok = true;
-	      }
-	    else
-	      ok = true;
-	  }
-	catch(const std::runtime_error& e)
-	  {
-	    ROS_ERROR_STREAM("failed to initialize: "
-			     << e.what() << ", retrying...");
-	  }
-	catch(const std::string& str)
-	  {
-	    ROS_ERROR_STREAM("failed to initialize: "
-			     << str << ", retrying...");
-	  }
-	catch(...)
-	  {
-	    ROS_ERROR("failed to initialize, retrying...");
-	  }
+            ros::spinOnce();
+            loop_rate_tracking.sleep();
+            if (exiting())
+              return;
+          }
+          while(!vpDisplay::getClick(image_, ip, button, false));
+          ok = true;
+        }
+        else
+          ok = true;
       }
+      catch(const std::runtime_error& e)
+      {
+        ROS_ERROR_STREAM("failed to initialize: "
+                         << e.what() << ", retrying...");
+      }
+      catch(const std::string& str)
+      {
+        ROS_ERROR_STREAM("failed to initialize: "
+                         << str << ", retrying...");
+      }
+      catch(...)
+      {
+        ROS_ERROR("failed to initialize, retrying...");
+      }
+    }
 
     ROS_INFO_STREAM("Initialization done, sending initial cMo:\n" << cMo);
     try
-      {
-	sendcMo(cMo);
-      }
+    {
+      sendcMo(cMo);
+    }
     catch(std::exception& e)
-      {
-	ROS_ERROR_STREAM("failed to send cMo: " << e.what ());
-      }
+    {
+      ROS_ERROR_STREAM("failed to send cMo: " << e.what ());
+    }
     catch(...)
-      {
-	ROS_ERROR("unknown error happened while sending the cMo, retrying...");
-      }
+    {
+      ROS_ERROR("unknown error happened while sending the cMo, retrying...");
+    }
   }
   
   TrackerClient::~TrackerClient()
@@ -317,6 +319,8 @@ namespace visp_tracker
 
     vpHomogeneousMatrixToTransform(srv.request.initial_cMo, cMo);
     
+    convertVpMbTrackerToInitRequest(tracker_, srv);
+
     if(trackerType_!="klt"){
       convertVpMeToInitRequest(movingEdge_, tracker_, srv);
     }

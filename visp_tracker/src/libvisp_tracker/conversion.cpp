@@ -142,6 +142,20 @@ void transformToVpHomogeneousMatrix(vpHomogeneousMatrix& dst,
   dst[3][3] = 1.;
 }
 
+void convertModelBasedSettingsConfigToVpMbTracker(const visp_tracker::ModelBasedSettingsConfig& config,
+           vpMbTracker* tracker)
+{
+  tracker->setAngleAppear(vpMath::rad(config.angle_appear));
+  tracker->setAngleDisappear(vpMath::rad(config.angle_disappear));
+}
+
+void convertVpMbTrackerToModelBasedSettingsConfig(const vpMbTracker* tracker,
+           visp_tracker::ModelBasedSettingsConfig& config)
+{
+  config.angle_appear = vpMath::deg(tracker->angleAppears);
+  config.angle_disappear = vpMath::deg(tracker->angleDisappears);
+}
+
 void convertModelBasedSettingsConfigToVpMe(const visp_tracker::ModelBasedSettingsConfig& config,
 				   vpMe& moving_edge,
 				   vpMbTracker* tracker)
@@ -214,9 +228,6 @@ void convertModelBasedSettingsConfigToVpKltOpencv(const visp_tracker::ModelBased
   klt.setHarrisFreeParameter(config.harris);
   klt.setBlockSize(config.size_block);
   klt.setPyramidLevels(config.pyramid_lvl);
-  
-  t->setAngleAppear(vpMath::rad(config.angle_appear));
-  t->setAngleDisappear(vpMath::rad(config.angle_disappear));
   t->setMaskBorder((unsigned)config.mask_border);
 
   t->setKltOpencv(klt);
@@ -235,10 +246,21 @@ void convertVpKltOpencvToModelBasedSettingsConfig(const vpKltOpencv& klt,
   config.harris = klt.getHarrisFreeParameter();
   config.size_block = klt.getBlockSize();
   config.pyramid_lvl = klt.getPyramidLevels();
-  
-  config.angle_appear = vpMath::deg(t->angleAppears);
-  config.angle_disappear = vpMath::deg(t->angleDisappears);
   config.mask_border = t->maskBorder;
+}
+
+void convertVpMbTrackerToInitRequest(const vpMbTracker* tracker,
+            visp_tracker::Init& srv)
+{
+  srv.request.tracker_param.angle_appear = vpMath::deg(tracker->angleAppears);
+  srv.request.tracker_param.angle_disappear = vpMath::deg(tracker->angleDisappears);
+}
+
+void convertInitRequestToVpMbTracker(const visp_tracker::Init::Request& req,
+            vpMbTracker* tracker)
+{
+  tracker->setAngleAppear(vpMath::rad(req.tracker_param.angle_appear));
+  tracker->setAngleDisappear(vpMath::rad(req.tracker_param.angle_disappear));
 }
 
 void convertVpMeToInitRequest(const vpMe& moving_edge,
@@ -312,9 +334,6 @@ void convertVpKltOpencvToInitRequest(const vpKltOpencv& klt,
   srv.request.klt_param.harris = klt.getHarrisFreeParameter();
   srv.request.klt_param.size_block = klt.getBlockSize();
   srv.request.klt_param.pyramid_lvl = klt.getPyramidLevels();
-  
-  srv.request.klt_param.angle_appear = vpMath::deg(t->angleAppears);
-  srv.request.klt_param.angle_disappear = vpMath::deg(t->angleDisappears);
   srv.request.klt_param.mask_border = t->maskBorder;
 }
 
@@ -331,9 +350,6 @@ void convertInitRequestToVpKltOpencv(const visp_tracker::Init::Request& req,
   klt.setHarrisFreeParameter(req.klt_param.harris);
   klt.setBlockSize(req.klt_param.size_block);
   klt.setPyramidLevels(req.klt_param.pyramid_lvl);
-  
-  t->setAngleAppear(vpMath::rad(req.klt_param.angle_appear));
-  t->setAngleDisappear(vpMath::rad(req.klt_param.angle_disappear));
   t->setMaskBorder((unsigned)req.klt_param.mask_border);
 
   //FIXME: not sure if this is needed.
