@@ -552,7 +552,8 @@ namespace tracking{
 
       for(std::list<vpMbtDistanceKltPoints*>::const_iterator it=poly_lst->begin(); it!=poly_lst->end(); ++it){
         map_klt = &((*it)->getCurrentPoints());
-        
+
+        if((*it)->polygon->isVisible()){
         if(map_klt->size() > 3)
           {
             for (std::map<int, vpImagePoint>::iterator it=map_klt->begin(); it!=map_klt->end(); ++it)
@@ -564,6 +565,7 @@ namespace tracking{
               klt->klt_points_positions.push_back (kltPoint);
             }
           }
+        }
       }
     }
 #endif
