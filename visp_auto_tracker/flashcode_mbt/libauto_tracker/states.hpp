@@ -253,6 +253,7 @@ namespace tracking{
     int iter_;
   public:
     vpHomogeneousMatrix cMo;
+    vpMatrix covariance;
 
     ~TrackModel(){
       delete plot_;
@@ -263,6 +264,7 @@ namespace tracking{
     template <class Fsm>
     void on_entry(finished const& evt, Fsm& fsm){
       fsm.get_mbt().getPose(cMo);
+      covariance = fsm.get_mbt().getCovarianceMatrix();
     }
 
     template <class Fsm>
@@ -280,6 +282,7 @@ namespace tracking{
     void on_exit(Event const& evt, Fsm& fsm)
     {
       fsm.get_mbt().getPose(cMo);
+      covariance = fsm.get_mbt().getCovarianceMatrix();
       if(fsm.get_flush_display()){
         vpDisplay::display(evt.I);
 
@@ -315,15 +318,13 @@ namespace tracking{
         }
         vpDisplay::flush(evt.I);
 
-        vpMatrix mat = fsm.get_mbt().getCovarianceMatrix();
         if(fsm.get_cmd().show_plot()){
           if(fsm.get_cmd().using_var_limit())
             plot_->plot(0,6,iter_,(double)fsm.get_cmd().get_var_limit());
           for(unsigned int i=0;i<6;i++)
-            plot_->plot(0,i,iter_,mat[i][i]);
+            plot_->plot(0,i,iter_,covariance[i][i]);
         }
       }
-
 
       iter_++;
     }

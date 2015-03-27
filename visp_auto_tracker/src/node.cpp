@@ -187,6 +187,18 @@ namespace visp_auto_tracker{
                             ps_cov.pose.pose = ps.pose;
                             ps_cov.header = image_header_;
                             ps_cov.header.frame_id = tracker_ref_frame;
+
+                            for (unsigned i = 0; i < track_model.covariance.getRows(); ++i)
+                            {
+                                for (unsigned j = 0; j < track_model.covariance.getCols(); ++j)
+                                {
+                                    unsigned idx = i * track_model.covariance.getCols() + j;
+                                    if (idx >= 36)
+                                        continue;
+                                    ps_cov.pose.covariance[idx] = track_model.covariance[i][j];
+                                }
+                            }
+
                             object_pose_covariance_publisher.publish(ps_cov);
                         }
 

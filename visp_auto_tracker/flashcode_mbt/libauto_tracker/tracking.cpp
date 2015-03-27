@@ -319,20 +319,20 @@ namespace tracking{
 
       tracker_->track(Igray_); // track the object on this image
       tracker_->getPose(cMo_);
-      vpMatrix mat = tracker_->getCovarianceMatrix();
+      covariance_ = tracker_->getCovarianceMatrix();
       if(cmd.using_var_file()){
         writer.write(iter_);
-        for(unsigned int i=0;i<mat.getRows();i++)
-          writer.write(mat[i][i]);
+        for(unsigned int i=0;i<covariance_.getRows();i++)
+          writer.write(covariance_[i][i]);
       }
       if(cmd.using_var_limit())
         for(unsigned int i=0; i<6; i++)
-          if(mat[i][i]>cmd.get_var_limit())
+          if(covariance_[i][i]>cmd.get_var_limit())
             return false;
       if(cmd.using_hinkley())
         for(unsigned int i=0; i<6; i++){
-          if(hink_[i].testDownUpwardJump(mat[i][i]) != vpHinkley::noJump){
-            writer.write(mat[i][i]);
+          if(hink_[i].testDownUpwardJump(covariance_[i][i]) != vpHinkley::noJump){
+            writer.write(covariance_[i][i]);
             if(cmd.get_verbose())
               std::cout << "Hinkley:detected jump!" << std::endl;
             return false;
@@ -343,16 +343,16 @@ namespace tracking{
 
 
 
-      for(unsigned int i=0;i<mat.getRows();i++)
-        statistics.var(mat[i][i]);
+      for(unsigned int i=0;i<covariance_.getRows();i++)
+        statistics.var(covariance_[i][i]);
 
-      if(mat.getRows() == 6){ //if the covariance matrix is set
-        statistics.var_x(mat[0][0]);
-        statistics.var_y(mat[1][1]);
-        statistics.var_z(mat[2][2]);
-        statistics.var_wx(mat[3][3]);
-        statistics.var_wy(mat[4][4]);
-        statistics.var_wz(mat[5][5]);
+      if(covariance_.getRows() == 6){ //if the covariance matrix is set
+        statistics.var_x(covariance_[0][0]);
+        statistics.var_y(covariance_[1][1]);
+        statistics.var_z(covariance_[2][2]);
+        statistics.var_wx(covariance_[3][3]);
+        statistics.var_wy(covariance_[4][4]);
+        statistics.var_wz(covariance_[5][5]);
       }
 
       if(cmd.using_var_file() && cmd.log_pose()){
