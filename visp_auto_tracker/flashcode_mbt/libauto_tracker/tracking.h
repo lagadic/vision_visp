@@ -75,6 +75,7 @@ namespace tracking{
     vpImage<vpRGBa> *I_;
     vpImage<vpRGBa> *_I;
     vpHomogeneousMatrix cMo_; // Pose computed using the tracker.
+    vpMatrix covariance_; // Covariance associated to the pose estimation
     vpCameraParameters cam_;
     vpImage<unsigned char> Igray_;
 
