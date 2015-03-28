@@ -235,8 +235,7 @@ namespace visp_tracker
         }
         tracker_->getPose(cMo);
 
-        ROS_INFO_STREAM("initial pose [tx,ty,tz,tux,tuy,tuz]:\n"
-                        << vpPoseVector(cMo));
+        ROS_INFO_STREAM("initial pose [tx,ty,tz,tux,tuy,tuz]:\n" << vpPoseVector(cMo).t());
 
         // Track once to make sure initialization is correct.
         if (confirmInit_)
@@ -427,62 +426,107 @@ namespace visp_tracker
     vpHomogeneousMatrix cMo;
     cMo.eye();
 
-    std::string initialPose =
-      getInitialPoseFileFromModelName (modelName_, modelPath_);
+    std::string initialPose = getInitialPoseFileFromModelName (modelName_, modelPath_);
     std::string resource;
     try
+    {
+      resource = fetchResource (initialPose);
+      std::stringstream file;
+      file << resource;
+
+      if (!file.good())
       {
-	resource = fetchResource (initialPose);
+        ROS_WARN_STREAM("failed to load initial pose: " << initialPose << "\n"
+                        << "using identity as initial pose");
+        return cMo;
       }
+
+      vpPoseVector pose;
+      for (unsigned i = 0; i < 6; ++i) {
+        if (file.good())
+          file >> pose[i];
+        else
+        {
+          ROS_WARN("failed to parse initial pose file");
+          return cMo;
+        }
+      }
+      cMo.buildFrom(pose);
+      return cMo;
+    }
     catch (...)
-      {
-	ROS_WARN_STREAM
-	  ("failed to retrieve initial pose: " << initialPose << "\n"
-	   << "using identity as initial pose");
-	return cMo;
-      }
-    std::stringstream file;
-    file << resource;
+    {
+      // Failed to retrieve initial pose since model path starts with http://, package://, file:///
+      // We try to read from temporary file /tmp/$USER/
+      std::string username;
+      vpIoTools::getUserName(username);
 
-    if (!file.good())
-      {
-	ROS_WARN_STREAM("failed to load initial pose: " << initialPose << "\n"
-			<< "using identity as initial pose");
-	return cMo;
+      std::string filename;
+  #if defined(_WIN32)
+      filename ="C:/temp/" + username;
+  #else
+      filename ="/tmp/" + username;
+  #endif
+      filename += "/" + modelName_ + ".0.pos";
+      ROS_INFO_STREAM("Try to read init pose from: " << filename);
+      if (vpIoTools::checkFilename(filename)) {
+        ROS_INFO_STREAM("Retrieve initial pose from: " << filename);
+        std::ifstream in( filename.c_str() );
+        vpPoseVector pose;
+        pose.load(in);
+        cMo.buildFrom(pose);
+        in.close();
       }
 
-    vpPoseVector pose;
-    for (unsigned i = 0; i < 6; ++i)
-      if (file.good())
-	file >> pose[i];
-      else
-	{
-	  ROS_WARN("failed to parse initial pose file");
-	  return cMo;
-	}
-    cMo.buildFrom(pose);
-    return cMo;
+      return cMo;
+    }
   }
 
   void
   TrackerClient::saveInitialPose(const vpHomogeneousMatrix& cMo)
   {
-    boost::filesystem::path initialPose =
-        getInitialPoseFileFromModelName(modelName_, modelPath_);
+    boost::filesystem::path initialPose = getInitialPoseFileFromModelName(modelName_, modelPath_);
     boost::filesystem::ofstream file(initialPose);
     if (!file.good())
     {
-      ROS_WARN_STREAM
-          ("failed to save initial pose: " << initialPose
-           <<"\n"
-           <<"Note: this is normal is you use a remote resource."
-           <<"\n"
-           <<"I.e. your model path starts with http://, package://, etc.");
-      return;
+      // Failed to save initial pose since model path starts with http://, package://, file:///
+      // We create a temporary file in /tmp/$USER/
+      std::string username;
+      vpIoTools::getUserName(username);
+
+      // Create a log filename to save velocities...
+      std::string logdirname;
+  #if defined(_WIN32)
+      logdirname ="C:/temp/" + username;
+  #else
+      logdirname ="/tmp/" + username;
+  #endif
+      // Test if the output path exist. If no try to create it
+      if (vpIoTools::checkDirectory(logdirname) == false) {
+        try {
+          vpIoTools::makeDirectory(logdirname);
+        }
+        catch (...) {
+          ROS_WARN_STREAM("Unable to create the folder " << logdirname << " to save the initial pose");
+          return;
+        }
+      }
+      std::string filename = logdirname + "/" + modelName_ + ".0.pos";
+      ROS_INFO_STREAM("Save initial pose in: " << filename);
+      std::fstream finitpos ;
+      finitpos.open(filename.c_str(), std::ios::out) ;
+      vpPoseVector pose;
+      pose.buildFrom(cMo);
+
+      finitpos << pose;
+      finitpos.close();
     }
-    vpPoseVector pose;
-    pose.buildFrom(cMo);
-    file << pose;
+    else {
+      ROS_INFO_STREAM("Save initial pose in: " << initialPose);
+      vpPoseVector pose;
+      pose.buildFrom(cMo);
+      file << pose;
+    }
   }
 
   TrackerClient::points_t
@@ -548,14 +592,15 @@ namespace visp_tracker
     ros::Rate loop_rate(200);
     vpImagePoint ip;
     vpMouseButton::vpMouseButtonType button = vpMouseButton::button1;
-
     vpDisplay::display(image_);
+    tracker_->setDisplayFeatures(false);
     tracker_->display(image_, cMo, cameraParameters_, vpColor::green);
-    vpDisplay::displayFrame(image_, cMo, cameraParameters_,0.05, vpColor::green);
+    vpDisplay::displayFrame(image_, cMo, cameraParameters_,0.05);
     vpDisplay::displayCharString(image_, 15, 10,
-        "left click to validate, right click to modify initial pose",
+        "Left click to validate, right click to modify initial pose",
         vpColor::red);
     vpDisplay::flush(image_);
+    tracker_->setDisplayFeatures(true);
 
     do
     {
@@ -580,6 +625,7 @@ namespace visp_tracker
     vpImagePoint point (10, 10);
 
     cMo = loadInitialPose();
+    tracker_->initFromPose(image_, cMo);
 
     // Show last cMo.
     vpImagePoint ip;
@@ -587,10 +633,8 @@ namespace visp_tracker
 
     if(validatePose(cMo))
     {
-      tracker_->initFromPose(image_, cMo);
       return;
     }
-
     vpDisplayX *initHelpDisplay = NULL;
 
     std::string helpImagePath;
