@@ -11,6 +11,7 @@
 
 #include <ros/ros.h>
 #include <ros/param.h>
+#include <ros/package.h>
 #include <dynamic_reconfigure/server.h>
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
 #include <image_proc/advertisement_checker.h>
@@ -29,6 +30,8 @@
 #undef protected
 
 #include <visp/vpDisplayX.h>
+#include <visp/vpImageIo.h>
+#include <visp/vpIoTools.h>
 
 #include "conversion.hh"
 #include "callbacks.hh"
@@ -588,6 +591,64 @@ namespace visp_tracker
       return;
     }
 
+    vpDisplayX *initHelpDisplay = NULL;
+
+    std::string helpImagePath;
+    nodeHandlePrivate_.param<std::string>("help_image_path", helpImagePath, "");
+    if (helpImagePath.empty()){
+
+      resource_retriever::MemoryResource resource;
+
+      try{
+        resource = resourceRetriever_.get( getHelpImageFileFromModelName(modelName_, modelPath_) );
+        char* tmpname = strdup("/tmp/tmpXXXXXX");
+        if (mkdtemp(tmpname) == NULL) {
+          ROS_ERROR_STREAM("Failed to create the temporary directory: " << strerror(errno));
+        }
+        else {
+          boost::filesystem::path path(tmpname);
+          path /= ("help.ppm");
+          free(tmpname);
+
+          helpImagePath = path.native();
+          ROS_INFO("Copy help image from %s to %s", getHelpImageFileFromModelName(modelName_, modelPath_).c_str(),
+                   helpImagePath.c_str());
+
+
+          FILE* f = fopen(helpImagePath.c_str(), "w");
+          fwrite(resource.data.get(), resource.size, 1, f);
+          fclose(f);
+        }
+      }
+      catch(...){
+      }
+
+      ROS_WARN_STREAM("Auto detection of help file: " << helpImagePath);
+    }
+
+    if (!helpImagePath.empty()){
+      try {
+        // check if the file exists
+        if (! vpIoTools::checkFilename(helpImagePath)) {
+          ROS_WARN("Error tracker initialization help image file \"%s\" doesn't exist", helpImagePath.c_str());
+        }
+        else {
+          ROS_INFO_STREAM("Load help image: " << helpImagePath);
+
+          initHelpDisplay = new vpDisplayX (image_.display->getWindowXPosition()+image_.getWidth()+20,
+                                            image_.display->getWindowYPosition(), "Init help image");
+
+          vpImage<vpRGBa> initHelpImage;
+          vpImageIo::read(initHelpImage, helpImagePath);
+          initHelpDisplay->init(initHelpImage);
+          vpDisplay::display(initHelpImage);
+          vpDisplay::flush(initHelpImage);
+        }
+      } catch(vpException &e) {
+        ROS_WARN("Error diplaying tracker initialization help image file \"%s\":\n%s", helpImagePath.c_str(), e.what());
+      }
+    }
+
     points_t points = loadInitializationPoints();
     imagePoints_t imagePoints;
 
@@ -620,6 +681,8 @@ namespace visp_tracker
     }
     tracker_->initFromPose(image_, cMo);
     saveInitialPose(cMo);
+    if (initHelpDisplay != NULL)
+      delete initHelpDisplay;
   }
 
   void

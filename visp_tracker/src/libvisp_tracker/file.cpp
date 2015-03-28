@@ -23,6 +23,15 @@ getInitFileFromModelName (const std::string& modelName,
 }
 
 std::string
+getHelpImageFileFromModelName (const std::string& modelName,
+        const std::string& defaultPath)
+{
+  boost::format fmt("%1%/%2%/%2%.ppm");
+  fmt % defaultPath % modelName;
+  return fmt.str ();
+}
+
+std::string
 getModelFileFromModelName (const std::string& modelName,
 			   const std::string& defaultPath)
 {
