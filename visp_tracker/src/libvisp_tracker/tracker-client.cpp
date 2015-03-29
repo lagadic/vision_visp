@@ -595,7 +595,7 @@ namespace visp_tracker
     vpDisplay::display(image_);
     tracker_->setDisplayFeatures(false);
     tracker_->display(image_, cMo, cameraParameters_, vpColor::green);
-    vpDisplay::displayFrame(image_, cMo, cameraParameters_,0.05);
+    vpDisplay::displayFrame(image_, cMo, cameraParameters_,0.05,vpColor::none);
     vpDisplay::displayCharString(image_, 15, 10,
         "Left click to validate, right click to modify initial pose",
         vpColor::red);
@@ -678,9 +678,13 @@ namespace visp_tracker
         }
         else {
           ROS_INFO_STREAM("Load help image: " << helpImagePath);
-
-          initHelpDisplay = new vpDisplayX (image_.display->getWindowXPosition()+image_.getWidth()+20,
-                                            image_.display->getWindowYPosition(), "Init help image");
+          int winx = 0;
+          int winy = 0;
+#if VISP_VERSION_INT >= VP_VERSION_INT(2,10,0)
+          winx = image_.display->getWindowXPosition();
+          winy = image_.display->getWindowYPosition();
+#endif
+          initHelpDisplay = new vpDisplayX (winx+image_.getWidth()+20, winy, "Init help image");
 
           vpImage<vpRGBa> initHelpImage;
           vpImageIo::read(initHelpImage, helpImagePath);

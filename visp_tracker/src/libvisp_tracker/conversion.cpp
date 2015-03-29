@@ -145,15 +145,19 @@ void transformToVpHomogeneousMatrix(vpHomogeneousMatrix& dst,
 void convertModelBasedSettingsConfigToVpMbTracker(const visp_tracker::ModelBasedSettingsConfig& config,
            vpMbTracker* tracker)
 {
+#if VISP_VERSION_INT >= VP_VERSION_INT(2,10,0)
   tracker->setAngleAppear(vpMath::rad(config.angle_appear));
   tracker->setAngleDisappear(vpMath::rad(config.angle_disappear));
+#endif
 }
 
 void convertVpMbTrackerToModelBasedSettingsConfig(const vpMbTracker* tracker,
            visp_tracker::ModelBasedSettingsConfig& config)
 {
+#if VISP_VERSION_INT >= VP_VERSION_INT(2,10,0)
   config.angle_appear = vpMath::deg(tracker->angleAppears);
   config.angle_disappear = vpMath::deg(tracker->angleDisappears);
+#endif
 }
 
 void convertModelBasedSettingsConfigToVpMe(const visp_tracker::ModelBasedSettingsConfig& config,
@@ -252,15 +256,19 @@ void convertVpKltOpencvToModelBasedSettingsConfig(const vpKltOpencv& klt,
 void convertVpMbTrackerToInitRequest(const vpMbTracker* tracker,
             visp_tracker::Init& srv)
 {
+#if VISP_VERSION_INT >= VP_VERSION_INT(2,10,0)
   srv.request.tracker_param.angle_appear = vpMath::deg(tracker->angleAppears);
   srv.request.tracker_param.angle_disappear = vpMath::deg(tracker->angleDisappears);
+#endif
 }
 
 void convertInitRequestToVpMbTracker(const visp_tracker::Init::Request& req,
             vpMbTracker* tracker)
 {
+#if VISP_VERSION_INT >= VP_VERSION_INT(2,10,0)
   tracker->setAngleAppear(vpMath::rad(req.tracker_param.angle_appear));
   tracker->setAngleDisappear(vpMath::rad(req.tracker_param.angle_disappear));
+#endif
 }
 
 void convertVpMeToInitRequest(const vpMe& moving_edge,
