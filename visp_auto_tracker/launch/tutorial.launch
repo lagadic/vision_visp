@@ -27,6 +27,7 @@
   <!-- Launch the viewer -->
   <node pkg="visp_tracker" type="visp_tracker_viewer" name="tracker_mbt_viewer" output="screen">
     <param name="camera_prefix" value="/camera" />
+    <param name="frame_size" value="0.1" />
     <remap from="/camera/image_rect" to="/camera/image_raw"/>
     <remap from="/object_position_covariance" to="/visp_auto_tracker/object_position_covariance"/>
   </node>

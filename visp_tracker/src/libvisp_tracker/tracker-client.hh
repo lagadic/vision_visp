@@ -110,6 +110,7 @@ namespace visp_tracker
     std::string rectifiedImageTopic_;
     std::string cameraInfoTopic_;
     std::string trackerType_;
+    double frameSize_;
 
     boost::filesystem::path bModelPath_;
     boost::filesystem::path bInitPath_;

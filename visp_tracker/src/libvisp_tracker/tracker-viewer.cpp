@@ -64,6 +64,7 @@ namespace visp_tracker
       nodeHandle_(nh),
       nodeHandlePrivate_(privateNh),
       imageTransport_(nodeHandle_),
+      frameSize_(0.1),
       rectifiedImageTopic_(),
       cameraInfoTopic_(),
       checkInputs_(nodeHandle_, ros::this_node::getName()),
@@ -114,6 +115,7 @@ namespace visp_tracker
 	  return;
 	rate.sleep ();
       }
+    nodeHandlePrivate_.param<double>("frame_size", frameSize_, 0.1);
 
     rectifiedImageTopic_ =
       ros::names::resolve(cameraPrefix + "/image_rect");
@@ -241,7 +243,7 @@ namespace visp_tracker
         {
           tracker_.initFromPose(image_, *cMo_);
           tracker_.display(image_, *cMo_, cameraParameters_, vpColor::red);
-          vpDisplay::displayFrame(image_, *cMo_, cameraParameters_, .1, vpColor::none, 2);
+          vpDisplay::displayFrame(image_, *cMo_, cameraParameters_, frameSize_, vpColor::none, 2);
         }
         catch(...)
         {

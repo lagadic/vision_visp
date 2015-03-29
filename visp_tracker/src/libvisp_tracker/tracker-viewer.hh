@@ -108,6 +108,7 @@ namespace visp_tracker
     /// \brief Image transport used to receive images.
     image_transport::ImageTransport imageTransport_;
 
+    double frameSize_;
 
     /// \name Topics and services strings.
     /// \{

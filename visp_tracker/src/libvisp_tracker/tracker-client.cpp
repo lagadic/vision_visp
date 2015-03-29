@@ -59,6 +59,8 @@ namespace visp_tracker
       cameraPrefix_(),
       rectifiedImageTopic_(),
       cameraInfoTopic_(),
+      trackerType_("mbt"),
+      frameSize_(0.1),
       bModelPath_(),
       bInitPath_(),
       cameraSubscriber_(),
@@ -90,6 +92,8 @@ namespace visp_tracker
       tracker_ = new vpMbKltTracker();
     else
       tracker_ = new vpMbEdgeKltTracker();
+
+    nodeHandlePrivate_.param<double>("frame_size", frameSize_, 0.1);
 
     //tracker_->resetTracker(); // TO CHECK
 
@@ -250,6 +254,7 @@ namespace visp_tracker
             tracker_->track(image_);
             tracker_->display(image_, cMo, cameraParameters_,
                               vpColor::red, 2);
+            vpDisplay::displayFrame(image_, cMo, cameraParameters_,frameSize_,vpColor::none,2);
             tracker_->getPose(cMo);
             mutex_.unlock();
             vpDisplay::displayCharString
@@ -595,7 +600,7 @@ namespace visp_tracker
     vpDisplay::display(image_);
     tracker_->setDisplayFeatures(false);
     tracker_->display(image_, cMo, cameraParameters_, vpColor::green);
-    vpDisplay::displayFrame(image_, cMo, cameraParameters_,0.05,vpColor::none);
+    vpDisplay::displayFrame(image_, cMo, cameraParameters_,frameSize_,vpColor::none,2);
     vpDisplay::displayCharString(image_, 15, 10,
         "Left click to validate, right click to modify initial pose",
         vpColor::red);
