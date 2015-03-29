@@ -12,6 +12,7 @@ namespace visp_auto_tracker
 
         extern std::string object_position_topic;
         extern std::string object_position_covariance_topic;
+        extern std::string code_message_topic;
         extern std::string init_service;
 
         extern std::string tracker_ref_frame;

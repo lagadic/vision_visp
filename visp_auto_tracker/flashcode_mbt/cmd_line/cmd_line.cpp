@@ -356,3 +356,6 @@ void CmdLine:: set_data_directory(std::string &dir){
 void CmdLine:: set_pattern_name(std::string &name){
   pattern_name_ = name;
 }
+void CmdLine:: set_show_fps(bool show_fps){
+  show_fps_ = show_fps;
+}

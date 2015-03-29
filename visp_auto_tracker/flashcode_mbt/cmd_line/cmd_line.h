@@ -142,5 +142,6 @@ class CmdLine{
 
   void set_data_directory(std::string &dir);
   void set_pattern_name(std::string &name);
+  void set_show_fps(bool show_fps);
 };
 #endif

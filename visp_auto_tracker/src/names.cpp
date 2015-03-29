@@ -11,6 +11,7 @@ namespace visp_auto_tracker
 
   std::string object_position_topic("object_position");
   std::string object_position_covariance_topic("object_position_covariance");
+  std::string code_message_topic("code_message");
   std::string init_service("init");
 
   std::string tracker_ref_frame("/map");

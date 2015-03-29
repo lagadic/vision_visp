@@ -36,7 +36,7 @@
 #include "resource_retriever/retriever.h"
 
 #include "std_msgs/Int8.h"
-
+#include "std_msgs/String.h"
 
 namespace visp_auto_tracker{
         Node::Node() :
@@ -59,6 +59,7 @@ namespace visp_auto_tracker{
                 cmd_.init(tracker_config_path_);
                 cmd_.set_data_directory(model_path_); //force data path
                 cmd_.set_pattern_name(model_name_); //force model name
+                cmd_.set_show_fps(false);
 
                 resource_retriever::Retriever r;
                 resource_retriever::MemoryResource res = r.get(std::string("file://")+cmd_.get_mbt_cad_file());
@@ -143,6 +144,7 @@ namespace visp_auto_tracker{
                 ros::Publisher moving_edge_sites_publisher = n_.advertise<visp_tracker::MovingEdgeSites>(moving_edge_sites_topic, queue_size_);
                 ros::Publisher klt_points_publisher = n_.advertise<visp_tracker::KltPoints>(klt_points_topic, queue_size_);
                 ros::Publisher status_publisher = n_.advertise<std_msgs::Int8>(status_topic, queue_size_);
+                ros::Publisher code_message_publisher = n_.advertise<std_msgs::String>(code_message_topic, queue_size_);
 
                 //wait for an image to be ready
                 waitForImage();
@@ -235,6 +237,23 @@ namespace visp_auto_tracker{
                             }
                             klt->header = image_header_;
                             klt_points_publisher.publish(klt);
+                        }
+
+                        if (code_message_publisher.getNumSubscribers() > 0)
+                        {
+                          std_msgs::String message;
+                          if (*(t_->current_state()) == 3) { // Tracking successful
+#if VISP_VERSION_INT < VP_VERSION_INT(2,10,0)
+                            message.data = detector->get_message();
+#else
+                            message.data = detector->getMessage(0);
+#endif
+                          }
+                          else {
+                            message.data = std::string();
+                          }
+                          code_message_publisher.publish(message);
+                          ROS_INFO_STREAM("Code with message \"" <<  message.data << "\" under tracking");
                         }
 
                         ros::spinOnce();
