@@ -170,7 +170,25 @@ namespace tracking{
     return detector_->detect(bgr,cmd.get_dmx_timeout(),0,0);
 #else
     vpImageConvert::convert(evt.I, Igray_);
-    return detector_->detect(Igray_);
+    detector_->detect(Igray_);
+    if (detector_->getNbObjects()) {
+      if (cmd.get_code_message().empty()) {
+        cmd.set_code_message_index(0); // we retain the largest code at index 0
+        return true;
+      }
+      else {
+        for (size_t i=0; i<detector_->getNbObjects(); i++) {
+          if (detector_->getMessage(i) == cmd.get_code_message()) {
+            cmd.set_code_message_index(i);
+            ROS_WARN_STREAM("Code with message \"" << cmd.get_code_message() << "\" found");
+            return true;
+          }
+        }
+        ROS_WARN_STREAM("Code with message \"" << cmd.get_code_message() << "\" not found");
+        return false;
+      }
+    }
+    return false;
 #endif
   }
 
@@ -208,7 +226,25 @@ namespace tracking{
 #else
     // TODO, use boundig box as for ViSP < 2.10.0
     vpImageConvert::convert(evt.I, Igray_);
-    return detector_->detect(Igray_);
+    detector_->detect(Igray_);
+    if (detector_->getNbObjects()) {
+      if (cmd.get_code_message().empty()) {
+        cmd.set_code_message_index(0); // we retain the largest code at index 0
+        return true;
+      }
+      else {
+        for (size_t i=0; i<detector_->getNbObjects(); i++) {
+          if (detector_->getMessage(i) == cmd.get_code_message()) {
+            cmd.set_code_message_index(i);
+            ROS_WARN_STREAM("Code with message \"" << cmd.get_code_message() << "\" found");
+            return true;
+          }
+        }
+        ROS_WARN_STREAM("Code with message \"" << cmd.get_code_message() << "\" not found");
+        return false;
+      }
+    }
+    return false;
 #endif
   }
 

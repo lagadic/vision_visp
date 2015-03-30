@@ -41,6 +41,8 @@ class CmdLine{
   std::vector<double> flashcode_coordinates,inner_coordinates,outer_coordinates;
   std::string log_file_pattern_,input_file_pattern_;
   std::string config_file;
+  std::string code_message_; // Code message used to specify which target to track
+  int code_message_index_; // Index in the vector of code messages that were found
   void loadConfig(std::string& config_file);
   void common();
  public:
@@ -101,6 +103,9 @@ class CmdLine{
 
   bool using_video_camera() const;
 
+  std::string get_code_message() const;
+  size_t get_code_message_index() const;
+
   std::string get_data_dir() const;
 
   std::string get_pattern_name() const;
@@ -140,6 +145,8 @@ class CmdLine{
 
   TRACKER_TYPE get_tracker_type() const;
 
+  void set_code_message(const std::string &msg);
+  void set_code_message_index(const size_t &index);
   void set_data_directory(std::string &dir);
   void set_pattern_name(std::string &name);
   void set_show_fps(bool show_fps);

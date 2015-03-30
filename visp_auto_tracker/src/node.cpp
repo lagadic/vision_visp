@@ -42,7 +42,17 @@ namespace visp_auto_tracker{
         Node::Node() :
                         n_("~"),
                         queue_size_(1),
-                        got_image_(false){
+                        tracker_config_path_(),
+                        model_description_(),
+                        model_path_(),
+                        model_name_(),
+                        code_message_(),
+                        debug_display_(false),
+                        I_(),
+                        image_header_(),
+                        got_image_(false),
+                        cam_(),
+                        t_(NULL) {
                 //get the tracker configuration file
                 //this file contains all of the tracker's parameters, they are not passed to ros directly.
                 n_.param<std::string>("tracker_config_path", tracker_config_path_, "");
@@ -50,6 +60,7 @@ namespace visp_auto_tracker{
                 std::string model_full_path;
                 n_.param<std::string>("model_path", model_path_, "");
                 n_.param<std::string>("model_name", model_name_, "");
+                n_.param<std::string>("code_message", code_message_, "");
                 model_path_= model_path_[model_path_.length()-1]=='/'?model_path_:model_path_+std::string("/");
                 model_full_path = model_path_+model_name_;
                 tracker_config_path_ = model_full_path+".cfg";
@@ -60,14 +71,25 @@ namespace visp_auto_tracker{
                 cmd_.set_data_directory(model_path_); //force data path
                 cmd_.set_pattern_name(model_name_); //force model name
                 cmd_.set_show_fps(false);
+                if (! code_message_.empty()) {
+                  ROS_WARN_STREAM("Track only code with message: \"" << code_message_ << "\"");
+                  cmd_.set_code_message(code_message_);
+                }
 
                 resource_retriever::Retriever r;
-                resource_retriever::MemoryResource res = r.get(std::string("file://")+cmd_.get_mbt_cad_file());
+                resource_retriever::MemoryResource res;
+                try {
+                  res = r.get(std::string("file://")+cmd_.get_mbt_cad_file());
+                }
+                catch(...) {
+                  ROS_ERROR_STREAM("Unable to read wrl or cao model file as resource: " << std::string("file://")+cmd_.get_mbt_cad_file());
+                }
+
                 model_description_.resize(res.size);
-                for (unsigned int i; i < res.size; ++i)
+                for (unsigned int i=0; i < res.size; ++i)
                         model_description_[i] = res.data.get()[i];
 
-                ROS_INFO("model content=%s",model_description_.c_str());
+                ROS_INFO("Model content=%s",model_description_.c_str());
 
                 n_.setParam ("/model_description", model_description_);
         }
@@ -246,7 +268,7 @@ namespace visp_auto_tracker{
 #if VISP_VERSION_INT < VP_VERSION_INT(2,10,0)
                             message.data = detector->get_message();
 #else
-                            message.data = detector->getMessage(0);
+                            message.data = detector->getMessage( cmd_.get_code_message_index() );
 #endif
                           }
                           else {

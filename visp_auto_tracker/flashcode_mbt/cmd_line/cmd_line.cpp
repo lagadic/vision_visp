@@ -24,6 +24,7 @@ void CmdLine::common(){
           ("config-file,c", po::value<std::string>(&config_file)->default_value("./data/config.cfg"), "config file for the program")
           ("show-fps,f", po::value< bool >(&show_fps_)->default_value(false)->composing(), "show framerate")
           ("show-plot,p", po::value< bool >(&show_plot_)->default_value(false)->composing(), "show variances graph")
+          ("code-message,m", po::value<std::string>(&code_message_)->default_value(""), "Target code message")
 
           ("help", "produce help message")
           ;
@@ -124,12 +125,12 @@ void CmdLine::loadConfig(std::string& config_file){
 
   }
 }
-CmdLine:: CmdLine(std::string& config_file) : should_exit_(false) {
+CmdLine:: CmdLine(std::string& config_file) : should_exit_(false), code_message_index_(0) {
   this->config_file = config_file;
   common();
   loadConfig(config_file);
 }
-CmdLine:: CmdLine() : should_exit_(false) {
+CmdLine:: CmdLine() : should_exit_(false), code_message_index_(0) {
 }
 void CmdLine:: init(std::string& config_file)
 {
@@ -138,9 +139,8 @@ void CmdLine:: init(std::string& config_file)
   loadConfig(config_file);
 }
 
-CmdLine:: CmdLine(int argc,char**argv) : should_exit_(false) {
+CmdLine:: CmdLine(int argc,char**argv) : should_exit_(false), code_message_index_(0) {
   common();
-
 
   po::store(po::parse_command_line(argc, argv, prog_args), vm_);
   po::notify(vm_);
@@ -337,6 +337,13 @@ bool CmdLine:: get_adhoc_recovery_display() const {
   return adhoc_recovery_display_;
 }
 
+std::string CmdLine:: get_code_message() const {
+  return code_message_;
+}
+size_t CmdLine:: get_code_message_index() const {
+  return code_message_index_;
+}
+
 bool CmdLine:: using_adhoc_recovery() const{
   return adhoc_recovery_;
 }
@@ -358,4 +365,13 @@ void CmdLine:: set_pattern_name(std::string &name){
 }
 void CmdLine:: set_show_fps(bool show_fps){
   show_fps_ = show_fps;
+}
+
+void CmdLine:: set_code_message(const std::string &msg)
+{
+  code_message_ = msg;
+}
+void CmdLine:: set_code_message_index(const size_t &index)
+{
+  code_message_index_ = index;
 }
