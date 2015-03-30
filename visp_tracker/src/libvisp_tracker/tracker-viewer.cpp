@@ -357,21 +357,21 @@ namespace visp_tracker
 
 	switch(suppress)
 	  {
-	  case 0:
+    case vpMeSite::NO_SUPPRESSION:
 	    color = vpColor::green;
 	    break;
-	  case 1:
+    case vpMeSite::CONSTRAST:
 	    color = vpColor::blue;
 	    break;
-	  case 2:
+    case vpMeSite::THRESHOLD:
 	    color = vpColor::purple;
 	    break;
-	  case 4:
+    case vpMeSite::M_ESTIMATOR:
 	    color = vpColor::red;
 	    break;
-	  default:
-	    ROS_ERROR_THROTTLE(10, "bad suppress value");
-	  }
+    default: // vpMeSite::UNKOWN
+      color = vpColor::yellow;
+  }
 
 	vpDisplay::displayCross(image_, vpImagePoint(x, y), 3, color, 1);
       }
