@@ -23,12 +23,12 @@ include_directories(
   ${VISP_INCLUDE_DIRS}
   ${catkin_INCLUDE_DIRS}
 )
-link_directories(
-  ${BULLET_LIBRARY_DIRS}
-  ${Boost_LIBRARY_DIRS}
-  ${VISP_LIBRARY_DIRS}
-  ${catkin_LIBRARY_DIRS}
-  )
+#link_directories(
+#  ${BULLET_LIBRARY_DIRS}
+#  ${Boost_LIBRARY_DIRS}
+#  ${VISP_LIBRARY_DIRS}
+#  ${catkin_LIBRARY_DIRS}
+#  )
 
 catkin_package(
    LIBRARIES auto_tracker
@@ -45,9 +45,6 @@ catkin_package(
    )
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/flashcode_mbt)
-if(VISP_VERSION VERSION_LESS 2.10.0)
-  include_directories(flashcode_mbt/detectors)
-endif()
 
 # Add ViSP definitions.
 add_definitions(${VISP_DEFINITIONS})
@@ -183,13 +180,14 @@ install(DIRECTORY models
 #############
 
 # Tutorial
-catkin_download_test_data(
-  visp_auto_tracker_bag
-  https://github.com/lagadic/vision_visp/releases/download/vision_visp-0.5.0/tutorial-qrcode.bag
-  DESTINATION ${CATKIN_DEVEL_PREFIX}/${CATKIN_PACKAGE_SHARE_DESTINATION}/bag
-  MD5 0f80ceea2610b8400591ca7aff764dfa)
+if(CATKIN_ENABLE_TESTING)
+  catkin_download_test_data(
+    visp_auto_tracker_bag
+    https://github.com/lagadic/vision_visp/releases/download/vision_visp-0.5.0/tutorial-qrcode.bag
+    DESTINATION ${CATKIN_DEVEL_PREFIX}/${CATKIN_PACKAGE_SHARE_DESTINATION}/bag
+    MD5 0f80ceea2610b8400591ca7aff764dfa)
 
-install(DIRECTORY ${CATKIN_DEVEL_PREFIX}/${CATKIN_PACKAGE_SHARE_DESTINATION}/bag
-  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
-)
-
+  install(DIRECTORY ${CATKIN_DEVEL_PREFIX}/${CATKIN_PACKAGE_SHARE_DESTINATION}/bag
+    DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+  )
+endif()
