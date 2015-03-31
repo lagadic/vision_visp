@@ -16,9 +16,9 @@ Changelog for package visp_auto_tracker
   If this parameter is not set, the code that is tracked is the largest in the image.
 * Add frame_size parameter to the tracker client and viewer nodes that allow to specify 
   the lenght (in meter) of the frame axis
-* - Publish the code message of the tracked target on /visp_auto_tracker/code_message topic. 
+* Publish the code message of the tracked target on /visp_auto_tracker/code_message topic. 
   If no target is tracked, publish an empty message.
-  - Remove fps printing
+  Remove fps printing
 * Fix to publish covariance matrix associated to the pose estimation
 * Fix to publish an empty list of moving edges and klt points on their respective topics when 
   the tracker fails
