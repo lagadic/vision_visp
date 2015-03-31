@@ -52,12 +52,6 @@ int64 ntotal_sample # How many discretization points are used to track the
 		    # Increasing this value makes the tracking slower.
 
 int64 strip             # How many pixels are ignored around the borders.
-float64 min_samplestep  # Minimum allowed samplestep. Useful to specify
-			# a lower bound when the samplestep is changed
-			# dynamically.
-			# This is not done by visp_tracker currently.
-float64 aberration      # Ignored.
-float64 init_aberration # Ignored.
 
 
 # Tracker parameters.

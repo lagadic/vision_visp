@@ -125,11 +125,7 @@ void convertModelBasedSettingsConfigToVpMe(const ConfigType& config,
   moving_edge.mu2 = config.mu2;
   moving_edge.sample_step = config.sample_step;
   moving_edge.ntotal_sample = config.ntotal_sample;
-
   moving_edge.strip = config.strip;
-  moving_edge.min_samplestep = config.min_samplestep;
-  moving_edge.aberration = config.aberration;
-  moving_edge.init_aberration = config.init_aberration;
 
   t->setLambda(config.lambda);
 #if VISP_VERSION_INT >= VP_VERSION_INT(2,10,0)
@@ -161,11 +157,7 @@ void convertVpMeToModelBasedSettingsConfig(const vpMe& moving_edge,
   config.mu2 = moving_edge.mu2;
   config.sample_step = moving_edge.sample_step;
   config.ntotal_sample = moving_edge.ntotal_sample;
-
   config.strip = moving_edge.strip;
-  config.min_samplestep = moving_edge.min_samplestep;
-  config.aberration = moving_edge.aberration;
-  config.init_aberration = moving_edge.init_aberration;
 
   config.lambda = t->getLambda();
 

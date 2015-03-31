@@ -205,12 +205,7 @@ void convertVpMeToInitRequest(const vpMe& moving_edge,
   srv.request.moving_edge.mu2 = moving_edge.mu2;
   srv.request.moving_edge.sample_step = moving_edge.sample_step;
   srv.request.moving_edge.ntotal_sample = moving_edge.ntotal_sample;
-
   srv.request.moving_edge.strip = moving_edge.strip;
-  srv.request.moving_edge.min_samplestep = moving_edge.min_samplestep;
-  srv.request.moving_edge.aberration = moving_edge.aberration;
-  srv.request.moving_edge.init_aberration = moving_edge.init_aberration;
-
   srv.request.moving_edge.lambda = t->getLambda();
 
 #if VISP_VERSION_INT >= VP_VERSION_INT(2,10,0)
@@ -234,11 +229,7 @@ void convertInitRequestToVpMe(const visp_tracker::Init::Request& req,
   moving_edge.mu2 = req.moving_edge.mu2;
   moving_edge.sample_step = req.moving_edge.sample_step;
   moving_edge.ntotal_sample = req.moving_edge.ntotal_sample;
-
   moving_edge.strip = req.moving_edge.strip;
-  moving_edge.min_samplestep = req.moving_edge.min_samplestep;
-  moving_edge.aberration = req.moving_edge.aberration;
-  moving_edge.init_aberration = req.moving_edge.init_aberration;
 
   t->setLambda(req.moving_edge.lambda);
 #if VISP_VERSION_INT >= VP_VERSION_INT(2,10,0)

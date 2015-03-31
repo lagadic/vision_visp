@@ -137,10 +137,10 @@ namespace visp_tracker
       convertVpMbTrackerToRosMessage(tracker_);
       // - Moving edges.
       if(trackerType_!="klt")
-        convertVpMeToRosMessage(movingEdge_);
+        convertVpMeToRosMessage(movingEdge);
 
       if(trackerType_!="mbt")
-        convertVpKltOpencvToRosMessage(tracker_,kltTracker_);
+        convertVpKltOpencvToRosMessage(tracker_,klt);
     }
     catch(const std::string& str)
     {
