@@ -34,5 +34,3 @@ Changelog for package vision_visp
 0.7.0 (2014-03-12)
 ------------------
 
-
-

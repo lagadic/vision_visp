@@ -11,7 +11,7 @@
 
   <license>GPLv2</license>
 
-  <url>http://ros.org/wiki/visp_bridge</url>
+  <url>http://wiki.ros.org/visp_bridge</url>
 
   <buildtool_depend>catkin</buildtool_depend>
   <build_depend>geometry_msgs</build_depend>

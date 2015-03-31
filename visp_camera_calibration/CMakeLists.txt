@@ -21,7 +21,7 @@ include_directories(SYSTEM
   ${catkin_INCLUDE_DIRS}
   )
 link_directories(
-  ${BULLET_LIBRARY_DIRS}
+#  ${BULLET_LIBRARY_DIRS}
   ${Boost_LIBRARY_DIRS}
   ${VISP_LIBRARY_DIRS}
   ${catkin_LIBRARY_DIRS}

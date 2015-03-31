@@ -11,6 +11,7 @@
 
 #include <ros/ros.h>
 #include <ros/param.h>
+#include <ros/package.h>
 #include <dynamic_reconfigure/server.h>
 #include <geometry_msgs/PoseWithCovarianceStamped.h>
 #include <image_proc/advertisement_checker.h>
@@ -29,6 +30,8 @@
 #undef protected
 
 #include <visp/vpDisplayX.h>
+#include <visp/vpImageIo.h>
+#include <visp/vpIoTools.h>
 
 #include "conversion.hh"
 #include "callbacks.hh"
@@ -51,15 +54,20 @@ namespace visp_tracker
       imageTransport_(nodeHandle_),
       image_(),
       modelPath_(),
+      modelPathAndExt_(),
       modelName_(),
       cameraPrefix_(),
       rectifiedImageTopic_(),
       cameraInfoTopic_(),
-      vrmlPath_(),
-      initPath_(),
+      trackerType_("mbt"),
+      frameSize_(0.1),
+      bModelPath_(),
+      bInitPath_(),
       cameraSubscriber_(),
       mutex_(),
-      reconfigureSrv_(mutex_, nodeHandlePrivate_),
+      reconfigureSrv_(NULL),
+      reconfigureKltSrv_(NULL),
+      reconfigureEdgeSrv_(NULL),
       movingEdge_(),
       kltTracker_(),
       cameraParameters_(),
@@ -87,6 +95,8 @@ namespace visp_tracker
     else
       tracker_ = new vpMbEdgeKltTracker();
 
+    nodeHandlePrivate_.param<double>("frame_size", frameSize_, 0.1);
+
     //tracker_->resetTracker(); // TO CHECK
 
     if (modelName_.empty ())
@@ -101,8 +111,8 @@ namespace visp_tracker
     ros::Rate rate (1);
     while (cameraPrefix_.empty ())
       {
-	if (!nodeHandle_.getParam ("camera_prefix", cameraPrefix_))
-	  {
+      if (!nodeHandle_.getParam ("camera_prefix", cameraPrefix_) && !ros::param::get ("~camera_prefix", cameraPrefix_))
+    {
 	    ROS_WARN
 	      ("the camera_prefix parameter does not exist.\n"
 	       "This may mean that:\n"
@@ -141,11 +151,31 @@ namespace visp_tracker
     }
     
     // Dynamic reconfigure.
-    reconfigureSrv_t::CallbackType f =
-      boost::bind(&reconfigureCallback, boost::ref(tracker_),
-                  boost::ref(image_), boost::ref(movingEdge_), boost::ref(kltTracker_),
-                  boost::ref(trackerType_), boost::ref(mutex_), _1, _2);
-    reconfigureSrv_.setCallback(f);
+    if(trackerType_=="mbt+klt"){ // Hybrid Tracker reconfigure
+      reconfigureSrv_ = new reconfigureSrvStruct<visp_tracker::ModelBasedSettingsConfig>::reconfigureSrv_t(mutex_, nodeHandlePrivate_);
+      reconfigureSrvStruct<visp_tracker::ModelBasedSettingsConfig>::reconfigureSrv_t::CallbackType f =
+        boost::bind(&reconfigureCallback, boost::ref(tracker_),
+                    boost::ref(image_), boost::ref(movingEdge_), boost::ref(kltTracker_),
+                    boost::ref(trackerType_), boost::ref(mutex_), _1, _2);
+      reconfigureSrv_->setCallback(f);
+    }
+    else if(trackerType_=="mbt"){ // Edge Tracker reconfigure
+      reconfigureEdgeSrv_ = new reconfigureSrvStruct<visp_tracker::ModelBasedSettingsEdgeConfig>::reconfigureSrv_t(mutex_, nodeHandlePrivate_);
+      reconfigureSrvStruct<visp_tracker::ModelBasedSettingsEdgeConfig>::reconfigureSrv_t::CallbackType f =
+        boost::bind(&reconfigureEdgeCallback, boost::ref(tracker_),
+                    boost::ref(image_), boost::ref(movingEdge_),
+                    boost::ref(mutex_), _1, _2);
+      reconfigureEdgeSrv_->setCallback(f);
+    }
+    else{ // KLT Tracker reconfigure
+      reconfigureKltSrv_ = new reconfigureSrvStruct<visp_tracker::ModelBasedSettingsKltConfig>::reconfigureSrv_t(mutex_, nodeHandlePrivate_);
+      reconfigureSrvStruct<visp_tracker::ModelBasedSettingsKltConfig>::reconfigureSrv_t::CallbackType f =
+        boost::bind(&reconfigureKltCallback, boost::ref(tracker_),
+                    boost::ref(image_), boost::ref(kltTracker_),
+                    boost::ref(mutex_), _1, _2);
+      reconfigureKltSrv_->setCallback(f);
+    }
+
 
     // Camera subscriber.
     cameraSubscriber_ = imageTransport_.subscribeCamera
@@ -153,25 +183,11 @@ namespace visp_tracker
        bindImageCallback(image_, header_, info_));
 
     // Model loading.
-    vrmlPath_ = getModelFileFromModelName(modelName_, modelPath_);
-    initPath_ = getInitFileFromModelName(modelName_, modelPath_);
+    bModelPath_ = getModelFileFromModelName(modelName_, modelPath_);
+    bInitPath_ = getInitFileFromModelName(modelName_, modelPath_);
 
-    ROS_INFO_STREAM("VRML file: " << vrmlPath_);
-    ROS_INFO_STREAM("Init file: " << initPath_);
-
-    // Check that required files exist.
-    // if (!boost::filesystem::is_regular_file(vrmlPath_))
-    //   {
-    // 	boost::format fmt("VRML model %1% is not a regular file");
-    // 	fmt % vrmlPath_;
-    // 	throw std::runtime_error(fmt.str());
-    //   }
-    // if (!boost::filesystem::is_regular_file(initPath_))
-    //   {
-    // 	boost::format fmt("Initialization file %1% is not a regular file");
-    // 	fmt % initPath_;
-    // 	throw std::runtime_error(fmt.str());
-    //   }
+    ROS_INFO_STREAM("Model file: " << bModelPath_);
+    ROS_INFO_STREAM("Init file: " << bInitPath_);
 
     // Load the 3d model.
     loadModel();
@@ -190,10 +206,11 @@ namespace visp_tracker
     tracker_->setDisplayFeatures(true);
 
     // - Moving edges.
-    movingEdge_.initMask();
     if(trackerType_!="klt"){
+      movingEdge_.initMask();
       vpMbEdgeTracker* t = dynamic_cast<vpMbEdgeTracker*>(tracker_);
       t->setMovingEdge(movingEdge_);
+      movingEdge_.print();
     }
     
     if(trackerType_!="mbt"){
@@ -203,7 +220,6 @@ namespace visp_tracker
 
     // Display camera parameters and moving edges settings.
     ROS_INFO_STREAM(cameraParameters_);
-    movingEdge_.print();
   }
 
   void
@@ -222,111 +238,130 @@ namespace visp_tracker
     fmtWindowTitle % ros::this_node::getNamespace ();
 
     vpDisplayX d(image_, image_.getWidth(), image_.getHeight(),
-		 fmtWindowTitle.str().c_str());
+                 fmtWindowTitle.str().c_str());
 
     ros::Rate loop_rate_tracking(200);
     bool ok = false;
     vpHomogeneousMatrix cMo;
     vpImagePoint point (10, 10);
     while (!ok && !exiting())
+    {
+      try
       {
-	try
-	  {
-	    // Initialize.
-	    vpDisplay::display(image_);
-	    vpDisplay::flush(image_);
-	    if (!startFromSavedPose_)
-	      init();
-	    else
-	      {
-		cMo = loadInitialPose();
-		startFromSavedPose_ = false;
-        tracker_->initFromPose(image_, cMo);
-	      }
+        // Initialize.
+        vpDisplay::display(image_);
+        vpDisplay::flush(image_);
+        if (!startFromSavedPose_)
+          init();
+        else
+        {
+          cMo = loadInitialPose();
+          startFromSavedPose_ = false;
+          tracker_->initFromPose(image_, cMo);
+        }
         tracker_->getPose(cMo);
 
-	    ROS_INFO_STREAM("initial pose [tx,ty,tz,tux,tuy,tuz]:\n"
-			    << vpPoseVector(cMo));
+        ROS_INFO_STREAM("initial pose [tx,ty,tz,tux,tuy,tuz]:\n" << vpPoseVector(cMo).t());
 
-	    // Track once to make sure initialization is correct.
-	    if (confirmInit_)
-	      {
-		vpImagePoint ip;
-		vpMouseButton::vpMouseButtonType button =
-		  vpMouseButton::button1;
-		do
-		  {
-		    vpDisplay::display(image_);
+        // Track once to make sure initialization is correct.
+        if (confirmInit_)
+        {
+          vpImagePoint ip;
+          vpMouseButton::vpMouseButtonType button =
+              vpMouseButton::button1;
+          do
+          {
+            vpDisplay::display(image_);
+            mutex_.lock ();
             tracker_->track(image_);
             tracker_->display(image_, cMo, cameraParameters_,
-				     vpColor::red, 2);
-		    vpDisplay::displayCharString
-		      (image_, point, "tracking, click to initialize tracker",
-		       vpColor::red);
-		    vpDisplay::flush(image_);
+                              vpColor::red, 2);
+            vpDisplay::displayFrame(image_, cMo, cameraParameters_,frameSize_,vpColor::none,2);
             tracker_->getPose(cMo);
+            mutex_.unlock();
+            vpDisplay::displayCharString
+                (image_, point, "tracking, click to initialize tracker",
+                 vpColor::red);
+            vpDisplay::flush(image_);
 
-		    ros::spinOnce();
-		    loop_rate_tracking.sleep();
-		    if (exiting())
-		      return;
-		  }
-		while(!vpDisplay::getClick(image_, ip, button, false));
-		ok = true;
-	      }
-	    else
-	      ok = true;
-	  }
-	catch(const std::runtime_error& e)
-	  {
-	    ROS_ERROR_STREAM("failed to initialize: "
-			     << e.what() << ", retrying...");
-	  }
-	catch(const std::string& str)
-	  {
-	    ROS_ERROR_STREAM("failed to initialize: "
-			     << str << ", retrying...");
-	  }
-	catch(...)
-	  {
-	    ROS_ERROR("failed to initialize, retrying...");
-	  }
+            ros::spinOnce();
+            loop_rate_tracking.sleep();
+            if (exiting())
+              return;
+          }
+          while(!vpDisplay::getClick(image_, ip, button, false));
+          ok = true;
+        }
+        else
+          ok = true;
       }
+      catch(const std::runtime_error& e)
+      {
+        mutex_.unlock();
+        ROS_ERROR_STREAM("failed to initialize: "
+                         << e.what() << ", retrying...");
+      }
+      catch(const std::string& str)
+      {
+        mutex_.unlock();
+        ROS_ERROR_STREAM("failed to initialize: "
+                         << str << ", retrying...");
+      }
+      catch(...)
+      {
+        mutex_.unlock();
+        ROS_ERROR("failed to initialize, retrying...");
+      }
+    }
 
     ROS_INFO_STREAM("Initialization done, sending initial cMo:\n" << cMo);
     try
-      {
-	sendcMo(cMo);
-      }
+    {
+      sendcMo(cMo);
+    }
     catch(std::exception& e)
-      {
-	ROS_ERROR_STREAM("failed to send cMo: " << e.what ());
-      }
+    {
+      ROS_ERROR_STREAM("failed to send cMo: " << e.what ());
+    }
     catch(...)
-      {
-	ROS_ERROR("unknown error happened while sending the cMo, retrying...");
-      }
+    {
+      ROS_ERROR("unknown error happened while sending the cMo, retrying...");
+    }
   }
   
   TrackerClient::~TrackerClient()
   {
     delete tracker_;
+
+    if(reconfigureSrv_ != NULL)
+      delete reconfigureSrv_;
+
+    if(reconfigureKltSrv_ != NULL)
+      delete reconfigureKltSrv_;
+
+    if(reconfigureEdgeSrv_ != NULL)
+      delete reconfigureEdgeSrv_;
   }
 
   void
   TrackerClient::sendcMo(const vpHomogeneousMatrix& cMo)
   {
     ros::ServiceClient client =
-      nodeHandle_.serviceClient<visp_tracker::Init>(visp_tracker::init_service);
+        nodeHandle_.serviceClient<visp_tracker::Init>(visp_tracker::init_service);
+
+
+    ros::ServiceClient clientViewer =
+        nodeHandle_.serviceClient<visp_tracker::Init>(visp_tracker::init_service_viewer);
     visp_tracker::Init srv;
 
     // Load the model and send it to the parameter server.
-    std::string modelDescription = fetchResource
-      (getModelFileFromModelName (modelName_, modelPath_));
+    std::string modelDescription = fetchResource(modelPathAndExt_);
     nodeHandle_.setParam (model_description_param, modelDescription);
 
     vpHomogeneousMatrixToTransform(srv.request.initial_cMo, cMo);
     
+    convertVpMbTrackerToInitRequest(tracker_, srv);
+
     if(trackerType_!="klt"){
       convertVpMeToInitRequest(movingEdge_, tracker_, srv);
     }
@@ -337,19 +372,29 @@ namespace visp_tracker
 
     ros::Rate rate (1);
     while (!client.waitForExistence ())
-      {
-	ROS_INFO
-	  ("Waiting for the initialization service to become available.");
-	rate.sleep ();
-      }
+    {
+      ROS_INFO
+          ("Waiting for the initialization service to become available.");
+      rate.sleep ();
+    }
 
     if (client.call(srv))
-      {
-	if (srv.response.initialization_succeed)
-	  ROS_INFO("Tracker initialized with success.");
-	else
-	  throw std::runtime_error("failed to initialize tracker.");
-      }
+    {
+      if (srv.response.initialization_succeed)
+        ROS_INFO("Tracker initialized with success.");
+      else
+        throw std::runtime_error("failed to initialize tracker.");
+    }
+    else
+      throw std::runtime_error("failed to call service init");
+
+    if (clientViewer.call(srv))
+    {
+      if (srv.response.initialization_succeed)
+        ROS_INFO("Tracker initialized with success.");
+      else
+        throw std::runtime_error("failed to initialize tracker.");
+    }
     else
       throw std::runtime_error("failed to call service init");
   }
@@ -360,17 +405,17 @@ namespace visp_tracker
     try
       {
 	ROS_DEBUG_STREAM("Trying to load the model "
-			 << vrmlPath_.native());
+       << bModelPath_.native());
 
 	std::string modelPath;
 	boost::filesystem::ofstream modelStream;
 	if (!makeModelFile(modelStream,
-			   vrmlPath_.native(),
+         bModelPath_.native(),
 			   modelPath))
 	  throw std::runtime_error ("failed to retrieve model");
 
-    tracker_->loadModel(modelPath.c_str());
-	ROS_INFO("VRML model has been successfully loaded.");
+    tracker_->loadModel(modelPath);
+  ROS_INFO("Model has been successfully loaded.");
 
   if(trackerType_=="mbt"){
     vpMbEdgeTracker* t = dynamic_cast<vpMbEdgeTracker*>(tracker_);
@@ -409,7 +454,7 @@ namespace visp_tracker
 	  ("Failed to load the model %1%\n"
 	   "Do you use resource_retriever syntax?\n"
 	   "I.e. replace /my/model/path by file:///my/model/path");
-	fmt % vrmlPath_;
+  fmt % bModelPath_;
 	throw std::runtime_error(fmt.str());
       }
   }
@@ -420,62 +465,107 @@ namespace visp_tracker
     vpHomogeneousMatrix cMo;
     cMo.eye();
 
-    std::string initialPose =
-      getInitialPoseFileFromModelName (modelName_, modelPath_);
+    std::string initialPose = getInitialPoseFileFromModelName (modelName_, modelPath_);
     std::string resource;
     try
+    {
+      resource = fetchResource (initialPose);
+      std::stringstream file;
+      file << resource;
+
+      if (!file.good())
       {
-	resource = fetchResource (initialPose);
+        ROS_WARN_STREAM("failed to load initial pose: " << initialPose << "\n"
+                        << "using identity as initial pose");
+        return cMo;
       }
+
+      vpPoseVector pose;
+      for (unsigned i = 0; i < 6; ++i) {
+        if (file.good())
+          file >> pose[i];
+        else
+        {
+          ROS_WARN("failed to parse initial pose file");
+          return cMo;
+        }
+      }
+      cMo.buildFrom(pose);
+      return cMo;
+    }
     catch (...)
-      {
-	ROS_WARN_STREAM
-	  ("failed to retrieve initial pose: " << initialPose << "\n"
-	   << "using identity as initial pose");
-	return cMo;
-      }
-    std::stringstream file;
-    file << resource;
+    {
+      // Failed to retrieve initial pose since model path starts with http://, package://, file:///
+      // We try to read from temporary file /tmp/$USER/
+      std::string username;
+      vpIoTools::getUserName(username);
 
-    if (!file.good())
-      {
-	ROS_WARN_STREAM("failed to load initial pose: " << initialPose << "\n"
-			<< "using identity as initial pose");
-	return cMo;
+      std::string filename;
+  #if defined(_WIN32)
+      filename ="C:/temp/" + username;
+  #else
+      filename ="/tmp/" + username;
+  #endif
+      filename += "/" + modelName_ + ".0.pos";
+      ROS_INFO_STREAM("Try to read init pose from: " << filename);
+      if (vpIoTools::checkFilename(filename)) {
+        ROS_INFO_STREAM("Retrieve initial pose from: " << filename);
+        std::ifstream in( filename.c_str() );
+        vpPoseVector pose;
+        pose.load(in);
+        cMo.buildFrom(pose);
+        in.close();
       }
 
-    vpPoseVector pose;
-    for (unsigned i = 0; i < 6; ++i)
-      if (file.good())
-	file >> pose[i];
-      else
-	{
-	  ROS_WARN("failed to parse initial pose file");
-	  return cMo;
-	}
-    cMo.buildFrom(pose);
-    return cMo;
+      return cMo;
+    }
   }
 
   void
   TrackerClient::saveInitialPose(const vpHomogeneousMatrix& cMo)
   {
-    boost::filesystem::path initialPose =
-      getInitialPoseFileFromModelName(modelName_, modelPath_);
+    boost::filesystem::path initialPose = getInitialPoseFileFromModelName(modelName_, modelPath_);
     boost::filesystem::ofstream file(initialPose);
     if (!file.good())
-      {
-	ROS_WARN_STREAM
-	  ("failed to save initial pose: " << initialPose
-	   <<"\n"
-	   <<"Note: this is normal is you use a remote resource."
-	   <<"\n"
-	   <<"I.e. your model path starts with http://, package://, etc.");
-	return;
+    {
+      // Failed to save initial pose since model path starts with http://, package://, file:///
+      // We create a temporary file in /tmp/$USER/
+      std::string username;
+      vpIoTools::getUserName(username);
+
+      // Create a log filename to save velocities...
+      std::string logdirname;
+  #if defined(_WIN32)
+      logdirname ="C:/temp/" + username;
+  #else
+      logdirname ="/tmp/" + username;
+  #endif
+      // Test if the output path exist. If no try to create it
+      if (vpIoTools::checkDirectory(logdirname) == false) {
+        try {
+          vpIoTools::makeDirectory(logdirname);
+        }
+        catch (...) {
+          ROS_WARN_STREAM("Unable to create the folder " << logdirname << " to save the initial pose");
+          return;
+        }
       }
-    vpPoseVector pose;
-    pose.buildFrom(cMo);
-    file << pose;
+      std::string filename = logdirname + "/" + modelName_ + ".0.pos";
+      ROS_INFO_STREAM("Save initial pose in: " << filename);
+      std::fstream finitpos ;
+      finitpos.open(filename.c_str(), std::ios::out) ;
+      vpPoseVector pose;
+      pose.buildFrom(cMo);
+
+      finitpos << pose;
+      finitpos.close();
+    }
+    else {
+      ROS_INFO_STREAM("Save initial pose in: " << initialPose);
+      vpPoseVector pose;
+      pose.buildFrom(cMo);
+      file << pose;
+    }
   }
 
   TrackerClient::points_t
@@ -484,33 +574,55 @@ namespace visp_tracker
     points_t points;
 
     std::string init =
-      getInitFileFromModelName(modelName_, modelPath_);
+        getInitFileFromModelName(modelName_, modelPath_);
     std::string resource = fetchResource(init);
     std::stringstream file;
     file << resource;
 
     if (!file.good())
-      {
-	boost::format fmt("failed to load initialization points: %1");
-	fmt % init;
-	throw std::runtime_error(fmt.str());
-      }
+    {
+      boost::format fmt("failed to load initialization points: %1");
+      fmt % init;
+      throw std::runtime_error(fmt.str());
+    }
 
-    unsigned npoints = 0;
+    char c;
+    // skip lines starting with # as comment
+    file.get(c);
+    while (!file.fail() && (c == '#')) {
+      file.ignore(256, '\n');
+      file.get(c);
+    }
+    file.unget();
+
+    unsigned int npoints;
     file >> npoints;
-    if (!file.good())
-      throw std::runtime_error("failed to read initialization file");
+    file.ignore(256, '\n'); // skip the rest of the line
+    ROS_INFO_STREAM("Number of 3D points  " << npoints << "\n");
 
-    double X = 0., Y = 0., Z = 0.;
+    if (npoints > 100000) {
+      throw vpException(vpException::badValue,
+                        "Exceed the max number of points.");
+    }
+
     vpPoint point;
-    for (unsigned i = 0; i < npoints; ++i)
-      {
-	if (!file.good())
-	  throw std::runtime_error("failed to read initialization file");
-	file >> X >> Y >> Z;
-	point.setWorldCoordinates(X,Y,Z);
-	points.push_back(point);
+    double X = 0., Y = 0., Z = 0.;
+    for (unsigned int i=0 ; i < npoints ; i++){
+      // skip lines starting with # as comment
+      file.get(c);
+      while (!file.fail() && (c == '#')) {
+        file.ignore(256, '\n');
+        file.get(c);
       }
+      file.unget();
+
+      file >> X >> Y >> Z ;
+      file.ignore(256, '\n'); // skip the rest of the line
+
+      point.setWorldCoordinates(X,Y,Z) ; // (X,Y,Z)
+      points.push_back(point);
+    }
+
     return points;
   }
 
@@ -519,14 +631,15 @@ namespace visp_tracker
     ros::Rate loop_rate(200);
     vpImagePoint ip;
     vpMouseButton::vpMouseButtonType button = vpMouseButton::button1;
-
     vpDisplay::display(image_);
+    tracker_->setDisplayFeatures(false);
     tracker_->display(image_, cMo, cameraParameters_, vpColor::green);
-    vpDisplay::displayFrame(image_, cMo, cameraParameters_,0.05, vpColor::green);
+    vpDisplay::displayFrame(image_, cMo, cameraParameters_,frameSize_,vpColor::none,2);
     vpDisplay::displayCharString(image_, 15, 10,
-        "left click to validate, right click to modify initial pose",
+        "Left click to validate, right click to modify initial pose",
         vpColor::red);
     vpDisplay::flush(image_);
+    tracker_->setDisplayFeatures(true);
 
     do
     {
@@ -551,6 +664,7 @@ namespace visp_tracker
     vpImagePoint point (10, 10);
 
     cMo = loadInitialPose();
+    tracker_->initFromPose(image_, cMo);
 
     // Show last cMo.
     vpImagePoint ip;
@@ -558,8 +672,68 @@ namespace visp_tracker
 
     if(validatePose(cMo))
     {
-      tracker_->initFromPose(image_, cMo);
       return;
+    }
+    vpDisplayX *initHelpDisplay = NULL;
+
+    std::string helpImagePath;
+    nodeHandlePrivate_.param<std::string>("help_image_path", helpImagePath, "");
+    if (helpImagePath.empty()){
+
+      resource_retriever::MemoryResource resource;
+
+      try{
+        resource = resourceRetriever_.get( getHelpImageFileFromModelName(modelName_, modelPath_) );
+        char* tmpname = strdup("/tmp/tmpXXXXXX");
+        if (mkdtemp(tmpname) == NULL) {
+          ROS_ERROR_STREAM("Failed to create the temporary directory: " << strerror(errno));
+        }
+        else {
+          boost::filesystem::path path(tmpname);
+          path /= ("help.ppm");
+          free(tmpname);
+
+          helpImagePath = path.native();
+          ROS_INFO("Copy help image from %s to %s", getHelpImageFileFromModelName(modelName_, modelPath_).c_str(),
+                   helpImagePath.c_str());
+
+
+          FILE* f = fopen(helpImagePath.c_str(), "w");
+          fwrite(resource.data.get(), resource.size, 1, f);
+          fclose(f);
+        }
+      }
+      catch(...){
+      }
+
+      ROS_WARN_STREAM("Auto detection of help file: " << helpImagePath);
+    }
+
+    if (!helpImagePath.empty()){
+      try {
+        // check if the file exists
+        if (! vpIoTools::checkFilename(helpImagePath)) {
+          ROS_WARN("Error tracker initialization help image file \"%s\" doesn't exist", helpImagePath.c_str());
+        }
+        else {
+          ROS_INFO_STREAM("Load help image: " << helpImagePath);
+          int winx = 0;
+          int winy = 0;
+#if VISP_VERSION_INT >= VP_VERSION_INT(2,10,0)
+          winx = image_.display->getWindowXPosition();
+          winy = image_.display->getWindowYPosition();
+#endif
+          initHelpDisplay = new vpDisplayX (winx+image_.getWidth()+20, winy, "Init help image");
+
+          vpImage<vpRGBa> initHelpImage;
+          vpImageIo::read(initHelpImage, helpImagePath);
+          initHelpDisplay->init(initHelpImage);
+          vpDisplay::display(initHelpImage);
+          vpDisplay::flush(initHelpImage);
+        }
+      } catch(vpException &e) {
+        ROS_WARN("Error diplaying tracker initialization help image file \"%s\":\n%s", helpImagePath.c_str(), e.what());
+      }
     }
 
     points_t points = loadInitializationPoints();
@@ -594,6 +768,8 @@ namespace visp_tracker
     }
     tracker_->initFromPose(image_, cMo);
     saveInitialPose(cMo);
+    if (initHelpDisplay != NULL)
+      delete initHelpDisplay;
   }
 
   void
@@ -664,11 +840,36 @@ namespace visp_tracker
 
   bool
   TrackerClient::makeModelFile(boost::filesystem::ofstream& modelStream,
-			       const std::string& resourcePath,
-			       std::string& fullModelPath)
+                               const std::string& resourcePath,
+                               std::string& fullModelPath)
   {
-    resource_retriever::MemoryResource resource =
-      resourceRetriever_.get(resourcePath);
+    std::string modelExt_ = ".wrl";
+    bool vrmlWorked = true;
+    resource_retriever::MemoryResource resource;
+
+    try{
+      resource = resourceRetriever_.get(resourcePath + modelExt_);
+    }
+    catch(...){
+      vrmlWorked = false;
+    }
+
+    if(!vrmlWorked){
+      modelExt_ = ".cao";
+
+      try{
+        resource = resourceRetriever_.get(resourcePath + modelExt_);
+      }
+      catch(...){
+        ROS_ERROR_STREAM("No .cao nor .wrl file found in: " << resourcePath);
+      }
+    }
+
+    modelPathAndExt_ = resourcePath + modelExt_;
+
+    //ROS_WARN_STREAM("Model file Make Client: " << resourcePath << modelExt_);
+
+    // Crash after when model not found
     std::string result;
     result.resize(resource.size);
     unsigned i = 0;
@@ -678,24 +879,27 @@ namespace visp_tracker
 
     char* tmpname = strdup("/tmp/tmpXXXXXX");
     if (mkdtemp(tmpname) == NULL)
-      {
-	ROS_ERROR_STREAM
-	  ("Failed to create the temporary directory: " << strerror(errno));
-	return false;
-      }
+    {
+      ROS_ERROR_STREAM
+          ("Failed to create the temporary directory: " << strerror(errno));
+      return false;
+    }
     boost::filesystem::path path(tmpname);
-    path /= "model.wrl";
+    path /= ("model" + modelExt_);
     free(tmpname);
 
     fullModelPath = path.native();
 
+
+    //ROS_WARN_STREAM("Model file Make Client Full path tmp: " << fullModelPath );
+
     modelStream.open(path);
     if (!modelStream.good())
-      {
-	ROS_ERROR_STREAM
-	  ("Failed to create the temporary file: " << path);
-	return false;
-      }
+    {
+      ROS_ERROR_STREAM
+          ("Failed to create the temporary file: " << path);
+      return false;
+    }
     modelStream << result;
     modelStream.flush();
     return true;

@@ -32,6 +32,29 @@ namespace visp_tracker
     }
   } // end of anonymous namespace.
 
+  // Callback to fix ROS bug when /model_description (not properly cleared) doesn't contain the right model of the object to track.
+  // Bug only occurs when viewer is started too early and with a different model than the previous call.
+  bool
+  TrackerViewer::initCallback(visp_tracker::Init::Request& req,
+      visp_tracker::Init::Response& res)
+  {
+    boost::filesystem::ofstream modelStream;
+    std::string path;
+
+    if (!makeModelFile(modelStream, path))
+      throw std::runtime_error
+  ("failed to load the model from the callback");
+    //ROS_WARN_STREAM("Make model Viewer: " << path.c_str());
+    ROS_INFO_STREAM("Model loaded from the service.");
+    modelPath_ = path;
+
+    tracker_.resetTracker();
+    initializeTracker();
+
+    res.initialization_succeed = true;
+    return true;
+  }
+
   TrackerViewer::TrackerViewer(ros::NodeHandle& nh,
 			       ros::NodeHandle& privateNh,
 			       volatile bool& exiting,
@@ -41,6 +64,7 @@ namespace visp_tracker
       nodeHandle_(nh),
       nodeHandlePrivate_(privateNh),
       imageTransport_(nodeHandle_),
+      frameSize_(0.1),
       rectifiedImageTopic_(),
       cameraInfoTopic_(),
       checkInputs_(nodeHandle_, ros::this_node::getName()),
@@ -48,6 +72,7 @@ namespace visp_tracker
       cameraParameters_(),
       image_(),
       info_(),
+      initService_(),
       cMo_(boost::none),
       sites_(),
       imageSubscriber_(),
@@ -70,7 +95,8 @@ namespace visp_tracker
     ros::Rate rate (1);
     while (cameraPrefix.empty ())
       {
-	if (!nodeHandle_.getParam ("camera_prefix", cameraPrefix))
+      // Check for the global parameter /camera_prefix set by visp_tracker node
+      if (!nodeHandle_.getParam ("camera_prefix", cameraPrefix) && !ros::param::get ("~camera_prefix", cameraPrefix))
 	  {
 	    ROS_WARN
 	      ("the camera_prefix parameter does not exist.\n"
@@ -89,38 +115,54 @@ namespace visp_tracker
 	  return;
 	rate.sleep ();
       }
+    nodeHandlePrivate_.param<double>("frame_size", frameSize_, 0.1);
 
     rectifiedImageTopic_ =
       ros::names::resolve(cameraPrefix + "/image_rect");
     cameraInfoTopic_ =
       ros::names::resolve(cameraPrefix + "/camera_info");
 
+    initCallback_t initCallback =
+      boost::bind(&TrackerViewer::initCallback, this, _1, _2);
+
+    initService_ = nodeHandle_.advertiseService
+      (visp_tracker::init_service_viewer, initCallback);
+
     boost::filesystem::ofstream modelStream;
     std::string path;
 
+    unsigned int cpt = 0;
     while (!nodeHandle_.hasParam(visp_tracker::model_description_param))
+    {
+      if (!nodeHandle_.hasParam(visp_tracker::model_description_param))
       {
-	if (!nodeHandle_.hasParam(visp_tracker::model_description_param))
-	  {
-	    ROS_WARN
-	      ("the model_description parameter does not exist.\n"
-	       "This may mean that:\n"
-	       "- the tracker is not launched or not initialized,\n"
-	       "- the tracker and viewer are not running in the same namespace."
-	       );
-	  }
-	if (this->exiting())
-	  return;
-	rate.sleep ();
+        if(cpt%10 == 0){
+          ROS_WARN_STREAM
+              ("[Node: " << ros::this_node::getName() << "]\n"
+               "The model_description parameter does not exist.\n"
+               "This may mean that:\n"
+               "- the tracker is not launched or not initialized,\n"
+               "- the tracker and viewer are not running in the same namespace."
+               );
+        }
+        cpt++;
       }
+      if (this->exiting())
+        return;
+      rate.sleep ();
+    }
+
 
     if (!makeModelFile(modelStream, path))
       throw std::runtime_error
-	("failed to load the model from the parameter server");
+  ("failed to load the model from the parameter server");
+
     ROS_INFO_STREAM("Model loaded from the parameter server.");
-    vrmlPath_ = path;
+    //ROS_WARN_STREAM("Make model Viewer: " << path.c_str());
+    modelPath_ = path;
 
     initializeTracker();
+
     if (this->exiting())
       return;
 
@@ -182,8 +224,8 @@ namespace visp_tracker
     fmtWindowTitle % ros::this_node::getNamespace ();
 
     vpDisplayX d(image_,
-		 image_.getWidth(), image_.getHeight(),
-		 fmtWindowTitle.str().c_str());
+                 image_.getWidth(), image_.getHeight(),
+                 fmtWindowTitle.str().c_str());
     vpImagePoint point (10, 10);
     vpImagePoint pointTime (22, 10);
     vpImagePoint pointCameraTopic (34, 10);
@@ -195,42 +237,44 @@ namespace visp_tracker
     boost::format fmtCameraTopic("camera topic = %s");
     fmtCameraTopic % rectifiedImageTopic_;
     while (!exiting())
+    {
+      vpDisplay::display(image_);
+      displayMovingEdgeSites();
+      displayKltPoints();
+      if (cMo_)
       {
-	vpDisplay::display(image_);
-  displayMovingEdgeSites();
-  displayKltPoints();
-  if (cMo_)
-	  {
-	    try
-	      {
-		tracker_.initFromPose(image_, *cMo_);
-		tracker_.display(image_, *cMo_,
-				 cameraParameters_, vpColor::red);
-	      }
-	    catch(...)
-	      {
-		ROS_DEBUG_STREAM_THROTTLE(10, "failed to display cmo");
-	      }
+        try
+        {
+          tracker_.initFromPose(image_, *cMo_);
+          tracker_.display(image_, *cMo_, cameraParameters_, vpColor::red);
+          vpDisplay::displayFrame(image_, *cMo_, cameraParameters_, frameSize_, vpColor::none, 2);
+        }
+        catch(...)
+        {
+          ROS_DEBUG_STREAM_THROTTLE(10, "failed to display cmo");
+        }
 
         ROS_DEBUG_STREAM_THROTTLE(10, "cMo viewer:\n" << *cMo_);
 
-	    fmt % (*cMo_)[0][3] % (*cMo_)[1][3] % (*cMo_)[2][3];
-	    vpDisplay::displayCharString
-	      (image_, point, fmt.str().c_str(), vpColor::red);
-	    fmtTime % info_->header.stamp.toSec();
-	    vpDisplay::displayCharString
-	      (image_, pointTime, fmtTime.str().c_str(), vpColor::red);
-	    vpDisplay::displayCharString
-	      (image_, pointCameraTopic, fmtCameraTopic.str().c_str(),
-	       vpColor::red);
-	  }
-	else
-	  vpDisplay::displayCharString
-	    (image_, point, "tracking failed", vpColor::red);
-	vpDisplay::flush(image_);
-    ros::spinOnce();
-	loop_rate.sleep();
+        fmt % (*cMo_)[0][3] % (*cMo_)[1][3] % (*cMo_)[2][3];
+        vpDisplay::displayCharString
+            (image_, point, fmt.str().c_str(), vpColor::red);
+        fmtTime % info_->header.stamp.toSec();
+        vpDisplay::displayCharString
+            (image_, pointTime, fmtTime.str().c_str(), vpColor::red);
+        vpDisplay::displayCharString
+            (image_, pointCameraTopic, fmtCameraTopic.str().c_str(),
+             vpColor::red);
       }
+      else{
+        vpDisplay::displayCharString
+            (image_, point, "tracking failed", vpColor::red);
+      }
+
+      vpDisplay::flush(image_);
+      ros::spinOnce();
+      loop_rate.sleep();
+    }
   }
 
   void
@@ -240,7 +284,7 @@ namespace visp_tracker
     while (!exiting()
 	   && (!image_.getWidth() || !image_.getHeight()))
       {
-	ROS_INFO_THROTTLE(1, "waiting for a rectified image...");
+    ROS_INFO_THROTTLE(1, "waiting for a rectified image...");
 	ros::spinOnce();
 	loop_rate.sleep();
       }
@@ -263,16 +307,16 @@ namespace visp_tracker
   {
     try
       {
-	ROS_DEBUG_STREAM("Trying to load the model " << vrmlPath_);
-	tracker_.loadModel(vrmlPath_.native().c_str());
+    //ROS_WARN_STREAM("Trying to load the model Viewer: " << modelPath_);
+    tracker_.loadModel(modelPath_.native().c_str());
       }
     catch(...)
       {
 	boost::format fmt("failed to load the model %1%");
-	fmt % vrmlPath_;
+    fmt % modelPath_;
 	throw std::runtime_error(fmt.str());
       }
-    ROS_INFO("Model has been successfully loaded.");
+    ROS_WARN("Model has been successfully loaded.");
   }
 
   void
@@ -317,21 +361,21 @@ namespace visp_tracker
 
 	switch(suppress)
 	  {
-	  case 0:
+    case vpMeSite::NO_SUPPRESSION:
 	    color = vpColor::green;
 	    break;
-	  case 1:
+    case vpMeSite::CONSTRAST:
 	    color = vpColor::blue;
 	    break;
-	  case 2:
+    case vpMeSite::THRESHOLD:
 	    color = vpColor::purple;
 	    break;
-	  case 4:
+    case vpMeSite::M_ESTIMATOR:
 	    color = vpColor::red;
 	    break;
-	  default:
-	    ROS_ERROR_THROTTLE(10, "bad suppress value");
-	  }
+    default: // vpMeSite::UNKOWN
+      color = vpColor::yellow;
+  }
 
 	vpDisplay::displayCross(image_, vpImagePoint(x, y), 3, color, 1);
       }
@@ -380,10 +424,11 @@ namespace visp_tracker
 	   "Tracking result: %d\n"
 	   "Moving edge sites: %d\n"
 	   "Synchronized tuples: %d\n"
+     "Threshold: %d\n"
 	   "Possible issues:\n"
 	   "\t* The network is too slow.");
 	fmt % countImages_ % countCameraInfo_
-	  % countTrackingResult_ % countMovingEdgeSites_ % countAll_;
+    % countTrackingResult_ % countMovingEdgeSites_ % countAll_ % threshold;
 	ROS_WARN_STREAM_THROTTLE(10, fmt.str());
       }
   }

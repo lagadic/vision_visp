@@ -42,7 +42,7 @@ visp_auto_tracker depends also on libdmtx-dev and libzbar-dev system dependencie
 Supposed you have a catkin work space just run:
 
 	$ cd ~/catkin_ws/src 
-	$ git clone -b hydro-devel --recursive https://github.com/lagadic/vision_visp.git
+	$ git clone -b hydro-devel https://github.com/lagadic/vision_visp.git
 	$ cd ..
 	$ catkin_make --pkg visp_auto_tracker
 

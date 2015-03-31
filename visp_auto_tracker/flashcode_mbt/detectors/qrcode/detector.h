@@ -5,7 +5,7 @@
 #include <vector>
 #include <utility>
 #include <string>
-#include "detector_base.h"
+#include "detectors/detector_base.h"
 #include <zbar.h>
 
 namespace detectors{

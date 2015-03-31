@@ -49,6 +49,7 @@ generate_messages(DEPENDENCIES geometry_msgs sensor_msgs std_msgs)
 catkin_package(
   CATKIN_DEPENDS
     message_runtime
+    roscpp
     sensor_msgs
     std_msgs
     geometry_msgs

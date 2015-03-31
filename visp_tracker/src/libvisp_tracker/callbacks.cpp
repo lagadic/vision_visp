@@ -53,30 +53,95 @@ bindImageCallback(vpImage<unsigned char>& image,
 }
 
 void reconfigureCallback(vpMbTracker* tracker,
-			 vpImage<unsigned char>& I,
-			 vpMe& moving_edge,
+       vpImage<unsigned char>& I,
+       vpMe& moving_edge,
        vpKltOpencv& kltTracker,
        const std::string &trackerType,
-			 boost::recursive_mutex& mutex,
-			 visp_tracker::ModelBasedSettingsConfig& config,
-			 uint32_t level)
+       boost::recursive_mutex& mutex,
+       visp_tracker::ModelBasedSettingsConfig& config,
+       uint32_t level)
 {
   mutex.lock ();
   try
     {
-      ROS_INFO("Reconfigure request received.");
+      ROS_INFO("Reconfigure Model Based Hybrid Tracker request received.");
+
+      convertModelBasedSettingsConfigToVpMbTracker<visp_tracker::ModelBasedSettingsConfig>(config, tracker);
       
       if(trackerType != "klt"){
-        convertModelBasedSettingsConfigToVpMe(config, moving_edge, tracker);
+        convertModelBasedSettingsConfigToVpMe<visp_tracker::ModelBasedSettingsConfig>(config, moving_edge, tracker);
 //         moving_edge.print();
       }
       
       if(trackerType != "mbt")
-        convertModelBasedSettingsConfigToVpKltOpencv(config, kltTracker, tracker); 
+        convertModelBasedSettingsConfigToVpKltOpencv<visp_tracker::ModelBasedSettingsConfig>(config, kltTracker, tracker);
       
       vpHomogeneousMatrix cMo;
       tracker->getPose(cMo);
-      tracker->initFromPose(I, cMo);      
+      // Could not use just initFromPose for hybrid tracker
+      // init() function from edge tracker has to be fixed in the trunk first
+      // It might have to reset the meLines
+      tracker->setPose(I, cMo);
+      tracker->initFromPose(I, cMo);
+    }
+  catch (...)
+    {
+      mutex.unlock ();
+      throw;
+    }
+  mutex.unlock ();
+}
+
+void reconfigureEdgeCallback(vpMbTracker* tracker,
+       vpImage<unsigned char>& I,
+       vpMe& moving_edge,
+       boost::recursive_mutex& mutex,
+       visp_tracker::ModelBasedSettingsEdgeConfig& config,
+       uint32_t level)
+{
+
+  mutex.lock ();
+  try
+    {
+      ROS_INFO("Reconfigure Model Based Edge Tracker request received.");
+
+      convertModelBasedSettingsConfigToVpMbTracker<visp_tracker::ModelBasedSettingsEdgeConfig>(config, tracker);
+      convertModelBasedSettingsConfigToVpMe<visp_tracker::ModelBasedSettingsEdgeConfig>(config, moving_edge, tracker);
+      moving_edge.print();
+
+      vpHomogeneousMatrix cMo;
+      tracker->getPose(cMo);
+      // Could not use initFromPose for edge tracker
+      // init() function has to be fixed in the trunk first
+      // It might have to reset the meLines
+      tracker->setPose(I, cMo);
+    }
+  catch (...)
+    {
+      mutex.unlock ();
+      throw;
+    }
+  mutex.unlock ();
+}
+
+void reconfigureKltCallback(vpMbTracker* tracker,
+       vpImage<unsigned char>& I,
+       vpKltOpencv& kltTracker,
+       boost::recursive_mutex& mutex,
+       visp_tracker::ModelBasedSettingsKltConfig& config,
+       uint32_t level)
+{
+  mutex.lock ();
+  try
+    {
+      ROS_INFO("Reconfigure Model Based KLT Tracker request received.");
+
+      convertModelBasedSettingsConfigToVpMbTracker<visp_tracker::ModelBasedSettingsKltConfig>(config, tracker);
+      convertModelBasedSettingsConfigToVpKltOpencv<visp_tracker::ModelBasedSettingsKltConfig>(config, kltTracker, tracker);
+
+      vpHomogeneousMatrix cMo;
+      tracker->getPose(cMo);
+      tracker->initFromPose(I, cMo);
     }
   catch (...)
     {

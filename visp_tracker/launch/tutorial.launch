@@ -42,6 +42,7 @@
     <param name="model_path" value="package://visp_tracker/models" />
     <param name="model_name" value="laas-box" />
     <param name="tracker_type" value="mbt+klt" />
+    <param name="frame_size" value="0.2" />
 
     <!-- Load recommended settings for tracking initialization. They
       will be automatically forwarded to the tracking node if the
@@ -58,7 +59,9 @@
        ~image_transport parameter to do so, see the image_transport
        package documentation for more information.
   -->
-    <node pkg="visp_tracker" type="visp_tracker_viewer" name="tracker_mbt_viewer"/>
+ <node pkg="visp_tracker" type="visp_tracker_viewer" name="tracker_mbt_viewer">
+    <param name="frame_size" value="0.2" />
+  </node>
 
 
 

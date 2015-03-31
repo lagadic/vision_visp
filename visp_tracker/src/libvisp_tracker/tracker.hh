@@ -19,14 +19,18 @@
 
 # include <visp_tracker/Init.h>
 # include <visp_tracker/ModelBasedSettingsConfig.h>
+# include <visp_tracker/ModelBasedSettingsKltConfig.h>
+# include <visp_tracker/ModelBasedSettingsEdgeConfig.h>
 # include <visp_tracker/MovingEdgeSites.h>
 # include <visp_tracker/KltPoints.h>
 
 # include <visp/vpCameraParameters.h>
 # include <visp/vpHomogeneousMatrix.h>
 # include <visp/vpImage.h>
+
 # include <visp/vpMbTracker.h>
-#include <visp/vpMbEdgeKltTracker.h>
+# include <visp/vpMbEdgeKltTracker.h>
+
 # include <visp/vpMe.h>
 # include <string>
 
@@ -37,12 +41,14 @@ namespace visp_tracker
   public:
     typedef vpImage<unsigned char> image_t;
 
-    typedef dynamic_reconfigure::Server<visp_tracker::ModelBasedSettingsConfig>
-    reconfigureSrv_t;
-
     typedef boost::function<bool (visp_tracker::Init::Request&,
-				  visp_tracker::Init::Response& res)>
+          visp_tracker::Init::Response& res)>
     initCallback_t;
+
+    template<class ConfigType>
+    struct reconfigureSrvStruct{
+      typedef dynamic_reconfigure::Server<ConfigType> reconfigureSrv_t;
+    };
 
     enum State
       {
@@ -101,12 +107,15 @@ namespace visp_tracker
     std::string rectifiedImageTopic_;
     std::string cameraInfoTopic_;
 
-    boost::filesystem::path vrmlPath_;
+    boost::filesystem::path modelPath_;
 
     image_transport::CameraSubscriber cameraSubscriber_;
 
     boost::recursive_mutex mutex_;
-    reconfigureSrv_t reconfigureSrv_;
+
+    reconfigureSrvStruct<visp_tracker::ModelBasedSettingsConfig>::reconfigureSrv_t *reconfigureSrv_;
+    reconfigureSrvStruct<visp_tracker::ModelBasedSettingsKltConfig>::reconfigureSrv_t *reconfigureKltSrv_;
+    reconfigureSrvStruct<visp_tracker::ModelBasedSettingsEdgeConfig>::reconfigureSrv_t *reconfigureEdgeSrv_;
 
     ros::Publisher resultPublisher_;
     ros::Publisher transformationPublisher_;

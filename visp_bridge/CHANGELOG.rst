@@ -59,4 +59,3 @@ Changelog for package visp_bridge
 * Prepare changelogs
 * Contributors: Fabien Spindler
 
-

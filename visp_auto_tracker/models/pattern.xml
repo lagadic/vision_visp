@@ -22,7 +22,7 @@
 		<threshold_outlier>0.7</threshold_outlier> 
   		<max_features>10000</max_features> 
   		<window_size>5</window_size> 
-  		<quality>0.01</quality> 
+  		<quality>0.05</quality> 
   		<min_distance>20</min_distance> 
   		<harris>0.01</harris>
 		<size_block>3</size_block> 
