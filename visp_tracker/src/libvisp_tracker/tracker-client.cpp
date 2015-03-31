@@ -65,7 +65,9 @@ namespace visp_tracker
       bInitPath_(),
       cameraSubscriber_(),
       mutex_(),
-      reconfigureSrv_(mutex_, nodeHandlePrivate_),
+      reconfigureSrv_(NULL),
+      reconfigureKltSrv_(NULL),
+      reconfigureEdgeSrv_(NULL),
       movingEdge_(),
       kltTracker_(),
       cameraParameters_(),
@@ -149,11 +151,31 @@ namespace visp_tracker
     }
     
     // Dynamic reconfigure.
-    reconfigureSrv_t::CallbackType f =
-      boost::bind(&reconfigureCallback, boost::ref(tracker_),
-                  boost::ref(image_), boost::ref(movingEdge_), boost::ref(kltTracker_),
-                  boost::ref(trackerType_), boost::ref(mutex_), _1, _2);
-    reconfigureSrv_.setCallback(f);
+    if(trackerType_=="mbt+klt"){ // Hybrid Tracker reconfigure
+      reconfigureSrv_ = new reconfigureSrvStruct<visp_tracker::ModelBasedSettingsConfig>::reconfigureSrv_t(mutex_, nodeHandlePrivate_);
+      reconfigureSrvStruct<visp_tracker::ModelBasedSettingsConfig>::reconfigureSrv_t::CallbackType f =
+        boost::bind(&reconfigureCallback, boost::ref(tracker_),
+                    boost::ref(image_), boost::ref(movingEdge_), boost::ref(kltTracker_),
+                    boost::ref(trackerType_), boost::ref(mutex_), _1, _2);
+      reconfigureSrv_->setCallback(f);
+    }
+    else if(trackerType_=="mbt"){ // Edge Tracker reconfigure
+      reconfigureEdgeSrv_ = new reconfigureSrvStruct<visp_tracker::ModelBasedSettingsEdgeConfig>::reconfigureSrv_t(mutex_, nodeHandlePrivate_);
+      reconfigureSrvStruct<visp_tracker::ModelBasedSettingsEdgeConfig>::reconfigureSrv_t::CallbackType f =
+        boost::bind(&reconfigureEdgeCallback, boost::ref(tracker_),
+                    boost::ref(image_), boost::ref(movingEdge_),
+                    boost::ref(mutex_), _1, _2);
+      reconfigureEdgeSrv_->setCallback(f);
+    }
+    else{ // KLT Tracker reconfigure
+      reconfigureKltSrv_ = new reconfigureSrvStruct<visp_tracker::ModelBasedSettingsKltConfig>::reconfigureSrv_t(mutex_, nodeHandlePrivate_);
+      reconfigureSrvStruct<visp_tracker::ModelBasedSettingsKltConfig>::reconfigureSrv_t::CallbackType f =
+        boost::bind(&reconfigureKltCallback, boost::ref(tracker_),
+                    boost::ref(image_), boost::ref(kltTracker_),
+                    boost::ref(mutex_), _1, _2);
+      reconfigureKltSrv_->setCallback(f);
+    }
+
 
     // Camera subscriber.
     cameraSubscriber_ = imageTransport_.subscribeCamera
@@ -184,10 +206,11 @@ namespace visp_tracker
     tracker_->setDisplayFeatures(true);
 
     // - Moving edges.
-    movingEdge_.initMask();
     if(trackerType_!="klt"){
+      movingEdge_.initMask();
       vpMbEdgeTracker* t = dynamic_cast<vpMbEdgeTracker*>(tracker_);
       t->setMovingEdge(movingEdge_);
+      movingEdge_.print();
     }
     
     if(trackerType_!="mbt"){
@@ -197,7 +220,6 @@ namespace visp_tracker
 
     // Display camera parameters and moving edges settings.
     ROS_INFO_STREAM(cameraParameters_);
-    movingEdge_.print();
   }
 
   void
@@ -275,16 +297,19 @@ namespace visp_tracker
       }
       catch(const std::runtime_error& e)
       {
+        mutex_.unlock();
         ROS_ERROR_STREAM("failed to initialize: "
                          << e.what() << ", retrying...");
       }
       catch(const std::string& str)
       {
+        mutex_.unlock();
         ROS_ERROR_STREAM("failed to initialize: "
                          << str << ", retrying...");
       }
       catch(...)
       {
+        mutex_.unlock();
         ROS_ERROR("failed to initialize, retrying...");
       }
     }
@@ -307,6 +332,15 @@ namespace visp_tracker
   TrackerClient::~TrackerClient()
   {
     delete tracker_;
+
+    if(reconfigureSrv_ != NULL)
+      delete reconfigureSrv_;
+
+    if(reconfigureKltSrv_ != NULL)
+      delete reconfigureKltSrv_;
+
+    if(reconfigureEdgeSrv_ != NULL)
+      delete reconfigureEdgeSrv_;
   }
 
   void

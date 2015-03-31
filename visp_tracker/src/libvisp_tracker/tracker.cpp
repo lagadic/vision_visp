@@ -22,12 +22,12 @@
 #include <visp/vpImageConvert.h>
 #include <visp/vpCameraParameters.h>
 
+#include "tracker.hh"
+
 #include "conversion.hh"
 #include "callbacks.hh"
 #include "file.hh"
 #include "names.hh"
-
-#include "tracker.hh"
 
 // TODO:
 // - add a topic allowing to suggest an estimation of the cMo
@@ -65,28 +65,42 @@ namespace visp_tracker
 
     // Load moving edges.     
     vpMe movingEdge;
-    visp_tracker::ModelBasedSettingsConfig config;
     tracker_->resetTracker();
 
     // Common parameters
     convertInitRequestToVpMbTracker(req, tracker_);
-    // Update parameters.
-    convertVpMbTrackerToModelBasedSettingsConfig(tracker_, config);
-    reconfigureSrv_.updateConfig(config);
     
     if(trackerType_!="klt"){ // for mbt and hybrid
       convertInitRequestToVpMe(req, tracker_, movingEdge);
-      // Update parameters.
-      convertVpMeToModelBasedSettingsConfig(movingEdge, tracker_, config);
-      reconfigureSrv_.updateConfig(config);
     }
     
     vpKltOpencv klt;
     if(trackerType_!="mbt"){ // for klt and hybrid
       convertInitRequestToVpKltOpencv(req, tracker_, klt);
-      // Update parameters.
-      convertVpKltOpencvToModelBasedSettingsConfig(klt, tracker_, config);
-      reconfigureSrv_.updateConfig(config);
+    }
+
+    if(trackerType_=="mbt+klt"){ // Hybrid Tracker reconfigure
+      visp_tracker::ModelBasedSettingsConfig config;
+      convertVpMbTrackerToModelBasedSettingsConfig<visp_tracker::ModelBasedSettingsConfig>(tracker_, config);
+      reconfigureSrv_->updateConfig(config);
+      convertVpMeToModelBasedSettingsConfig<visp_tracker::ModelBasedSettingsConfig>(movingEdge, tracker_, config);
+      reconfigureSrv_->updateConfig(config);
+      convertVpKltOpencvToModelBasedSettingsConfig<visp_tracker::ModelBasedSettingsConfig>(klt, tracker_, config);
+      reconfigureSrv_->updateConfig(config);
+    }
+    else if(trackerType_=="mbt"){ // Edge Tracker reconfigure
+      visp_tracker::ModelBasedSettingsEdgeConfig config;
+      convertVpMbTrackerToModelBasedSettingsConfig<visp_tracker::ModelBasedSettingsEdgeConfig>(tracker_, config);
+      reconfigureEdgeSrv_->updateConfig(config);
+      convertVpMeToModelBasedSettingsConfig<visp_tracker::ModelBasedSettingsEdgeConfig>(movingEdge, tracker_, config);
+      reconfigureEdgeSrv_->updateConfig(config);
+    }
+    else{ // KLT Tracker reconfigure
+      visp_tracker::ModelBasedSettingsKltConfig config;
+      convertVpMbTrackerToModelBasedSettingsConfig<visp_tracker::ModelBasedSettingsKltConfig>(tracker_, config);
+      reconfigureKltSrv_->updateConfig(config);
+      convertVpKltOpencvToModelBasedSettingsConfig<visp_tracker::ModelBasedSettingsKltConfig>(klt, tracker_, config);
+      reconfigureKltSrv_->updateConfig(config);
     }
     
     state_ = WAITING_FOR_INITIALIZATION;
@@ -257,7 +271,10 @@ namespace visp_tracker
       modelPath_(),
       cameraSubscriber_(),
       mutex_ (),
-      reconfigureSrv_(mutex_, nodeHandlePrivate_),
+      //reconfigureSrv_(mutex_, nodeHandlePrivate_),
+      reconfigureSrv_(NULL),
+      reconfigureKltSrv_(NULL),
+      reconfigureEdgeSrv_(NULL),
       resultPublisher_(),
       transformationPublisher_(),
       movingEdgeSitesPublisher_(),
@@ -367,11 +384,30 @@ namespace visp_tracker
     }
     
     // Dynamic reconfigure.
-    reconfigureSrv_t::CallbackType f =
-      boost::bind(&reconfigureCallback, boost::ref(tracker_),
-                  boost::ref(image_), boost::ref(movingEdge_), boost::ref(kltTracker_),
-                  boost::ref(trackerType_), boost::ref(mutex_), _1, _2);
-    reconfigureSrv_.setCallback(f);
+    if(trackerType_=="mbt+klt"){ // Hybrid Tracker reconfigure
+      reconfigureSrv_ = new reconfigureSrvStruct<visp_tracker::ModelBasedSettingsConfig>::reconfigureSrv_t(mutex_, nodeHandlePrivate_);
+      reconfigureSrvStruct<visp_tracker::ModelBasedSettingsConfig>::reconfigureSrv_t::CallbackType f =
+        boost::bind(&reconfigureCallback, boost::ref(tracker_),
+                    boost::ref(image_), boost::ref(movingEdge_), boost::ref(kltTracker_),
+                    boost::ref(trackerType_), boost::ref(mutex_), _1, _2);
+      reconfigureSrv_->setCallback(f);
+    }
+    else if(trackerType_=="mbt"){ // Edge Tracker reconfigure
+      reconfigureEdgeSrv_ = new reconfigureSrvStruct<visp_tracker::ModelBasedSettingsEdgeConfig>::reconfigureSrv_t(mutex_, nodeHandlePrivate_);
+      reconfigureSrvStruct<visp_tracker::ModelBasedSettingsEdgeConfig>::reconfigureSrv_t::CallbackType f =
+        boost::bind(&reconfigureEdgeCallback, boost::ref(tracker_),
+                    boost::ref(image_), boost::ref(movingEdge_),
+                    boost::ref(mutex_), _1, _2);
+      reconfigureEdgeSrv_->setCallback(f);
+    }
+    else{ // KLT Tracker reconfigure
+      reconfigureKltSrv_ = new reconfigureSrvStruct<visp_tracker::ModelBasedSettingsKltConfig>::reconfigureSrv_t(mutex_, nodeHandlePrivate_);
+      reconfigureSrvStruct<visp_tracker::ModelBasedSettingsKltConfig>::reconfigureSrv_t::CallbackType f =
+        boost::bind(&reconfigureKltCallback, boost::ref(tracker_),
+                    boost::ref(image_), boost::ref(kltTracker_),
+                    boost::ref(mutex_), _1, _2);
+      reconfigureKltSrv_->setCallback(f);
+    }
     
     // Wait for the image to be initialized.
     waitForImage();
@@ -419,6 +455,15 @@ namespace visp_tracker
   Tracker::~Tracker()
   {
     delete tracker_;  
+
+    if(reconfigureSrv_ != NULL)
+      delete reconfigureSrv_;
+
+    if(reconfigureKltSrv_ != NULL)
+      delete reconfigureKltSrv_;
+
+    if(reconfigureEdgeSrv_ != NULL)
+      delete reconfigureEdgeSrv_;
   }
 
   void Tracker::spin()
@@ -462,7 +507,9 @@ namespace visp_tracker
                   mutex_.unlock();
               }
               catch(tf::TransformException& e)
-              {}
+              {
+                mutex_.unlock();
+              }
 
               // If we are lost but an estimation of the object position
               // is provided, use it to try to reinitialize the system.
@@ -493,6 +540,7 @@ namespace visp_tracker
               }
               catch(...)
               {
+                  mutex_.unlock();
                   ROS_WARN_THROTTLE(10, "tracking lost");
                   state_ = LOST;
               }

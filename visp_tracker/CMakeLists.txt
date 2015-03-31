@@ -43,7 +43,10 @@ add_service_files(
 generate_messages(DEPENDENCIES geometry_msgs sensor_msgs std_msgs)
 
 # Dynamic reconfigure.
-generate_dynamic_reconfigure_options(cfg/ModelBasedSettings.cfg)
+generate_dynamic_reconfigure_options(
+    cfg/ModelBasedSettings.cfg
+    cfg/ModelBasedSettingsEdge.cfg
+    cfg/ModelBasedSettingsKlt.cfg)
 
 
 catkin_package(
