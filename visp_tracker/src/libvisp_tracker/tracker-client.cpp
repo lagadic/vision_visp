@@ -205,17 +205,20 @@ namespace visp_tracker
     tracker_->setCameraParameters(cameraParameters_);
     tracker_->setDisplayFeatures(true);
 
+    convertVpMbTrackerToRosMessage(tracker_);
     // - Moving edges.
     if(trackerType_!="klt"){
       movingEdge_.initMask();
       vpMbEdgeTracker* t = dynamic_cast<vpMbEdgeTracker*>(tracker_);
       t->setMovingEdge(movingEdge_);
-      movingEdge_.print();
+      convertVpMeToRosMessage(movingEdge_);
+      //movingEdge_.print();
     }
     
     if(trackerType_!="mbt"){
       vpMbKltTracker* t = dynamic_cast<vpMbKltTracker*>(tracker_);
       t->setKltOpencv(kltTracker_);
+      convertVpKltOpencvToRosMessage(tracker_,kltTracker_);
     }
 
     // Display camera parameters and moving edges settings.

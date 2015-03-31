@@ -37,7 +37,7 @@ namespace visp_tracker
 {
   bool
   Tracker::initCallback(visp_tracker::Init::Request& req,
-			visp_tracker::Init::Response& res)
+                        visp_tracker::Init::Response& res)
   {
     ROS_INFO("Initialization request received.");
 
@@ -45,16 +45,16 @@ namespace visp_tracker
 
     // If something goes wrong, rollback all changes.
     BOOST_SCOPE_EXIT((&res)(tracker_)(&state_)
-		     (&lastTrackedImage_)(&trackerType_))
+                     (&lastTrackedImage_)(&trackerType_))
+    {
+      if(!res.initialization_succeed)
       {
-	if(!res.initialization_succeed)
-	  {
         tracker_->resetTracker();
-	    state_ = WAITING_FOR_INITIALIZATION;
-	    lastTrackedImage_ = 0;
+        state_ = WAITING_FOR_INITIALIZATION;
+        lastTrackedImage_ = 0;
 
-	  }
-      } BOOST_SCOPE_EXIT_END;
+      }
+    } BOOST_SCOPE_EXIT_END;
 
     std::string fullModelPath;
     boost::filesystem::ofstream modelStream;
@@ -63,17 +63,17 @@ namespace visp_tracker
     if (!makeModelFile(modelStream, fullModelPath))
       return true;
 
-    // Load moving edges.     
+    // Load moving edges.
     vpMe movingEdge;
     tracker_->resetTracker();
 
     // Common parameters
     convertInitRequestToVpMbTracker(req, tracker_);
-    
+
     if(trackerType_!="klt"){ // for mbt and hybrid
       convertInitRequestToVpMe(req, tracker_, movingEdge);
     }
-    
+
     vpKltOpencv klt;
     if(trackerType_!="mbt"){ // for klt and hybrid
       convertInitRequestToVpKltOpencv(req, tracker_, klt);
@@ -102,22 +102,22 @@ namespace visp_tracker
       convertVpKltOpencvToModelBasedSettingsConfig<visp_tracker::ModelBasedSettingsKltConfig>(klt, tracker_, config);
       reconfigureKltSrv_->updateConfig(config);
     }
-    
+
     state_ = WAITING_FOR_INITIALIZATION;
     lastTrackedImage_ = 0;
 
     // Load the model.
     try
-      {
-    ROS_DEBUG_STREAM("Trying to load the model Tracker: " << fullModelPath);
-	tracker_->loadModel(fullModelPath.c_str());
-	modelStream.close();
-      }
+    {
+      ROS_DEBUG_STREAM("Trying to load the model Tracker: " << fullModelPath);
+      tracker_->loadModel(fullModelPath.c_str());
+      modelStream.close();
+    }
     catch(...)
-      {
-	ROS_ERROR_STREAM("Failed to load the model: " << fullModelPath);
-	return true;
-      }
+    {
+      ROS_ERROR_STREAM("Failed to load the model: " << fullModelPath);
+      return true;
+    }
     ROS_DEBUG("Model has been successfully loaded.");
 
     // Load the initial cMo.
@@ -129,16 +129,23 @@ namespace visp_tracker
     // Try to initialize the tracker.
     ROS_INFO_STREAM("Initializing tracker with cMo:\n" << cMo_);
     try
-      {
-	tracker_->initFromPose(image_, cMo_);
-	ROS_INFO("Tracker successfully initialized.");
+    {
+      tracker_->initFromPose(image_, cMo_);
+      ROS_INFO("Tracker successfully initialized.");
 
-	movingEdge.print();
-      }
+      //movingEdge.print();
+      convertVpMbTrackerToRosMessage(tracker_);
+      // - Moving edges.
+      if(trackerType_!="klt")
+        convertVpMeToRosMessage(movingEdge_);
+
+      if(trackerType_!="mbt")
+        convertVpKltOpencvToRosMessage(tracker_,kltTracker_);
+    }
     catch(const std::string& str)
-      {
-	ROS_ERROR_STREAM("Tracker initialization has failed: " << str);
-      }
+    {
+      ROS_ERROR_STREAM("Tracker initialization has failed: " << str);
+    }
 
     // Initialization is valid.
     res.initialization_succeed = true;

@@ -46,6 +46,11 @@ void rosImageToVisp(vpImage<unsigned char>& dst,
 void vispImageToRos(sensor_msgs::Image& dst,
 		    const vpImage<unsigned char>& src);
 
+void convertVpMbTrackerToRosMessage(const vpMbTracker* tracker);
+
+void convertVpMeToRosMessage(const vpMe& moving_edge);
+
+void convertVpKltOpencvToRosMessage(const vpMbTracker* tracker, const vpKltOpencv& klt);
 
 void vpHomogeneousMatrixToTransform(geometry_msgs::Transform& dst,
 				    const vpHomogeneousMatrix& src);

@@ -80,6 +80,42 @@ void vispImageToRos(sensor_msgs::Image& dst,
       dst.data[j * dst.step + i] = src[j][i];
 }
 
+
+void convertVpMbTrackerToRosMessage(const vpMbTracker* tracker)
+{
+#if VISP_VERSION_INT >= VP_VERSION_INT(2,10,0)
+  ROS_INFO_STREAM("Model Based Tracker Common Setttings\n" <<
+                  " Angle for polygons apparition...." << vpMath::deg(tracker->getAngleAppear()) <<" degrees\n" <<
+                  " Angle for polygons disparition..." << vpMath::deg(tracker->getAngleDisappear()) << " degrees");
+#endif
+}
+
+void convertVpMeToRosMessage(const vpMe& moving_edge)
+{
+  ROS_INFO_STREAM("Moving Edge Setttings\n" <<
+                  " Size of the convolution masks...." << moving_edge.getMaskSize() <<"x"<< moving_edge.getMaskSize() <<" pixels\n" <<
+                  " Number of masks.................." << moving_edge.getMaskNumber() << "\n" <<
+                  " Query range +/- J................" << moving_edge.getRange() <<" pixels\n" <<
+                  " Likelihood test ratio............" << moving_edge.getThreshold() << "\n" <<
+                  " Contrast tolerance +/-..........." << moving_edge.getMu1() * 100 << "% and " << moving_edge.getMu2() * 100 << "% \n" <<
+                  " Sample step......................" << moving_edge.getSampleStep() <<" pixels\n" <<
+                  " Strip............................" << moving_edge.getStrip() << " pixels\n" );
+}
+
+void convertVpKltOpencvToRosMessage(const vpMbTracker* tracker, const vpKltOpencv& klt)
+{
+  const vpMbKltTracker* t = dynamic_cast<const vpMbKltTracker*>(tracker);
+  ROS_INFO_STREAM("KLT Setttings\n" <<
+                  " Window size......................" << klt.getWindowSize() <<"x"<< klt.getWindowSize() <<" pixels\n" <<
+                  " Mask border......................" << t->getMaskBorder() << " pixels\n" <<
+                  " Maximum number of features......." << klt.getMaxFeatures() <<"\n" <<
+                  " Detected points quality.........." << klt.getQuality() << "\n" <<
+                  " Minimum distance between points.." << klt.getMinDistance() << " pixels\n" <<
+                  " Harris free parameter............" << klt.getHarrisFreeParameter() <<"\n" <<
+                  " Block size......................." << klt.getBlockSize() << "x" << klt.getBlockSize() << " pixels\n" <<
+                  " Number of pyramid levels........." << klt.getPyramidLevels());
+}
+
 void vpHomogeneousMatrixToTransform(geometry_msgs::Transform& dst,
 				    const vpHomogeneousMatrix& src)
 {
