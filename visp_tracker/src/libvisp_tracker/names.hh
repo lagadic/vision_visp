@@ -11,6 +11,7 @@ namespace visp_tracker
   extern std::string klt_points_topic;
   extern std::string camera_velocity_topic;
   extern std::string init_service;
+  extern std::string init_service_viewer;
 
   extern std::string default_model_path;
 

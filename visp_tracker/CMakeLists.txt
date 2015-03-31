@@ -27,6 +27,7 @@ find_package(VISP REQUIRED)
 add_message_files(
   DIRECTORY msg
   FILES
+  TrackerSettings.msg
   KltPoint.msg
   KltPoints.msg
   KltSettings.msg
@@ -42,7 +43,10 @@ add_service_files(
 generate_messages(DEPENDENCIES geometry_msgs sensor_msgs std_msgs)
 
 # Dynamic reconfigure.
-generate_dynamic_reconfigure_options(cfg/ModelBasedSettings.cfg)
+generate_dynamic_reconfigure_options(
+    cfg/ModelBasedSettings.cfg
+    cfg/ModelBasedSettingsEdge.cfg
+    cfg/ModelBasedSettingsKlt.cfg)
 
 
 catkin_package(
@@ -66,14 +70,13 @@ include_directories(SYSTEM
   ${VISP_INCLUDE_DIRS}
   ${catkin_INCLUDE_DIRS}
   )
-link_directories(SYSTEM
-  ${Boost_LIBRARY_DIRS}
-  ${VISP_LIBRARY_DIRS}
-  ${catkin_LIBRARY_DIRS}
-  )
+#link_directories(SYSTEM
+#  ${Boost_LIBRARY_DIRS}
+#  ${VISP_LIBRARY_DIRS}
+#  ${catkin_LIBRARY_DIRS}
+#  )
 
 include_directories(
-  "${CMAKE_CURRENT_SOURCE_DIR}/src"
   "${CMAKE_CURRENT_SOURCE_DIR}/src/libvisp_tracker")
 
 # Add package definitions
@@ -201,15 +204,17 @@ install(FILES nodelet_plugins.xml
 #############
 
 # Tutorial
-catkin_download_test_data(
-  visp_tracker_bag
-  https://github.com/lagadic/vision_visp/releases/download/vision_visp-0.5.0/tutorial-static-box.bag
-  DESTINATION ${CATKIN_DEVEL_PREFIX}/${CATKIN_PACKAGE_SHARE_DESTINATION}/bag
-  MD5 1578dedd48d3f9f5515a8737845ae882)
+if(CATKIN_ENABLE_TESTING)
+  catkin_download_test_data(
+    visp_tracker_bag
+    https://github.com/lagadic/vision_visp/releases/download/vision_visp-0.5.0/tutorial-static-box.bag
+    DESTINATION ${CATKIN_DEVEL_PREFIX}/${CATKIN_PACKAGE_SHARE_DESTINATION}/bag
+    MD5 1578dedd48d3f9f5515a8737845ae882)
 
-install(DIRECTORY ${CATKIN_DEVEL_PREFIX}/${CATKIN_PACKAGE_SHARE_DESTINATION}/bag
-  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
-)
+  install(DIRECTORY ${CATKIN_DEVEL_PREFIX}/${CATKIN_PACKAGE_SHARE_DESTINATION}/bag
+    DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+  )
+endif()
 
 install(DIRECTORY models
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}

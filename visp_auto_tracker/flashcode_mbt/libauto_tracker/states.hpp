@@ -16,6 +16,7 @@
 #include <fstream>
 #include <boost/thread.hpp>
 #include "events.h"
+#include <ros/ros.h>
 
 
 namespace msm = boost::msm;
@@ -111,6 +112,7 @@ namespace tracking{
         if(fsm.get_flush_display()) {
           vpDisplay::display(evt.I);
         }
+#if VISP_VERSION_INT < VP_VERSION_INT(2,10,0)
         std::vector<cv::Point>& polygon = fsm.get_detector().get_polygon();
         if(polygon.size()!=4) {
           if(fsm.get_flush_display()) vpDisplay::flush(evt.I);
@@ -120,10 +122,26 @@ namespace tracking{
         corner1 = vpImagePoint (polygon[1].y,polygon[1].x);
         corner2 = vpImagePoint (polygon[2].y,polygon[2].x);
         corner3 = vpImagePoint (polygon[3].y,polygon[3].x);
+#else
+        // TODO: add a parameter to be able to select the QRcode from it's message
+        // For the moment we get the position of the first code that is the largest in the image
+        std::vector< std::vector< vpImagePoint > > polygons = fsm.get_detector().getPolygon();
+        std::vector< vpImagePoint > polygon(4);
+        if (polygons.size())
+          polygon = polygons[0];
+        if(polygon.size()!=4) {
+          if(fsm.get_flush_display()) vpDisplay::flush(evt.I);
+          return;
+        }
+        corner0 = polygon[0];
+        corner1 = polygon[1];
+        corner2 = polygon[2];
+        corner3 = polygon[3];
+#endif
 
+#if VISP_VERSION_INT < VP_VERSION_INT(2,10,0)
         if(0){//fsm.get_flush_display()){
           vpDisplay::displayRectangle(evt.I,fsm.template get_tracking_box< vpRect > (),getColor(),false,2);
-
           if(polygon.size()==0){
             vpDisplay::displayCharString(evt.I,vpImagePoint(0,0),"TRACKING LOST",vpColor::red);
             vpDisplay::flush(evt.I);
@@ -142,8 +160,9 @@ namespace tracking{
           vpDisplay::displayCharString(evt.I,corner2,"3",vpColor::cyan);
           vpDisplay::displayCharString(evt.I,corner3,"4",vpColor::darkRed);
 
-          vpDisplay::flush(evt.I);
         }
+#endif
+        vpDisplay::flush(evt.I);
       }
   };
 
@@ -234,6 +253,7 @@ namespace tracking{
     int iter_;
   public:
     vpHomogeneousMatrix cMo;
+    vpMatrix covariance;
 
     ~TrackModel(){
       delete plot_;
@@ -244,6 +264,7 @@ namespace tracking{
     template <class Fsm>
     void on_entry(finished const& evt, Fsm& fsm){
       fsm.get_mbt().getPose(cMo);
+      covariance = fsm.get_mbt().getCovarianceMatrix();
     }
 
     template <class Fsm>
@@ -261,8 +282,10 @@ namespace tracking{
     void on_exit(Event const& evt, Fsm& fsm)
     {
       fsm.get_mbt().getPose(cMo);
+      covariance = fsm.get_mbt().getCovarianceMatrix();
       if(fsm.get_flush_display()){
         vpDisplay::display(evt.I);
+
         fsm.get_mbt().display(evt.I, cMo, fsm.get_cam(), vpColor::red, 1);// display the model at the computed pose.
         vpDisplay::displayFrame(evt.I,cMo,fsm.get_cam(),.1,vpColor::none,2);
         if(fsm.get_cmd().using_adhoc_recovery() && fsm.get_cmd().get_adhoc_recovery_display()){
@@ -295,15 +318,13 @@ namespace tracking{
         }
         vpDisplay::flush(evt.I);
 
-        vpMatrix mat = fsm.get_mbt().getCovarianceMatrix();
         if(fsm.get_cmd().show_plot()){
           if(fsm.get_cmd().using_var_limit())
             plot_->plot(0,6,iter_,(double)fsm.get_cmd().get_var_limit());
           for(unsigned int i=0;i<6;i++)
-            plot_->plot(0,i,iter_,mat[i][i]);
+            plot_->plot(0,i,iter_,covariance[i][i]);
         }
       }
-
 
       iter_++;
     }

@@ -10,7 +10,7 @@
   <author>Filip Novotny</author>
   <maintainer email="Fabien.Spindler@inria.fr">Fabien Spindler</maintainer>
   <license>GPLv2</license>
-  <url>http://ros.org/wiki/visp_camera_calibration</url>
+  <url>http://wiki.ros.org/visp_camera_calibration</url>
 
   <buildtool_depend>catkin</buildtool_depend>
 
