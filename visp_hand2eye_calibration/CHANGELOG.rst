@@ -4,7 +4,6 @@ Changelog for package visp_hand2eye_calibration
 
 0.7.0 (2014-03-12)
 ------------------
-<<<<<<< HEAD
 
 0.7.1 (2014-03-13)
 ------------------
@@ -21,30 +20,13 @@ Changelog for package visp_hand2eye_calibration
 * Add missing dependency to ViSP
 * hydro-0.7.1
 * Prepare changelogs
-=======
-* Merge visp_hand2eye_calibration as our subdirectory
-* Contributors: Thomas Moulard
-
-0.7.2 (2014-04-07)
-------------------
-* Fix various dependency issues in the CMakeLists.txt and package.xml files
-* :lipstick: Aesthetic changes
-* Add missing dependency to ViSP
-* Fix errors detected with catkin_lint
->>>>>>> master
 * Contributors: Fabien Spindler, Thomas Moulard
 
 0.7.3 (2014-04-10)
 ------------------
-<<<<<<< HEAD
 * hydro-0.7.2
 * Prepare changelogs
 * Contributors: Fabien Spindler, Thomas Moulard
-=======
-* indigo-0.7.2
-* Prepare changelogs
-* Contributors: Fabien Spindler
->>>>>>> master
 
 0.7.4 (2014-07-03)
 ------------------
@@ -57,4 +39,16 @@ Changelog for package visp_hand2eye_calibration
 * hydro-0.7.4
 * Prepare changelogs
 * Contributors: Fabien Spindler
+
+0.8.0 (2015-04-01)
+------------------
+* Merge branch 'hydro-devel' into hydro
+* Reintroduce link_directories() requested to work with ros-hydro-visp-2.4.9
+* Merge branch 'master' into hydro-devel
+* Remove catkin_lint issues and warnings
+* Fix doc url location
+* hydro-0.7.5
+* Prepare changelogs
+* Contributors: Fabien Spindler
+
 
