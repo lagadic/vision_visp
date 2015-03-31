@@ -22,3 +22,4 @@ Changelog for package vision_visp
 * hydro-0.7.2
 * Contributors: Thomas Moulard
 
+

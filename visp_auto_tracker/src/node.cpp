@@ -4,9 +4,6 @@
 //command line parameters
 #include "cmd_line/cmd_line.h"
 
-//detectors
-#include "detectors/datamatrix/detector.h"
-#include "detectors/qrcode/detector.h"
 
 //tracking
 #include "libauto_tracker/tracking.h"
@@ -19,9 +16,16 @@
 //visp includes
 #include <visp/vpDisplayX.h>
 #include <visp/vpMbEdgeKltTracker.h>
-#include <visp/vpMbKltTracker.h>
-#include <visp/vpMbEdgeTracker.h>
 #include <visp/vpTime.h>
+
+//detectors
+#if VISP_VERSION_INT < VP_VERSION_INT(2,10,0)
+#  include "detectors/datamatrix/detector.h"
+#  include "detectors/qrcode/detector.h"
+#else
+#  include <visp/vpDetectorDataMatrixCode.h>
+#  include <visp/vpDetectorQRCode.h>
+#endif
 
 #include <visp_bridge/camera.h>
 #include <visp_bridge/image.h>
@@ -32,37 +36,62 @@
 #include "resource_retriever/retriever.h"
 
 #include "std_msgs/Int8.h"
-
+#include "std_msgs/String.h"
 
 namespace visp_auto_tracker{
         Node::Node() :
                         n_("~"),
                         queue_size_(1),
-                        got_image_(false){
+                        tracker_config_path_(),
+                        model_description_(),
+                        model_path_(),
+                        model_name_(),
+                        code_message_(),
+                        debug_display_(false),
+                        I_(),
+                        image_header_(),
+                        got_image_(false),
+                        cam_(),
+                        t_(NULL) {
                 //get the tracker configuration file
                 //this file contains all of the tracker's parameters, they are not passed to ros directly.
                 n_.param<std::string>("tracker_config_path", tracker_config_path_, "");
                 n_.param<bool>("debug_display", debug_display_, false);
-                std::string model_name;
                 std::string model_full_path;
                 n_.param<std::string>("model_path", model_path_, "");
-                n_.param<std::string>("model_name", model_name, "");
+                n_.param<std::string>("model_name", model_name_, "");
+                n_.param<std::string>("code_message", code_message_, "");
                 model_path_= model_path_[model_path_.length()-1]=='/'?model_path_:model_path_+std::string("/");
-                model_full_path = model_path_+model_name;
+                model_full_path = model_path_+model_name_;
                 tracker_config_path_ = model_full_path+".cfg";
                 ROS_INFO("model full path=%s",model_full_path.c_str());
+
+                //Parse command line arguments from config file (as ros param)
+                cmd_.init(tracker_config_path_);
+                cmd_.set_data_directory(model_path_); //force data path
+                cmd_.set_pattern_name(model_name_); //force model name
+                cmd_.set_show_fps(false);
+                if (! code_message_.empty()) {
+                  ROS_WARN_STREAM("Track only code with message: \"" << code_message_ << "\"");
+                  cmd_.set_code_message(code_message_);
+                }
+
                 resource_retriever::Retriever r;
-                resource_retriever::MemoryResource res = r.get(std::string("file://")+std::string(model_full_path+".wrl"));
+                resource_retriever::MemoryResource res;
+                try {
+                  res = r.get(std::string("file://")+cmd_.get_mbt_cad_file());
+                }
+                catch(...) {
+                  ROS_ERROR_STREAM("Unable to read wrl or cao model file as resource: " << std::string("file://")+cmd_.get_mbt_cad_file());
+                }
 
                 model_description_.resize(res.size);
-                unsigned i = 0;
-                for (; i < res.size; ++i)
+                for (unsigned int i=0; i < res.size; ++i)
                         model_description_[i] = res.data.get()[i];
 
-                ROS_INFO("model content=%s",model_description_.c_str());
+                ROS_INFO("Model content=%s",model_description_.c_str());
 
                 n_.setParam ("/model_description", model_description_);
-
         }
 
         void Node::waitForImage(){
@@ -83,11 +112,8 @@ namespace visp_auto_tracker{
         }
 
         void Node::spin(){
-                //Parse command line arguments from config file (as ros param)
-                CmdLine cmd(tracker_config_path_);
-                cmd.set_data_directory(model_path_); //force data path
 
-                if(cmd.should_exit()) return; //exit if needed
+                if(cmd_.should_exit()) return; //exit if needed
 
                 vpMbTracker* tracker; //mb-tracker will be chosen according to config
 
@@ -97,19 +123,27 @@ namespace visp_auto_tracker{
                   d = new vpDisplayX();
 
                 //init detector based on user preference
+#if VISP_VERSION_INT < VP_VERSION_INT(2,10,0)
                 detectors::DetectorBase* detector = NULL;
-                if (cmd.get_detector_type() == CmdLine::ZBAR)
+                if (cmd_.get_detector_type() == CmdLine::ZBAR)
                         detector = new detectors::qrcode::Detector;
-                else if(cmd.get_detector_type() == CmdLine::DMTX)
+                else if(cmd_.get_detector_type() == CmdLine::DMTX)
                         detector = new detectors::datamatrix::Detector;
+#else // ViSP >= 2.10.0. In that case we use the detectors from ViSP
+                vpDetectorBase *detector = NULL;
+                if (cmd_.get_detector_type() == CmdLine::ZBAR)
+                        detector = new vpDetectorQRCode;
+                else if(cmd_.get_detector_type() == CmdLine::DMTX)
+                        detector = new vpDetectorDataMatrixCode;
+#endif
 
 #if 0
                 //init tracker based on user preference
-                if(cmd.get_tracker_type() == CmdLine::KLT)
+                if(cmd_.get_tracker_type() == CmdLine::KLT)
                         tracker = new vpMbKltTracker();
-                else if(cmd.get_tracker_type() == CmdLine::KLT_MBT)
+                else if(cmd_.get_tracker_type() == CmdLine::KLT_MBT)
                         tracker = new vpMbEdgeKltTracker();
-                else if(cmd.get_tracker_type() == CmdLine::MBT)
+                else if(cmd_.get_tracker_type() == CmdLine::MBT)
                         tracker = new vpMbEdgeTracker();
 #else
                 // Use the best tracker
@@ -119,7 +153,7 @@ namespace visp_auto_tracker{
                 tracker->setDisplayFeatures(true);
 
                 //compile detectors and paramters into the automatic tracker.
-                t_ = new tracking::Tracker(cmd, detector, tracker, debug_display_);
+                t_ = new tracking::Tracker(cmd_, detector, tracker, debug_display_);
                 t_->start(); //start the state machine
 
                 //subscribe to ros topics and prepare a publisher that will publish the pose
@@ -132,6 +166,7 @@ namespace visp_auto_tracker{
                 ros::Publisher moving_edge_sites_publisher = n_.advertise<visp_tracker::MovingEdgeSites>(moving_edge_sites_topic, queue_size_);
                 ros::Publisher klt_points_publisher = n_.advertise<visp_tracker::KltPoints>(klt_points_topic, queue_size_);
                 ros::Publisher status_publisher = n_.advertise<std_msgs::Int8>(status_topic, queue_size_);
+                ros::Publisher code_message_publisher = n_.advertise<std_msgs::String>(code_message_topic, queue_size_);
 
                 //wait for an image to be ready
                 waitForImage();
@@ -176,6 +211,18 @@ namespace visp_auto_tracker{
                             ps_cov.pose.pose = ps.pose;
                             ps_cov.header = image_header_;
                             ps_cov.header.frame_id = tracker_ref_frame;
+
+                            for (unsigned i = 0; i < track_model.covariance.getRows(); ++i)
+                            {
+                                for (unsigned j = 0; j < track_model.covariance.getCols(); ++j)
+                                {
+                                    unsigned idx = i * track_model.covariance.getCols() + j;
+                                    if (idx >= 36)
+                                        continue;
+                                    ps_cov.pose.covariance[idx] = track_model.covariance[i][j];
+                                }
+                            }
+
                             object_pose_covariance_publisher.publish(ps_cov);
                         }
 
@@ -190,9 +237,13 @@ namespace visp_auto_tracker{
                         // Publish moving edge sites.
                         if (moving_edge_sites_publisher.getNumSubscribers	() > 0)
                         {
-                            visp_tracker::MovingEdgeSitesPtr sites
-                                    (new visp_tracker::MovingEdgeSites);
-                            t_->updateMovingEdgeSites(sites);
+                            visp_tracker::MovingEdgeSitesPtr sites (new visp_tracker::MovingEdgeSites);
+                            // Test if we are in the state tracking::TrackModel. In that case the pose is good;
+                            // we can send the moving edges. Otherwise we send an empty list of features
+                            if (*(t_->current_state()) == 3) {
+                              t_->updateMovingEdgeSites(sites);
+                            }
+
                             sites->header = image_header_;
                             moving_edge_sites_publisher.publish(sites);
                         }
@@ -200,16 +251,36 @@ namespace visp_auto_tracker{
                         // Publish KLT points.
                         if (klt_points_publisher.getNumSubscribers	() > 0)
                         {
-                            visp_tracker::KltPointsPtr klt
-                                    (new visp_tracker::KltPoints);
-                            t_->updateKltPoints(klt);
+                            visp_tracker::KltPointsPtr klt (new visp_tracker::KltPoints);
+                            // Test if we are in the state tracking::TrackModel. In that case the pose is good;
+                            // we can send the klt points. Otherwise we send an empty list of features
+                            if (*(t_->current_state()) == 3) {
+                              t_->updateKltPoints(klt);
+                            }
                             klt->header = image_header_;
                             klt_points_publisher.publish(klt);
                         }
 
+                        if (code_message_publisher.getNumSubscribers() > 0)
+                        {
+                          std_msgs::String message;
+                          if (*(t_->current_state()) == 3) { // Tracking successful
+#if VISP_VERSION_INT < VP_VERSION_INT(2,10,0)
+                            message.data = detector->get_message();
+#else
+                            message.data = detector->getMessage( cmd_.get_code_message_index() );
+#endif
+                          }
+                          else {
+                            message.data = std::string();
+                          }
+                          code_message_publisher.publish(message);
+                          ROS_INFO_STREAM("Code with message \"" <<  message.data << "\" under tracking");
+                        }
+
                         ros::spinOnce();
                         rate.sleep();
-                        if (cmd.show_fps())
+                        if (cmd_.show_fps())
                           std::cout << "Tracking done in " << vpTime::measureTimeMs() - t << " ms" << std::endl;
                 }
                 t_->process_event(tracking::finished());

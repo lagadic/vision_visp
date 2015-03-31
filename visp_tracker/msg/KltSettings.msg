@@ -17,8 +17,5 @@ float64 min_distance      # Minimum distance betwenn two points
 float64 harris          # Harris free parameters
 int64 size_block        # Block size
 int64 pyramid_lvl       # Pyramid levels
-
-float64 angle_appear    # Angle to test faces apparition
-float64 angle_disappear # Angle to test faces disparition
 int64 mask_border       # Mask Border
 

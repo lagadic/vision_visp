@@ -6,7 +6,7 @@
 #include <utility>
 #include <string>
 
-#include "detector_base.h"
+#include "detectors/detector_base.h"
 namespace detectors{
 namespace datamatrix{
   class Detector : public DetectorBase{

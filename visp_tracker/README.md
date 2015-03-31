@@ -25,9 +25,9 @@ This package can be compiled like any other catkin package using `catkin_make`.
 
 ### Prerequisities
 
-First you need to install ViSP as a system dependency. This can be achived using `ros-hydro-visp` package for Ubuntu. Just run:
+First you need to install ViSP as a system dependency. This can be achived using `ros-indigo-visp` package for Ubuntu. Just run:
 
-	$ sudo apt-get install ros-hydro-visp
+	$ sudo apt-get install ros-indigo-visp
 
 If the package is not available (this is for example the case for Fedora) or if you want to use a more recent version of ViSP, you can also install ViSP from source:
 
