@@ -140,15 +140,16 @@ namespace visp_tracker
     checkInputs();
 
     // Set callback for dynamic reconfigure.
-    if(trackerType_!="klt"){
-      vpMbEdgeTracker* t = dynamic_cast<vpMbEdgeTracker*>(tracker_);
-      t->setMovingEdge(movingEdge_);
-    }
+    // No more necessary as it is done via the reconfigure server
+//    if(trackerType_!="klt"){
+//      vpMbEdgeTracker* t = dynamic_cast<vpMbEdgeTracker*>(tracker_);
+//      t->setMovingEdge(movingEdge_);
+//    }
     
-    if(trackerType_!="mbt"){
-      vpMbKltTracker* t = dynamic_cast<vpMbKltTracker*>(tracker_);
-      t->setKltOpencv(kltTracker_);
-    }
+//    if(trackerType_!="mbt"){
+//      vpMbKltTracker* t = dynamic_cast<vpMbKltTracker*>(tracker_);
+//      t->setKltOpencv(kltTracker_);
+//    }
     
     // Dynamic reconfigure.
     if(trackerType_=="mbt+klt"){ // Hybrid Tracker reconfigure
@@ -208,16 +209,18 @@ namespace visp_tracker
     convertVpMbTrackerToRosMessage(tracker_);
     // - Moving edges.
     if(trackerType_!="klt"){
-      movingEdge_.initMask();
-      vpMbEdgeTracker* t = dynamic_cast<vpMbEdgeTracker*>(tracker_);
-      t->setMovingEdge(movingEdge_);
+      // No more necessary as it has been done via the reconfigure server
+//      movingEdge_.initMask();
+//      vpMbEdgeTracker* t = dynamic_cast<vpMbEdgeTracker*>(tracker_);
+//      t->setMovingEdge(movingEdge_);
       convertVpMeToRosMessage(movingEdge_);
       //movingEdge_.print();
     }
     
     if(trackerType_!="mbt"){
-      vpMbKltTracker* t = dynamic_cast<vpMbKltTracker*>(tracker_);
-      t->setKltOpencv(kltTracker_);
+      // No more necessary as it has been done via the reconfigure server
+//      vpMbKltTracker* t = dynamic_cast<vpMbKltTracker*>(tracker_);
+//      t->setKltOpencv(kltTracker_);
       convertVpKltOpencvToRosMessage(tracker_,kltTracker_);
     }
 

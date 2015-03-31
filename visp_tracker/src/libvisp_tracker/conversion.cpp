@@ -241,7 +241,6 @@ void convertInitRequestToVpMe(const visp_tracker::Init::Request& req,
   //FIXME: not sure if this is needed.
   moving_edge.initMask();
   //Reset the tracker and the node state.
-  //FIXME: not sure if this is needed.
   t->setMovingEdge(moving_edge);
 }
 
@@ -276,7 +275,6 @@ void convertInitRequestToVpKltOpencv(const visp_tracker::Init::Request& req,
   klt.setPyramidLevels(req.klt_param.pyramid_lvl);
   t->setMaskBorder((unsigned)req.klt_param.mask_border);
 
-  //FIXME: not sure if this is needed.
   t->setKltOpencv(klt);
 }
 

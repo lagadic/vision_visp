@@ -63,43 +63,40 @@ namespace visp_tracker
     if (!makeModelFile(modelStream, fullModelPath))
       return true;
 
-    // Load moving edges.
-    vpMe movingEdge;
     tracker_->resetTracker();
 
     // Common parameters
     convertInitRequestToVpMbTracker(req, tracker_);
 
     if(trackerType_!="klt"){ // for mbt and hybrid
-      convertInitRequestToVpMe(req, tracker_, movingEdge);
+      convertInitRequestToVpMe(req, tracker_, movingEdge_);
     }
 
-    vpKltOpencv klt;
     if(trackerType_!="mbt"){ // for klt and hybrid
-      convertInitRequestToVpKltOpencv(req, tracker_, klt);
+      convertInitRequestToVpKltOpencv(req, tracker_, kltTracker_);
     }
 
     if(trackerType_=="mbt+klt"){ // Hybrid Tracker reconfigure
       visp_tracker::ModelBasedSettingsConfig config;
       convertVpMbTrackerToModelBasedSettingsConfig<visp_tracker::ModelBasedSettingsConfig>(tracker_, config);
       reconfigureSrv_->updateConfig(config);
-      convertVpMeToModelBasedSettingsConfig<visp_tracker::ModelBasedSettingsConfig>(movingEdge, tracker_, config);
+      convertVpMeToModelBasedSettingsConfig<visp_tracker::ModelBasedSettingsConfig>(movingEdge_, tracker_, config);
       reconfigureSrv_->updateConfig(config);
-      convertVpKltOpencvToModelBasedSettingsConfig<visp_tracker::ModelBasedSettingsConfig>(klt, tracker_, config);
+      convertVpKltOpencvToModelBasedSettingsConfig<visp_tracker::ModelBasedSettingsConfig>(kltTracker_, tracker_, config);
       reconfigureSrv_->updateConfig(config);
     }
     else if(trackerType_=="mbt"){ // Edge Tracker reconfigure
       visp_tracker::ModelBasedSettingsEdgeConfig config;
       convertVpMbTrackerToModelBasedSettingsConfig<visp_tracker::ModelBasedSettingsEdgeConfig>(tracker_, config);
       reconfigureEdgeSrv_->updateConfig(config);
-      convertVpMeToModelBasedSettingsConfig<visp_tracker::ModelBasedSettingsEdgeConfig>(movingEdge, tracker_, config);
+      convertVpMeToModelBasedSettingsConfig<visp_tracker::ModelBasedSettingsEdgeConfig>(movingEdge_, tracker_, config);
       reconfigureEdgeSrv_->updateConfig(config);
     }
     else{ // KLT Tracker reconfigure
       visp_tracker::ModelBasedSettingsKltConfig config;
       convertVpMbTrackerToModelBasedSettingsConfig<visp_tracker::ModelBasedSettingsKltConfig>(tracker_, config);
       reconfigureKltSrv_->updateConfig(config);
-      convertVpKltOpencvToModelBasedSettingsConfig<visp_tracker::ModelBasedSettingsKltConfig>(klt, tracker_, config);
+      convertVpKltOpencvToModelBasedSettingsConfig<visp_tracker::ModelBasedSettingsKltConfig>(kltTracker_, tracker_, config);
       reconfigureKltSrv_->updateConfig(config);
     }
 
@@ -130,6 +127,7 @@ namespace visp_tracker
     ROS_INFO_STREAM("Initializing tracker with cMo:\n" << cMo_);
     try
     {
+      // Bug between setPose() and initFromPose() not present here due to previous call to resetTracker()
       tracker_->initFromPose(image_, cMo_);
       ROS_INFO("Tracker successfully initialized.");
 
@@ -137,10 +135,10 @@ namespace visp_tracker
       convertVpMbTrackerToRosMessage(tracker_);
       // - Moving edges.
       if(trackerType_!="klt")
-        convertVpMeToRosMessage(movingEdge);
+        convertVpMeToRosMessage(movingEdge_);
 
       if(trackerType_!="mbt")
-        convertVpKltOpencvToRosMessage(tracker_,klt);
+        convertVpKltOpencvToRosMessage(tracker_,kltTracker_);
     }
     catch(const std::string& str)
     {
@@ -379,16 +377,17 @@ namespace visp_tracker
       ("object_position_hint", queueSize_, callback);
 
     // Initialization.
-    movingEdge_.initMask();
-    if(trackerType_!="klt"){
-      vpMbEdgeTracker* t = dynamic_cast<vpMbEdgeTracker*>(tracker_);
-      t->setMovingEdge(movingEdge_);
-    }
+    // No more necessary as it is done via the reconfigure server
+//    movingEdge_.initMask();
+//    if(trackerType_!="klt"){
+//      vpMbEdgeTracker* t = dynamic_cast<vpMbEdgeTracker*>(tracker_);
+//      t->setMovingEdge(movingEdge_);
+//    }
     
-    if(trackerType_!="mbt"){
-      vpMbKltTracker* t = dynamic_cast<vpMbKltTracker*>(tracker_);
-      t->setKltOpencv(kltTracker_);
-    }
+//    if(trackerType_!="mbt"){
+//      vpMbKltTracker* t = dynamic_cast<vpMbKltTracker*>(tracker_);
+//      t->setKltOpencv(kltTracker_);
+//    }
     
     // Dynamic reconfigure.
     if(trackerType_=="mbt+klt"){ // Hybrid Tracker reconfigure

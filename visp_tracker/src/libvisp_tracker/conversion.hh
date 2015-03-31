@@ -138,7 +138,6 @@ void convertModelBasedSettingsConfigToVpMe(const ConfigType& config,
   //FIXME: not sure if this is needed.
   moving_edge.initMask();
   //Reset the tracker and the node state.
-  //FIXME: not sure if this is needed.
   t->setMovingEdge(moving_edge);
 }
 
