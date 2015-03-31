@@ -13,13 +13,8 @@
 #include <visp/vpTranslationVector.h>
 #include <visp/vpQuaternionVector.h>
 
-#define protected public
 # include <visp/vpMbEdgeTracker.h>
-#undef protected
-
-#define protected public
 # include <visp/vpMbKltTracker.h>
-#undef protected
 
 #include "conversion.hh"
 
@@ -146,8 +141,8 @@ void convertVpMbTrackerToInitRequest(const vpMbTracker* tracker,
             visp_tracker::Init& srv)
 {
 #if VISP_VERSION_INT >= VP_VERSION_INT(2,10,0)
-  srv.request.tracker_param.angle_appear = vpMath::deg(tracker->angleAppears);
-  srv.request.tracker_param.angle_disappear = vpMath::deg(tracker->angleDisappears);
+  srv.request.tracker_param.angle_appear = vpMath::deg(tracker->getAngleAppear());
+  srv.request.tracker_param.angle_disappear = vpMath::deg(tracker->getAngleDisappear());
 #endif
 }
 
@@ -180,8 +175,13 @@ void convertVpMeToInitRequest(const vpMe& moving_edge,
   srv.request.moving_edge.aberration = moving_edge.aberration;
   srv.request.moving_edge.init_aberration = moving_edge.init_aberration;
 
-  srv.request.moving_edge.lambda = t->lambda;
-  srv.request.moving_edge.first_threshold = t->percentageGdPt;
+  srv.request.moving_edge.lambda = t->getLambda();
+
+#if VISP_VERSION_INT >= VP_VERSION_INT(2,10,0)
+  srv.request.moving_edge.first_threshold = t->getGoodMovingEdgesRatioThreshold();
+#else
+  srv.request.moving_edge.first_threshold = t->getFirstThreshold();
+#endif
 }
 
 void convertInitRequestToVpMe(const visp_tracker::Init::Request& req,
@@ -231,7 +231,7 @@ void convertVpKltOpencvToInitRequest(const vpKltOpencv& klt,
   srv.request.klt_param.harris = klt.getHarrisFreeParameter();
   srv.request.klt_param.size_block = klt.getBlockSize();
   srv.request.klt_param.pyramid_lvl = klt.getPyramidLevels();
-  srv.request.klt_param.mask_border = t->maskBorder;
+  srv.request.klt_param.mask_border = t->getMaskBorder();
 }
 
 void convertInitRequestToVpKltOpencv(const visp_tracker::Init::Request& req,

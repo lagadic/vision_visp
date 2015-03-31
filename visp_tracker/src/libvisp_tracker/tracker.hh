@@ -28,10 +28,8 @@
 # include <visp/vpHomogeneousMatrix.h>
 # include <visp/vpImage.h>
 
-#define protected public
 # include <visp/vpMbTracker.h>
 # include <visp/vpMbEdgeKltTracker.h>
-#undef protected
 
 # include <visp/vpMe.h>
 # include <string>

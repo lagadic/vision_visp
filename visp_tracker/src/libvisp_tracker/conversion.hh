@@ -10,19 +10,10 @@
 # include <tf/transform_datatypes.h>
 
 # include <visp_tracker/Init.h>
-# include <visp_tracker/ModelBasedSettingsConfig.h>
 
-#define protected public
 # include <visp/vpMbEdgeTracker.h>
-#undef protected
-
-#define protected public
 # include <visp/vpMbKltTracker.h>
-#undef protected
-
-#define protected public
 # include <visp/vpMbTracker.h>
-#undef protected
 
 # include <visp/vpHomogeneousMatrix.h>
 # include <visp/vpCameraParameters.h>
@@ -109,8 +100,8 @@ void convertVpMbTrackerToModelBasedSettingsConfig(const vpMbTracker* tracker,
            ConfigType& config)
 {
 #if VISP_VERSION_INT >= VP_VERSION_INT(2,10,0)
-  config.angle_appear = vpMath::deg(tracker->angleAppears);
-  config.angle_disappear = vpMath::deg(tracker->angleDisappears);
+  config.angle_appear = vpMath::deg(tracker->getAngleAppear());
+  config.angle_disappear = vpMath::deg(tracker->getAngleDisappear());
 #endif
 }
 
@@ -171,8 +162,13 @@ void convertVpMeToModelBasedSettingsConfig(const vpMe& moving_edge,
   config.aberration = moving_edge.aberration;
   config.init_aberration = moving_edge.init_aberration;
 
-  config.lambda = t->lambda;
-  config.first_threshold = t->percentageGdPt;
+  config.lambda = t->getLambda();
+
+#if VISP_VERSION_INT >= VP_VERSION_INT(2,10,0)
+  config.first_threshold = t->getGoodMovingEdgesRatioThreshold();
+#else
+  config.first_threshold = t->getFirstThreshold();
+#endif
 }
 
 template<class ConfigType>
@@ -208,7 +204,7 @@ void convertVpKltOpencvToModelBasedSettingsConfig(const vpKltOpencv& klt,
   config.harris = klt.getHarrisFreeParameter();
   config.size_block = klt.getBlockSize();
   config.pyramid_lvl = klt.getPyramidLevels();
-  config.mask_border = t->maskBorder;
+  config.mask_border = t->getMaskBorder();
 }
 
 #endif //! VISP_TRACKER_CONVERSION_HH
