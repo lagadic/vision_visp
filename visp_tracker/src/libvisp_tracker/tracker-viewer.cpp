@@ -131,17 +131,21 @@ namespace visp_tracker
     boost::filesystem::ofstream modelStream;
     std::string path;
 
-
+    unsigned int cpt = 0;
     while (!nodeHandle_.hasParam(visp_tracker::model_description_param))
     {
       if (!nodeHandle_.hasParam(visp_tracker::model_description_param))
       {
-        ROS_WARN
-            ("the model_description parameter does not exist.\n"
-             "This may mean that:\n"
-             "- the tracker is not launched or not initialized,\n"
-             "- the tracker and viewer are not running in the same namespace."
-             );
+        if(cpt%10 == 0){
+          ROS_WARN_STREAM
+              ("[Node: " << ros::this_node::getName() << "]\n"
+               "The model_description parameter does not exist.\n"
+               "This may mean that:\n"
+               "- the tracker is not launched or not initialized,\n"
+               "- the tracker and viewer are not running in the same namespace."
+               );
+        }
+        cpt++;
       }
       if (this->exiting())
         return;
