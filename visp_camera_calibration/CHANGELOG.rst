@@ -21,3 +21,14 @@ Changelog for package visp_camera_calibration
 * Prepare changelogs
 * Contributors: Fabien Spindler, Thomas Moulard
 
+0.8.0 (2015-04-01)
+------------------
+* Remove catkin_lint issues and warnings
+* Fix doc url location
+* Update and fix content of README files
+* Fix to allow calibration on images that are not 640x480
+* 0.7.3
+* Prepare changelogs
+* Prepare changelogs
+* Contributors: Fabien Spindler
+

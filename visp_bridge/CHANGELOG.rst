@@ -20,3 +20,22 @@ Changelog for package visp_bridge
 * Prepare changelogs
 * Contributors: Fabien Spindler
 
+0.8.0 (2015-04-01)
+------------------
+* Remove catkin_lint issues and warnings
+* Fix doc url location
+* Revert previous commit that breaks compat
+* Update and fix content of README files
+* Revised with comments from fspindle
+* Changed the way boost is linked
+* Renamed conversion tool
+* Mark camera parameter converter for installation
+* minor changes
+* Support for distortion camera parameter model
+* Delete existing output file
+* tool for converting visp camera parameter files to/from ros camera  parameter files
+* 0.7.3
+* Prepare changelogs
+* Prepare changelogs
+* Contributors: Fabien Spindler, Riccardo Spica
+
