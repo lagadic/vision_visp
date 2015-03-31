@@ -2,6 +2,16 @@
 Changelog for package visp_bridge
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.8.0 (2015-03-31)
+------------------
+* Merge branch 'indigo-devel' into indigo
+* Remove catkin_lint issues and warnings
+* Fix doc url location
+* Revert previous commit that breaks compat
+* indigo-0.7.5
+* Prepare changelogs
+* Contributors: Fabien Spindler, Riccardo Spica
+
 0.7.5 (2014-08-01)
 ------------------
 * Revert previous commit that breaks compat

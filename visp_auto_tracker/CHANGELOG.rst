@@ -2,6 +2,47 @@
 Changelog for package visp_auto_tracker
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.8.0 (2015-03-31)
+------------------
+* Merge branch 'indigo-devel' into indigo
+* Remove catkin_lint issues and warnings
+* Fix doc url location
+* Update launch files
+* Comment viewer node. Only interesting when visp_auto_tracker debug_display param is False
+* Improve pose computation using Lagrange and Dementhon methods as initialisation
+* Increase quality value to avoid keypoint detection on the black part of the target
+* Introduce code_message parameter as a comment to show how to use.
+* New parameter "code_message" to specify the target to track from the code message.
+  If this parameter is not set, the code that is tracked is the largest in the image.
+* Add frame_size parameter to the tracker client and viewer nodes that allow to specify 
+  the lenght (in meter) of the frame axis
+* - Publish the code message of the tracked target on /visp_auto_tracker/code_message topic. 
+  If no target is tracked, publish an empty message.
+  - Remove fps printing
+* Fix to publish covariance matrix associated to the pose estimation
+* Fix to publish an empty list of moving edges and klt points on their respective topics when 
+  the tracker fails
+* Makes sure klt points that are sent via ros are from visible polygons.
+* Show how to use the viewer with visp_auto_tracker
+* Consider also .cao file to describe the cad model of the object to track with the hybrid 
+  model-based tracker
+* Remove useless include
+* Fix issue https://github.com/lagadic/vision_visp/issues/45 to take into account model_name 
+  parameter set in the launch file.
+* Changes done to use flash code detectors introduced in ViSP 2.10.0 rather than the one in
+  visp_auto_tracker/flashcode_mbt/detectors.
+* Fix to avoid an OpenCV exception when the object roi is outside the image
+* Fix to run the viewer node
+* Fix to publish camera_info with the images
+* Fix compat with ViSP 2.10.0
+* Fix to avoid an OpenCV exception when the object roi is outside the image
+* Fix to run the viewer node
+* Fix to publish camera_info with the images
+* Fix compat with ViSP 2.10.0
+* indigo-0.7.5
+* Prepare changelogs
+* Contributors: Aurelien Yol, Fabien Spindler
+
 0.7.5 (2014-08-01)
 ------------------
 * indigo-0.7.4

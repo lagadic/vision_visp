@@ -2,6 +2,15 @@
 Changelog for package visp_hand2eye_calibration
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.8.0 (2015-03-31)
+------------------
+* Merge branch 'indigo-devel' into indigo
+* Remove catkin_lint issues and warnings
+* Fix doc url location
+* indigo-0.7.5
+* Prepare changelogs
+* Contributors: Fabien Spindler
+
 0.7.5 (2014-08-01)
 ------------------
 * indigo-0.7.4
