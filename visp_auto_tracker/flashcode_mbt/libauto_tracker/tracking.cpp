@@ -298,9 +298,24 @@ namespace tracking{
     for(unsigned int i=0;i<f_.size();i++)
       pose.addPoint(f_[i]);
 
-    pose.computePose(vpPose::LAGRANGE,cMo_);
-    pose.computePose(vpPose::VIRTUAL_VS,cMo_);
-    //vpDisplay::displayFrame(*I_,cMo_,cam_,0.01,vpColor::none,2);
+    try {
+      vpHomogeneousMatrix cMo_dem;
+      vpHomogeneousMatrix cMo_lag;
+      pose.computePose(vpPose::DEMENTHON, cMo_dem);
+      pose.computePose(vpPose::LAGRANGE, cMo_lag);
+      double residual_dem = pose.computeResidual(cMo_dem);
+      double residual_lag = pose.computeResidual(cMo_lag);
+      if (residual_dem < residual_lag)
+        cMo_ = cMo_dem;
+      else
+        cMo_ = cMo_lag;
+      pose.computePose(vpPose::VIRTUAL_VS,cMo_);
+      //vpDisplay::displayFrame(*I_,cMo_,cam_,0.01,vpColor::none,2);
+    }
+    catch(vpException& e) {
+      std::cout << "Pose computation failed: " << e.getStringMessage() << std::endl;
+      return false;
+    }
 
     std::vector<vpImagePoint> model_inner_corner(4);
     std::vector<vpImagePoint> model_outer_corner(4);
@@ -377,10 +392,9 @@ namespace tracking{
       if(cmd.using_var_file() && cmd.using_mbt_dynamic_range())
         writer.write(tracker_me_config_.getRange());
 
-
-
-      for(unsigned int i=0;i<covariance_.getRows();i++)
+      for(unsigned int i=0;i<covariance_.getRows();i++) {
         statistics.var(covariance_[i][i]);
+      }
 
       if(covariance_.getRows() == 6){ //if the covariance matrix is set
         statistics.var_x(covariance_[0][0]);
