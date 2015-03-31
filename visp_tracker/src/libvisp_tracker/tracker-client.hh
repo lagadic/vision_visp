@@ -21,6 +21,8 @@
 # include <resource_retriever/retriever.h>
 
 # include <visp_tracker/ModelBasedSettingsConfig.h>
+# include <visp_tracker/ModelBasedSettingsKltConfig.h>
+# include <visp_tracker/ModelBasedSettingsEdgeConfig.h>
 # include <visp_tracker/MovingEdgeSites.h>
 
 # include <visp/vpCameraParameters.h>
@@ -41,13 +43,10 @@ namespace visp_tracker
     typedef std::vector<vpPoint> points_t;
     typedef std::vector<vpImagePoint> imagePoints_t;
 
-    typedef dynamic_reconfigure::Server<visp_tracker::ModelBasedSettingsConfig>
-    reconfigureSrv_t;
-
-    typedef dynamic_reconfigure::Server
-    <visp_tracker::ModelBasedSettingsConfig>::CallbackType
-    reconfigureCallback_t;
-
+    template<class ConfigType>
+    struct reconfigureSrvStruct{
+      typedef dynamic_reconfigure::Server<ConfigType> reconfigureSrv_t;
+    };
 
     TrackerClient(ros::NodeHandle& nh,
 		  ros::NodeHandle& privateNh,
@@ -103,20 +102,24 @@ namespace visp_tracker
     image_t image_;
 
     std::string modelPath_;
+    std::string modelPathAndExt_;
     std::string modelName_;
 
     std::string cameraPrefix_;
     std::string rectifiedImageTopic_;
     std::string cameraInfoTopic_;
     std::string trackerType_;
+    double frameSize_;
 
-    boost::filesystem::path vrmlPath_;
-    boost::filesystem::path initPath_;
+    boost::filesystem::path bModelPath_;
+    boost::filesystem::path bInitPath_;
 
     image_transport::CameraSubscriber cameraSubscriber_;
 
     boost::recursive_mutex mutex_;
-    reconfigureSrv_t reconfigureSrv_;
+    reconfigureSrvStruct<visp_tracker::ModelBasedSettingsConfig>::reconfigureSrv_t *reconfigureSrv_;
+    reconfigureSrvStruct<visp_tracker::ModelBasedSettingsKltConfig>::reconfigureSrv_t *reconfigureKltSrv_;
+    reconfigureSrvStruct<visp_tracker::ModelBasedSettingsEdgeConfig>::reconfigureSrv_t *reconfigureEdgeSrv_;
 
     std_msgs::Header header_;
     sensor_msgs::CameraInfoConstPtr info_;

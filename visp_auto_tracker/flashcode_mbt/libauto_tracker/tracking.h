@@ -29,7 +29,12 @@
 #include "visp_tracker/KltPoints.h"
 
 #include "cmd_line/cmd_line.h"
+#if VISP_VERSION_INT < VP_VERSION_INT(2,10,0)
 #include "detectors/detector_base.h"
+#else
+#  include <visp/vpDetectorBase.h>
+#endif
+
 #include <visp/vpMbEdgeTracker.h>
 #include "states.hpp"
 #include "events.h"
@@ -57,7 +62,11 @@ namespace tracking{
     int iter_;
     vpImagePoint flashcode_center_;
     std::ofstream varfile_;
+#if VISP_VERSION_INT < VP_VERSION_INT(2,10,0)
     detectors::DetectorBase* detector_;
+#else
+    vpDetectorBase *detector_;
+#endif
     typedef boost::array<vpHinkley,6> hinkley_array_t;
     hinkley_array_t hink_;
 
@@ -66,6 +75,7 @@ namespace tracking{
     vpImage<vpRGBa> *I_;
     vpImage<vpRGBa> *_I;
     vpHomogeneousMatrix cMo_; // Pose computed using the tracker.
+    vpMatrix covariance_; // Covariance associated to the pose estimation
     vpCameraParameters cam_;
     vpImage<unsigned char> Igray_;
 
@@ -85,7 +95,11 @@ namespace tracking{
     //getters to access useful members
     void set_flush_display(bool val);
     bool get_flush_display();
+#if VISP_VERSION_INT < VP_VERSION_INT(2,10,0)
     detectors::DetectorBase& get_detector();
+#else
+    vpDetectorBase& get_detector();
+#endif
     vpMbTracker& get_mbt();
     std::vector<vpPoint>& get_points3D_inner();
     std::vector<vpPoint>& get_points3D_outer();
@@ -104,8 +118,11 @@ namespace tracking{
 
     //constructor
     //inits tracker from a detector, a visp tracker
+#if VISP_VERSION_INT < VP_VERSION_INT(2,10,0)
     Tracker_(CmdLine& cmd, detectors::DetectorBase* detector,vpMbTracker* tracker_,bool flush_display = true);
-
+#else
+    Tracker_(CmdLine& cmd, vpDetectorBase* detector,vpMbTracker* tracker_,bool flush_display = true);
+#endif
     typedef WaitingForInput initial_state;      //initial state of our state machine tracker
 
     //Guards

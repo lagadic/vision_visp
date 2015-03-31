@@ -17,6 +17,7 @@
 # include <sensor_msgs/Image.h>
 # include <sensor_msgs/CameraInfo.h>
 
+# include <visp_tracker/Init.h>
 # include <visp_tracker/MovingEdgeSites.h>
 # include <visp_tracker/KltPoints.h>
 
@@ -32,6 +33,11 @@ namespace visp_tracker
   public:
     /// \brief ViSP image type
     typedef vpImage<unsigned char> image_t;
+
+
+    typedef boost::function<bool (visp_tracker::Init::Request&,
+          visp_tracker::Init::Response& res)>
+    initCallback_t;
 
     /// \brief Synchronization policy
     ///
@@ -66,6 +72,9 @@ namespace visp_tracker
     /// \brief Hang until the first image is received.
     void waitForImage();
 
+    bool initCallback(visp_tracker::Init::Request& req,
+          visp_tracker::Init::Response& res);
+
     /// \brief Callback used to received synchronized data.
     void
     callback
@@ -99,6 +108,7 @@ namespace visp_tracker
     /// \brief Image transport used to receive images.
     image_transport::ImageTransport imageTransport_;
 
+    double frameSize_;
 
     /// \name Topics and services strings.
     /// \{
@@ -111,8 +121,10 @@ namespace visp_tracker
     /// \}
 
 
-    /// \brief VRML model path.
-    boost::filesystem::path vrmlPath_;
+    ros::ServiceServer initService_;
+
+    /// \brief Model path.
+    boost::filesystem::path modelPath_;
 
     /// \brief Helper used to check that subscribed topics exist.
     image_proc::AdvertisementChecker checkInputs_;

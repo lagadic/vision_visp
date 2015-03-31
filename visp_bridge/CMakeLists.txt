@@ -42,11 +42,11 @@ include_directories(SYSTEM
   ${catkin_INCLUDE_DIRS}
   ${Boost_INCLUDE_DIRS}
 )
-link_directories(
-  ${VISP_LIBRARY_DIRS}
-  ${catkin_LIBRARY_DIRS}
-  ${Boost_LIBRARY_DIRS}
-)
+#link_directories(
+#  ${VISP_LIBRARY_DIRS}
+#  ${catkin_LIBRARY_DIRS}
+#  ${Boost_LIBRARY_DIRS}
+#)
 
 # Make sure Boost.Filesystem v3 is used.
 add_definitions(-DBOOST_FILESYSTEM_VERSION=3)

@@ -20,7 +20,7 @@
   <author>Filip Novotny</author>
   <maintainer email="Fabien.Spindler@inria.fr">Fabien Spindler</maintainer>
   <license>GPLv2</license>
-  <url>http://ros.org/wiki/visp_auto_tracker</url>
+  <url>http://wiki.ros.org/visp_auto_tracker</url>
 
   <buildtool_depend>catkin</buildtool_depend>
 

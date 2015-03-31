@@ -81,8 +81,8 @@ vpCameraParameters toVispCameraParameters(const sensor_msgs::CameraInfo& cam_inf
       const double& py = cam_info.P[1 * 4 + 1];
       const double& u0 = cam_info.P[0 * 4 + 2];
       const double& v0 = cam_info.P[1 * 4 + 2];
-      //cam.initPersProjWithDistortion(px, py, u0, v0, -cam_info.D[0], cam_info.D[0]);
       cam.initPersProjWithoutDistortion(px, py, u0, v0);
+      //cam.initPersProjWithDistortion(px, py, u0, v0, -cam_info.D[0], cam_info.D[0]);
       return cam;
     }
 
