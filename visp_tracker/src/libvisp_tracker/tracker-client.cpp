@@ -397,12 +397,12 @@ namespace visp_tracker
     if (clientViewer.call(srv))
     {
       if (srv.response.initialization_succeed)
-        ROS_INFO("Tracker initialized with success.");
+        ROS_INFO("Tracker Viewer initialized with success.");
       else
-        throw std::runtime_error("failed to initialize tracker.");
+        throw std::runtime_error("failed to initialize tracker viewer.");
     }
     else
-      throw std::runtime_error("failed to call service init");
+       ROS_INFO("No Tracker Viewer node to initialize from service");
   }
 
   void
