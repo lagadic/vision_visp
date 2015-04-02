@@ -132,13 +132,13 @@ namespace visp_tracker
       ROS_INFO("Tracker successfully initialized.");
 
       //movingEdge.print();
-      convertVpMbTrackerToRosMessage(tracker_);
+      ROS_INFO_STREAM(convertVpMbTrackerToRosMessage(tracker_));
       // - Moving edges.
       if(trackerType_!="klt")
-        convertVpMeToRosMessage(movingEdge_);
+        ROS_INFO_STREAM(convertVpMeToRosMessage(tracker_, movingEdge_));
 
       if(trackerType_!="mbt")
-        convertVpKltOpencvToRosMessage(tracker_,kltTracker_);
+        ROS_INFO_STREAM(convertVpKltOpencvToRosMessage(tracker_,kltTracker_));
     }
     catch(const std::string& str)
     {

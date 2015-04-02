@@ -46,11 +46,11 @@ void rosImageToVisp(vpImage<unsigned char>& dst,
 void vispImageToRos(sensor_msgs::Image& dst,
 		    const vpImage<unsigned char>& src);
 
-void convertVpMbTrackerToRosMessage(const vpMbTracker* tracker);
+std::string convertVpMbTrackerToRosMessage(const vpMbTracker* tracker);
 
-void convertVpMeToRosMessage(const vpMe& moving_edge);
+std::string convertVpMeToRosMessage(const vpMbTracker* tracker, const vpMe& moving_edge);
 
-void convertVpKltOpencvToRosMessage(const vpMbTracker* tracker, const vpKltOpencv& klt);
+std::string convertVpKltOpencvToRosMessage(const vpMbTracker* tracker, const vpKltOpencv& klt);
 
 void vpHomogeneousMatrixToTransform(geometry_msgs::Transform& dst,
 				    const vpHomogeneousMatrix& src);
@@ -118,16 +118,13 @@ void convertModelBasedSettingsConfigToVpMe(const ConfigType& config,
   vpMbEdgeTracker* t = dynamic_cast<vpMbEdgeTracker*>(tracker);
 
   moving_edge.mask_size = config.mask_size;
-  moving_edge.n_mask = config.n_mask;
   moving_edge.range = config.range;
   moving_edge.threshold = config.threshold;
   moving_edge.mu1 = config.mu1;
   moving_edge.mu2 = config.mu2;
   moving_edge.sample_step = config.sample_step;
-  moving_edge.ntotal_sample = config.ntotal_sample;
   moving_edge.strip = config.strip;
 
-  t->setLambda(config.lambda);
 #if VISP_VERSION_INT >= VP_VERSION_INT(2,10,0)
   t->setGoodMovingEdgesRatioThreshold(config.first_threshold);
 
@@ -149,16 +146,12 @@ void convertVpMeToModelBasedSettingsConfig(const vpMe& moving_edge,
   const vpMbEdgeTracker* t = dynamic_cast<const vpMbEdgeTracker*>(tracker);
 
   config.mask_size = moving_edge.mask_size;
-  config.n_mask = moving_edge.n_mask;
   config.range = moving_edge.range;
   config.threshold = moving_edge.threshold;
   config.mu1 = moving_edge.mu1;
   config.mu2 = moving_edge.mu2;
   config.sample_step = moving_edge.sample_step;
-  config.ntotal_sample = moving_edge.ntotal_sample;
   config.strip = moving_edge.strip;
-
-  config.lambda = t->getLambda();
 
 #if VISP_VERSION_INT >= VP_VERSION_INT(2,10,0)
   config.first_threshold = t->getGoodMovingEdgesRatioThreshold();

@@ -81,39 +81,54 @@ void vispImageToRos(sensor_msgs::Image& dst,
 }
 
 
-void convertVpMbTrackerToRosMessage(const vpMbTracker* tracker)
+std::string convertVpMbTrackerToRosMessage(const vpMbTracker* tracker)
 {
 #if VISP_VERSION_INT >= VP_VERSION_INT(2,10,0)
-  ROS_INFO_STREAM("Model Based Tracker Common Setttings\n" <<
-                  " Angle for polygons apparition...." << vpMath::deg(tracker->getAngleAppear()) <<" degrees\n" <<
-                  " Angle for polygons disparition..." << vpMath::deg(tracker->getAngleDisappear()) << " degrees");
+  std::stringstream stream;
+  stream << "Model Based Tracker Common Setttings\n" <<
+            " Angle for polygons apparition...." << vpMath::deg(tracker->getAngleAppear()) <<" degrees\n" <<
+            " Angle for polygons disparition..." << vpMath::deg(tracker->getAngleDisappear()) << " degrees\n";
+
+  return stream.str();
 #endif
 }
 
-void convertVpMeToRosMessage(const vpMe& moving_edge)
+std::string convertVpMeToRosMessage(const vpMbTracker* tracker, const vpMe& moving_edge)
 {
-  ROS_INFO_STREAM("Moving Edge Setttings\n" <<
-                  " Size of the convolution masks...." << moving_edge.getMaskSize() <<"x"<< moving_edge.getMaskSize() <<" pixels\n" <<
-                  " Number of masks.................." << moving_edge.getMaskNumber() << "\n" <<
-                  " Query range +/- J................" << moving_edge.getRange() <<" pixels\n" <<
-                  " Likelihood test ratio............" << moving_edge.getThreshold() << "\n" <<
-                  " Contrast tolerance +/-..........." << moving_edge.getMu1() * 100 << "% and " << moving_edge.getMu2() * 100 << "% \n" <<
-                  " Sample step......................" << moving_edge.getSampleStep() <<" pixels\n" <<
-                  " Strip............................" << moving_edge.getStrip() << " pixels\n" );
+  const vpMbEdgeTracker* t = dynamic_cast<const vpMbEdgeTracker*>(tracker);
+  std::stringstream stream;
+  stream  << "Moving Edge Setttings\n" <<
+             " Size of the convolution masks...." << moving_edge.getMaskSize() <<"x"<< moving_edge.getMaskSize() <<" pixels\n" <<
+             " Query range +/- J................" << moving_edge.getRange() <<" pixels\n" <<
+             " Likelihood test ratio............" << moving_edge.getThreshold() << "\n" <<
+             " Contrast tolerance +/-..........." << moving_edge.getMu1() * 100 << "% and " << moving_edge.getMu2() * 100 << "% \n" <<
+             " Sample step......................" << moving_edge.getSampleStep() <<" pixels\n" <<
+             " Strip............................" << moving_edge.getStrip() << " pixels\n";
+
+#if VISP_VERSION_INT >= VP_VERSION_INT(2,10,0)
+  stream  << " Good moving edge threshold......." << t->getGoodMovingEdgesRatioThreshold()*100 << "%\n";
+#else
+  stream  << " Good moving edge threshold......." << t->getFirstThreshold()*100 << "%\n";
+#endif
+
+  return stream.str();
 }
 
-void convertVpKltOpencvToRosMessage(const vpMbTracker* tracker, const vpKltOpencv& klt)
+std::string convertVpKltOpencvToRosMessage(const vpMbTracker* tracker, const vpKltOpencv& klt)
 {
   const vpMbKltTracker* t = dynamic_cast<const vpMbKltTracker*>(tracker);
-  ROS_INFO_STREAM("KLT Setttings\n" <<
-                  " Window size......................" << klt.getWindowSize() <<"x"<< klt.getWindowSize() <<" pixels\n" <<
-                  " Mask border......................" << t->getMaskBorder() << " pixels\n" <<
-                  " Maximum number of features......." << klt.getMaxFeatures() <<"\n" <<
-                  " Detected points quality.........." << klt.getQuality() << "\n" <<
-                  " Minimum distance between points.." << klt.getMinDistance() << " pixels\n" <<
-                  " Harris free parameter............" << klt.getHarrisFreeParameter() <<"\n" <<
-                  " Block size......................." << klt.getBlockSize() << "x" << klt.getBlockSize() << " pixels\n" <<
-                  " Number of pyramid levels........." << klt.getPyramidLevels());
+  std::stringstream stream;
+  stream << "KLT Setttings\n" <<
+            " Window size......................" << klt.getWindowSize() <<"x"<< klt.getWindowSize() <<" pixels\n" <<
+            " Mask border......................" << t->getMaskBorder() << " pixels\n" <<
+            " Maximum number of features......." << klt.getMaxFeatures() <<"\n" <<
+            " Detected points quality.........." << klt.getQuality() << "\n" <<
+            " Minimum distance between points.." << klt.getMinDistance() << " pixels\n" <<
+            " Harris free parameter............" << klt.getHarrisFreeParameter() <<"\n" <<
+            " Block size......................." << klt.getBlockSize() << "x" << klt.getBlockSize() << " pixels\n" <<
+            " Number of pyramid levels........." << klt.getPyramidLevels() << "\n";
+
+  return stream.str();
 }
 
 void vpHomogeneousMatrixToTransform(geometry_msgs::Transform& dst,
@@ -198,15 +213,12 @@ void convertVpMeToInitRequest(const vpMe& moving_edge,
   const vpMbEdgeTracker* t = dynamic_cast<const vpMbEdgeTracker*>(tracker);
   
   srv.request.moving_edge.mask_size = moving_edge.mask_size;
-  srv.request.moving_edge.n_mask = moving_edge.n_mask;
   srv.request.moving_edge.range = moving_edge.range;
   srv.request.moving_edge.threshold = moving_edge.threshold;
   srv.request.moving_edge.mu1 = moving_edge.mu1;
   srv.request.moving_edge.mu2 = moving_edge.mu2;
   srv.request.moving_edge.sample_step = moving_edge.sample_step;
-  srv.request.moving_edge.ntotal_sample = moving_edge.ntotal_sample;
   srv.request.moving_edge.strip = moving_edge.strip;
-  srv.request.moving_edge.lambda = t->getLambda();
 
 #if VISP_VERSION_INT >= VP_VERSION_INT(2,10,0)
   srv.request.moving_edge.first_threshold = t->getGoodMovingEdgesRatioThreshold();
@@ -222,16 +234,13 @@ void convertInitRequestToVpMe(const visp_tracker::Init::Request& req,
   vpMbEdgeTracker* t = dynamic_cast<vpMbEdgeTracker*>(tracker);
   
   moving_edge.mask_size = req.moving_edge.mask_size;
-  moving_edge.n_mask = req.moving_edge.n_mask;
   moving_edge.range = req.moving_edge.range;
   moving_edge.threshold = req.moving_edge.threshold;
   moving_edge.mu1 = req.moving_edge.mu1;
   moving_edge.mu2 = req.moving_edge.mu2;
   moving_edge.sample_step = req.moving_edge.sample_step;
-  moving_edge.ntotal_sample = req.moving_edge.ntotal_sample;
   moving_edge.strip = req.moving_edge.strip;
 
-  t->setLambda(req.moving_edge.lambda);
 #if VISP_VERSION_INT >= VP_VERSION_INT(2,10,0)
   t->setGoodMovingEdgesRatioThreshold(req.moving_edge.first_threshold);
 #else

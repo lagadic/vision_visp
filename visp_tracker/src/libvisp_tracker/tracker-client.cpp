@@ -205,14 +205,14 @@ namespace visp_tracker
     tracker_->setCameraParameters(cameraParameters_);
     tracker_->setDisplayFeatures(true);
 
-    convertVpMbTrackerToRosMessage(tracker_);
+    ROS_INFO_STREAM(convertVpMbTrackerToRosMessage(tracker_));
     // - Moving edges.
     if(trackerType_!="klt"){
       // No more necessary as it has been done via the reconfigure server
 //      movingEdge_.initMask();
 //      vpMbEdgeTracker* t = dynamic_cast<vpMbEdgeTracker*>(tracker_);
 //      t->setMovingEdge(movingEdge_);
-      convertVpMeToRosMessage(movingEdge_);
+      ROS_INFO_STREAM(convertVpMeToRosMessage(tracker_, movingEdge_));
       //movingEdge_.print();
     }
     
@@ -220,7 +220,7 @@ namespace visp_tracker
       // No more necessary as it has been done via the reconfigure server
 //      vpMbKltTracker* t = dynamic_cast<vpMbKltTracker*>(tracker_);
 //      t->setKltOpencv(kltTracker_);
-      convertVpKltOpencvToRosMessage(tracker_,kltTracker_);
+      ROS_INFO_STREAM(convertVpKltOpencvToRosMessage(tracker_,kltTracker_));
     }
 
     // Display camera parameters and moving edges settings.
