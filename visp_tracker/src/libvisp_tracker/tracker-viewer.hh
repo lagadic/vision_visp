@@ -39,6 +39,10 @@ namespace visp_tracker
           visp_tracker::Init::Response& res)>
     initCallback_t;
 
+    typedef boost::function<bool (visp_tracker::Init::Request&,
+          visp_tracker::Init::Response& res)>
+    reconfigureCallback_t;
+
     /// \brief Synchronization policy
     ///
     /// This is used to make sure that the image, the object position
@@ -66,6 +70,9 @@ namespace visp_tracker
     /// \brief Initialize the tracker.
     void initializeTracker();
 
+    /// \brief Initialize the common parameters (visibility angles, etc)
+    void loadCommonParameters();
+
     /// \brief Make sure the topics we subscribe already exist.
     void checkInputs();
 
@@ -73,6 +80,9 @@ namespace visp_tracker
     void waitForImage();
 
     bool initCallback(visp_tracker::Init::Request& req,
+          visp_tracker::Init::Response& res);
+
+    bool reconfigureCallback(visp_tracker::Init::Request& req,
           visp_tracker::Init::Response& res);
 
     /// \brief Callback used to received synchronized data.
@@ -120,8 +130,14 @@ namespace visp_tracker
 
     /// \}
 
-
+    /// \brief Service called when user ends tracker_client node
     ros::ServiceServer initService_;
+
+    /// \brief Service called when user is reconfiguring tracker node
+    ros::ServiceServer reconfigureService_;
+
+    /// \brief Name of the tracker used in this viewer node
+    std::string trackerName_;
 
     /// \brief Model path.
     boost::filesystem::path modelPath_;

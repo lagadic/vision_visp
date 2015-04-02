@@ -33,6 +33,11 @@
       <param name="model_name" value="laas-box" />
       <rosparam file="$(find visp_tracker)/models/laas-box/tracker.yaml" />
     </node>
+
+    <node pkg="visp_tracker" type="visp_tracker_viewer" name="tracker_mbt_viewer">
+      <param name="frame_size" value="0.2" />
+      <param name="tracker_name" value="tracker_mbt" />
+    </node>
   </group>
 
   <group ns="tracker2">
@@ -45,6 +50,11 @@
       <param name="model_path" value="package://visp_tracker/models" />
       <param name="model_name" value="laas-box" />
       <rosparam file="$(find visp_tracker)/models/laas-box/tracker.yaml" />
+    </node>
+    
+    <node pkg="visp_tracker" type="visp_tracker_viewer" name="tracker_mbt_viewer">
+      <param name="frame_size" value="0.2" />
+      <param name="tracker_name" value="tracker_mbt" />
     </node>
   </group>
 </launch>

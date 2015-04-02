@@ -393,15 +393,17 @@ namespace visp_tracker
     if(trackerType_=="mbt+klt"){ // Hybrid Tracker reconfigure
       reconfigureSrv_ = new reconfigureSrvStruct<visp_tracker::ModelBasedSettingsConfig>::reconfigureSrv_t(mutex_, nodeHandlePrivate_);
       reconfigureSrvStruct<visp_tracker::ModelBasedSettingsConfig>::reconfigureSrv_t::CallbackType f =
-        boost::bind(&reconfigureCallback, boost::ref(tracker_),
+        boost::bind(&reconfigureCallbackAndInitViewer,
+                    boost::ref(nodeHandle_), boost::ref(tracker_),
                     boost::ref(image_), boost::ref(movingEdge_), boost::ref(kltTracker_),
-                    boost::ref(trackerType_), boost::ref(mutex_), _1, _2);
+                    boost::ref(mutex_), _1, _2);
       reconfigureSrv_->setCallback(f);
     }
     else if(trackerType_=="mbt"){ // Edge Tracker reconfigure
       reconfigureEdgeSrv_ = new reconfigureSrvStruct<visp_tracker::ModelBasedSettingsEdgeConfig>::reconfigureSrv_t(mutex_, nodeHandlePrivate_);
       reconfigureSrvStruct<visp_tracker::ModelBasedSettingsEdgeConfig>::reconfigureSrv_t::CallbackType f =
-        boost::bind(&reconfigureEdgeCallback, boost::ref(tracker_),
+        boost::bind(&reconfigureEdgeCallbackAndInitViewer,
+                    boost::ref(nodeHandle_), boost::ref(tracker_),
                     boost::ref(image_), boost::ref(movingEdge_),
                     boost::ref(mutex_), _1, _2);
       reconfigureEdgeSrv_->setCallback(f);
@@ -409,7 +411,8 @@ namespace visp_tracker
     else{ // KLT Tracker reconfigure
       reconfigureKltSrv_ = new reconfigureSrvStruct<visp_tracker::ModelBasedSettingsKltConfig>::reconfigureSrv_t(mutex_, nodeHandlePrivate_);
       reconfigureSrvStruct<visp_tracker::ModelBasedSettingsKltConfig>::reconfigureSrv_t::CallbackType f =
-        boost::bind(&reconfigureKltCallback, boost::ref(tracker_),
+        boost::bind(&reconfigureKltCallbackAndInitViewer,
+                    boost::ref(nodeHandle_), boost::ref(tracker_),
                     boost::ref(image_), boost::ref(kltTracker_),
                     boost::ref(mutex_), _1, _2);
       reconfigureKltSrv_->setCallback(f);

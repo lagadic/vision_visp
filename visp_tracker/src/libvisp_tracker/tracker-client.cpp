@@ -139,25 +139,40 @@ namespace visp_tracker
     // Check for subscribed topics.
     checkInputs();
 
+    // Camera subscriber.
+    cameraSubscriber_ = imageTransport_.subscribeCamera
+      (rectifiedImageTopic_, queueSize_,
+       bindImageCallback(image_, header_, info_));
+
+    // Model loading.
+    bModelPath_ = getModelFileFromModelName(modelName_, modelPath_);
+    bInitPath_ = getInitFileFromModelName(modelName_, modelPath_);
+
+    ROS_INFO_STREAM("Model file: " << bModelPath_);
+    ROS_INFO_STREAM("Init file: " << bInitPath_);
+
+    // Load the 3d model.
+    loadModel();
+
     // Set callback for dynamic reconfigure.
     // No more necessary as it is done via the reconfigure server
 //    if(trackerType_!="klt"){
 //      vpMbEdgeTracker* t = dynamic_cast<vpMbEdgeTracker*>(tracker_);
 //      t->setMovingEdge(movingEdge_);
 //    }
-    
+
 //    if(trackerType_!="mbt"){
 //      vpMbKltTracker* t = dynamic_cast<vpMbKltTracker*>(tracker_);
 //      t->setKltOpencv(kltTracker_);
 //    }
-    
+
     // Dynamic reconfigure.
     if(trackerType_=="mbt+klt"){ // Hybrid Tracker reconfigure
       reconfigureSrv_ = new reconfigureSrvStruct<visp_tracker::ModelBasedSettingsConfig>::reconfigureSrv_t(mutex_, nodeHandlePrivate_);
       reconfigureSrvStruct<visp_tracker::ModelBasedSettingsConfig>::reconfigureSrv_t::CallbackType f =
         boost::bind(&reconfigureCallback, boost::ref(tracker_),
                     boost::ref(image_), boost::ref(movingEdge_), boost::ref(kltTracker_),
-                    boost::ref(trackerType_), boost::ref(mutex_), _1, _2);
+                    boost::ref(mutex_), _1, _2);
       reconfigureSrv_->setCallback(f);
     }
     else if(trackerType_=="mbt"){ // Edge Tracker reconfigure
@@ -176,22 +191,6 @@ namespace visp_tracker
                     boost::ref(mutex_), _1, _2);
       reconfigureKltSrv_->setCallback(f);
     }
-
-
-    // Camera subscriber.
-    cameraSubscriber_ = imageTransport_.subscribeCamera
-      (rectifiedImageTopic_, queueSize_,
-       bindImageCallback(image_, header_, info_));
-
-    // Model loading.
-    bModelPath_ = getModelFileFromModelName(modelName_, modelPath_);
-    bInitPath_ = getInitFileFromModelName(modelName_, modelPath_);
-
-    ROS_INFO_STREAM("Model file: " << bModelPath_);
-    ROS_INFO_STREAM("Init file: " << bInitPath_);
-
-    // Load the 3d model.
-    loadModel();
 
     // Wait for the image to be initialized.
     waitForImage();

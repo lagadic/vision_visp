@@ -41,7 +41,6 @@ void reconfigureCallback(vpMbTracker* tracker,
 			 vpImage<unsigned char>& I,
 			 vpMe& moving_edge,
        vpKltOpencv& kltTracker,
-       const std::string &trackerType,
 			 boost::recursive_mutex& mutex,
        visp_tracker::ModelBasedSettingsConfig& config,
        uint32_t level);
@@ -54,6 +53,34 @@ void reconfigureEdgeCallback(vpMbTracker* tracker,
        uint32_t level);
 
 void reconfigureKltCallback(vpMbTracker* tracker,
+       vpImage<unsigned char>& I,
+       vpKltOpencv& kltTracker,
+       boost::recursive_mutex& mutex,
+       visp_tracker::ModelBasedSettingsKltConfig& config,
+       uint32_t level);
+
+void reInitViewerCommonParameters(ros::NodeHandle& nh,
+                                  vpMbTracker* tracker);
+
+void reconfigureCallbackAndInitViewer(ros::NodeHandle& nh,
+       vpMbTracker* tracker,
+       vpImage<unsigned char>& I,
+       vpMe& moving_edge,
+       vpKltOpencv& kltTracker,
+       boost::recursive_mutex& mutex,
+       visp_tracker::ModelBasedSettingsConfig& config,
+       uint32_t level);
+
+void reconfigureEdgeCallbackAndInitViewer(ros::NodeHandle& nh,
+       vpMbTracker* tracker,
+       vpImage<unsigned char>& I,
+       vpMe& moving_edge,
+       boost::recursive_mutex& mutex,
+       visp_tracker::ModelBasedSettingsEdgeConfig& config,
+       uint32_t level);
+
+void reconfigureKltCallbackAndInitViewer(ros::NodeHandle& nh,
+       vpMbTracker* tracker,
        vpImage<unsigned char>& I,
        vpKltOpencv& kltTracker,
        boost::recursive_mutex& mutex,
