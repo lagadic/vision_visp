@@ -11,9 +11,16 @@
 
 # include <visp_tracker/Init.h>
 
+#include <visp/vpConfig.h>
+#if VISP_VERSION_INT < VP_VERSION_INT(2,10,0)
+# define protected public
+#endif
 # include <visp/vpMbEdgeTracker.h>
 # include <visp/vpMbKltTracker.h>
 # include <visp/vpMbTracker.h>
+#if VISP_VERSION_INT < VP_VERSION_INT(2,10,0)
+# undef protected
+#endif
 
 # include <visp/vpHomogeneousMatrix.h>
 # include <visp/vpCameraParameters.h>
@@ -92,21 +99,51 @@ void initializeVpCameraFromCameraInfo(vpCameraParameters& cam,
 // Dynamic reconfigure template functions
 template<class ConfigType>
 void convertModelBasedSettingsConfigToVpMbTracker(const ConfigType& config,
-           vpMbTracker* tracker)
+                                                  vpMbTracker* tracker)
 {
 #if VISP_VERSION_INT >= VP_VERSION_INT(2,10,0)
   tracker->setAngleAppear(vpMath::rad(config.angle_appear));
   tracker->setAngleDisappear(vpMath::rad(config.angle_disappear));
+#else
+  vpMbEdgeTracker* tracker_edge = dynamic_cast<vpMbEdgeTracker*>(tracker);
+  if (tracker_edge != NULL) { // Also valid when hybrid
+    ROS_INFO("Set param angle from edge");
+    tracker_edge->setAngleAppear(vpMath::rad(config.angle_appear));
+    tracker_edge->setAngleDisappear(vpMath::rad(config.angle_disappear));
+  }
+  else {
+    vpMbKltTracker* tracker_klt = dynamic_cast<vpMbKltTracker*>(tracker);
+    if (tracker_klt != NULL) {
+      ROS_INFO("Set param angle from klt");
+      tracker_klt->setAngleAppear(vpMath::rad(config.angle_appear));
+      tracker_klt->setAngleDisappear(vpMath::rad(config.angle_disappear));
+    }
+  }
 #endif
 }
 
 template<class ConfigType>
 void convertVpMbTrackerToModelBasedSettingsConfig(const vpMbTracker* tracker,
-           ConfigType& config)
+                                                  ConfigType& config)
 {
 #if VISP_VERSION_INT >= VP_VERSION_INT(2,10,0)
   config.angle_appear = vpMath::deg(tracker->getAngleAppear());
   config.angle_disappear = vpMath::deg(tracker->getAngleDisappear());
+#else
+  const vpMbEdgeTracker* tracker_edge = dynamic_cast<const vpMbEdgeTracker*>(tracker);
+  if (tracker_edge != NULL) {
+    ROS_INFO("Modif config param angle from edge");
+    config.angle_appear = vpMath::deg(tracker_edge->getAngleAppear());
+    config.angle_disappear = vpMath::deg(tracker_edge->getAngleDisappear());
+  }
+  else {
+    const vpMbKltTracker* tracker_klt = dynamic_cast<const vpMbKltTracker*>(tracker);
+    if (tracker_klt != NULL) {
+      ROS_INFO("Modif config param angle from klt");
+      config.angle_appear = vpMath::deg(tracker_klt->getAngleAppear());
+      config.angle_disappear = vpMath::deg(tracker_klt->getAngleDisappear());
+    }
+  }
 #endif
 }
 
