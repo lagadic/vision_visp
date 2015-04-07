@@ -31,40 +31,37 @@ void rosImageToVisp(vpImage<unsigned char>& dst,
 
   // Resize the image if necessary.
   if (src->width != dst.getWidth() || src->height != dst.getHeight())
-    {
-      ROS_INFO
-	("dst is %dx%d but src size is %dx%d, resizing.",
-	 src->width, src->height,
-	 dst.getWidth (), dst.getHeight ());
-      dst.resize (src->height, src->width);
-    }
+  {
+    ROS_INFO("dst is %dx%d but src size is %dx%d, resizing.",
+             dst.getWidth (), dst.getHeight (), src->width, src->height);
+    dst.resize (src->height, src->width);
+  }
 
-  if(src->encoding == MONO8)
-    memcpy(dst.bitmap,
-	   &src->data[0],
-	   dst.getHeight () * src->step * sizeof(unsigned char));
+  if(src->encoding == MONO8) {
+    memcpy(dst.bitmap, &src->data[0], dst.getHeight () * src->step * sizeof(unsigned char));
+  }
   else if(src->encoding == RGB8 || src->encoding == RGBA8
-	  || src->encoding == BGR8 || src->encoding == BGRA8)
-    {
-      unsigned nc = numChannels(src->encoding);
-      unsigned cEnd =
-	(src->encoding == RGBA8 || src->encoding == BGRA8) ? nc - 1 : nc;
+          || src->encoding == BGR8 || src->encoding == BGRA8)
+  {
+    unsigned nc = numChannels(src->encoding);
+    unsigned cEnd =
+        (src->encoding == RGBA8 || src->encoding == BGRA8) ? nc - 1 : nc;
 
-      for(unsigned i = 0; i < dst.getWidth (); ++i)
-	for(unsigned j = 0; j < dst.getHeight (); ++j)
-	  {
-	    int acc = 0;
-	    for(unsigned c = 0; c < cEnd; ++c)
-	      acc += src->data[j * src->step + i * nc + c];
-	    dst[j][i] =  acc / nc;
-	  }
-    }
+    for(unsigned i = 0; i < dst.getWidth (); ++i)
+      for(unsigned j = 0; j < dst.getHeight (); ++j)
+      {
+        int acc = 0;
+        for(unsigned c = 0; c < cEnd; ++c)
+          acc += src->data[j * src->step + i * nc + c];
+        dst[j][i] =  acc / nc;
+      }
+  }
   else
-    {
-      boost::format fmt("bad encoding '%1'");
-      fmt % src->encoding;
-      throw std::runtime_error(fmt.str());
-    }
+  {
+    boost::format fmt("bad encoding '%1'");
+    fmt % src->encoding;
+    throw std::runtime_error(fmt.str());
+  }
 }
 
 void vispImageToRos(sensor_msgs::Image& dst,
@@ -83,14 +80,14 @@ void vispImageToRos(sensor_msgs::Image& dst,
 
 std::string convertVpMbTrackerToRosMessage(const vpMbTracker* tracker)
 {
-#if VISP_VERSION_INT >= VP_VERSION_INT(2,10,0)
   std::stringstream stream;
+#if VISP_VERSION_INT >= VP_VERSION_INT(2,10,0)
   stream << "Model Based Tracker Common Setttings\n" <<
             " Angle for polygons apparition...." << vpMath::deg(tracker->getAngleAppear()) <<" degrees\n" <<
             " Angle for polygons disparition..." << vpMath::deg(tracker->getAngleDisappear()) << " degrees\n";
 
-  return stream.str();
 #endif
+  return stream.str();
 }
 
 std::string convertVpMeToRosMessage(const vpMbTracker* tracker, const vpMe& moving_edge)
