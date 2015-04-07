@@ -197,7 +197,7 @@ namespace visp_tracker
     if (!klt)
       return;
 
-#if VISP_VERSION_INT < (2<<16 | 10<<8 | 0) // ViSP < 2.10.0
+#if VISP_VERSION_INT < VP_VERSION_INT(2,10,0) // ViSP < 2.10.0
     vpMbHiddenFaces<vpMbtKltPolygon> *poly_lst;
     std::map<int, vpImagePoint> *map_klt;
 
