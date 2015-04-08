@@ -11,9 +11,16 @@
 
 # include <visp_tracker/Init.h>
 
+#include <visp/vpConfig.h>
+#if VISP_VERSION_INT < VP_VERSION_INT(2,10,0)
+# define protected public
+#endif
 # include <visp/vpMbEdgeTracker.h>
 # include <visp/vpMbKltTracker.h>
 # include <visp/vpMbTracker.h>
+#if VISP_VERSION_INT < VP_VERSION_INT(2,10,0)
+# undef protected
+#endif
 
 # include <visp/vpHomogeneousMatrix.h>
 # include <visp/vpCameraParameters.h>
@@ -46,6 +53,11 @@ void rosImageToVisp(vpImage<unsigned char>& dst,
 void vispImageToRos(sensor_msgs::Image& dst,
 		    const vpImage<unsigned char>& src);
 
+std::string convertVpMbTrackerToRosMessage(const vpMbTracker* tracker);
+
+std::string convertVpMeToRosMessage(const vpMbTracker* tracker, const vpMe& moving_edge);
+
+std::string convertVpKltOpencvToRosMessage(const vpMbTracker* tracker, const vpKltOpencv& klt);
 
 void vpHomogeneousMatrixToTransform(geometry_msgs::Transform& dst,
 				    const vpHomogeneousMatrix& src);
@@ -87,21 +99,51 @@ void initializeVpCameraFromCameraInfo(vpCameraParameters& cam,
 // Dynamic reconfigure template functions
 template<class ConfigType>
 void convertModelBasedSettingsConfigToVpMbTracker(const ConfigType& config,
-           vpMbTracker* tracker)
+                                                  vpMbTracker* tracker)
 {
 #if VISP_VERSION_INT >= VP_VERSION_INT(2,10,0)
   tracker->setAngleAppear(vpMath::rad(config.angle_appear));
   tracker->setAngleDisappear(vpMath::rad(config.angle_disappear));
+#else
+  vpMbEdgeTracker* tracker_edge = dynamic_cast<vpMbEdgeTracker*>(tracker);
+  if (tracker_edge != NULL) { // Also valid when hybrid
+    ROS_INFO("Set param angle from edge");
+    tracker_edge->setAngleAppear(vpMath::rad(config.angle_appear));
+    tracker_edge->setAngleDisappear(vpMath::rad(config.angle_disappear));
+  }
+  else {
+    vpMbKltTracker* tracker_klt = dynamic_cast<vpMbKltTracker*>(tracker);
+    if (tracker_klt != NULL) {
+      ROS_INFO("Set param angle from klt");
+      tracker_klt->setAngleAppear(vpMath::rad(config.angle_appear));
+      tracker_klt->setAngleDisappear(vpMath::rad(config.angle_disappear));
+    }
+  }
 #endif
 }
 
 template<class ConfigType>
 void convertVpMbTrackerToModelBasedSettingsConfig(const vpMbTracker* tracker,
-           ConfigType& config)
+                                                  ConfigType& config)
 {
 #if VISP_VERSION_INT >= VP_VERSION_INT(2,10,0)
   config.angle_appear = vpMath::deg(tracker->getAngleAppear());
   config.angle_disappear = vpMath::deg(tracker->getAngleDisappear());
+#else
+  const vpMbEdgeTracker* tracker_edge = dynamic_cast<const vpMbEdgeTracker*>(tracker);
+  if (tracker_edge != NULL) {
+    ROS_INFO("Modif config param angle from edge");
+    config.angle_appear = vpMath::deg(tracker_edge->getAngleAppear());
+    config.angle_disappear = vpMath::deg(tracker_edge->getAngleDisappear());
+  }
+  else {
+    const vpMbKltTracker* tracker_klt = dynamic_cast<const vpMbKltTracker*>(tracker);
+    if (tracker_klt != NULL) {
+      ROS_INFO("Modif config param angle from klt");
+      config.angle_appear = vpMath::deg(tracker_klt->getAngleAppear());
+      config.angle_disappear = vpMath::deg(tracker_klt->getAngleDisappear());
+    }
+  }
 #endif
 }
 
@@ -113,20 +155,13 @@ void convertModelBasedSettingsConfigToVpMe(const ConfigType& config,
   vpMbEdgeTracker* t = dynamic_cast<vpMbEdgeTracker*>(tracker);
 
   moving_edge.mask_size = config.mask_size;
-  moving_edge.n_mask = config.n_mask;
   moving_edge.range = config.range;
   moving_edge.threshold = config.threshold;
   moving_edge.mu1 = config.mu1;
   moving_edge.mu2 = config.mu2;
   moving_edge.sample_step = config.sample_step;
-  moving_edge.ntotal_sample = config.ntotal_sample;
-
   moving_edge.strip = config.strip;
-  moving_edge.min_samplestep = config.min_samplestep;
-  moving_edge.aberration = config.aberration;
-  moving_edge.init_aberration = config.init_aberration;
 
-  t->setLambda(config.lambda);
 #if VISP_VERSION_INT >= VP_VERSION_INT(2,10,0)
   t->setGoodMovingEdgesRatioThreshold(config.first_threshold);
 
@@ -137,7 +172,6 @@ void convertModelBasedSettingsConfigToVpMe(const ConfigType& config,
   //FIXME: not sure if this is needed.
   moving_edge.initMask();
   //Reset the tracker and the node state.
-  //FIXME: not sure if this is needed.
   t->setMovingEdge(moving_edge);
 }
 
@@ -149,20 +183,12 @@ void convertVpMeToModelBasedSettingsConfig(const vpMe& moving_edge,
   const vpMbEdgeTracker* t = dynamic_cast<const vpMbEdgeTracker*>(tracker);
 
   config.mask_size = moving_edge.mask_size;
-  config.n_mask = moving_edge.n_mask;
   config.range = moving_edge.range;
   config.threshold = moving_edge.threshold;
   config.mu1 = moving_edge.mu1;
   config.mu2 = moving_edge.mu2;
   config.sample_step = moving_edge.sample_step;
-  config.ntotal_sample = moving_edge.ntotal_sample;
-
   config.strip = moving_edge.strip;
-  config.min_samplestep = moving_edge.min_samplestep;
-  config.aberration = moving_edge.aberration;
-  config.init_aberration = moving_edge.init_aberration;
-
-  config.lambda = t->getLambda();
 
 #if VISP_VERSION_INT >= VP_VERSION_INT(2,10,0)
   config.first_threshold = t->getGoodMovingEdgesRatioThreshold();

@@ -20,9 +20,6 @@ int64 mask_size    # Mask size (in pixel) used to compute the image gradient
 		   # Caution: this value cannot be changed dynamically
 		   # without resetting the tracking.
 
-int64 n_mask       # Number of masks applied to determine the object contour.
-                   # Increasing this value makes the tracking slower.
-
 int64 range        # Maximum seek distance on both sides of the reference pixel.
       		   # It should match the maximum distance in pixel between
 		   # the current position of the feature projection and
@@ -44,25 +41,11 @@ int64 sample_step   # Minimum distance in pixel between two
 		    # in the image is small).
 		    # Increasing this value makes the tracking *faster*.
 
-int64 ntotal_sample # How many discretization points are used to track the
-      		    # feature.
-		    # Higher is better but slow down the tracking.
-		    # The best value depends on your model and its distance
-		    # with respect to the camera.
-		    # Increasing this value makes the tracking slower.
-
 int64 strip             # How many pixels are ignored around the borders.
-float64 min_samplestep  # Minimum allowed samplestep. Useful to specify
-			# a lower bound when the samplestep is changed
-			# dynamically.
-			# This is not done by visp_tracker currently.
-float64 aberration      # Ignored.
-float64 init_aberration # Ignored.
 
 
 # Tracker parameters.
 
-float64 lambda          # Gain used to compute the control law.
 float64 first_threshold # What proportion of points should be valid to
                         # acccept an initial pose.
 			# Value should be between 0 et 1.
