@@ -42,14 +42,28 @@ namespace visp_tracker
     std::string path;
 
     if (!makeModelFile(modelStream, path))
-      throw std::runtime_error
-  ("failed to load the model from the callback");
+      throw std::runtime_error("failed to load the model from the callback");
     //ROS_WARN_STREAM("Make model Viewer: " << path.c_str());
     ROS_INFO_STREAM("Model loaded from the service.");
     modelPath_ = path;
 
     tracker_.resetTracker();
     initializeTracker();
+
+    // Common parameters
+    convertInitRequestToVpMbTracker(req, &tracker_);
+
+    res.initialization_succeed = true;
+    return true;
+  }
+
+  bool
+  TrackerViewer::reconfigureCallback(visp_tracker::Init::Request& req,
+      visp_tracker::Init::Response& res)
+  {
+    // Common parameters
+    ROS_INFO_STREAM("Reconfiguring Tracker Viewer.");
+    convertInitRequestToVpMbTracker(req, &tracker_);
 
     res.initialization_succeed = true;
     return true;
@@ -73,6 +87,8 @@ namespace visp_tracker
       image_(),
       info_(),
       initService_(),
+      reconfigureService_(),
+      trackerName_(),
       cMo_(boost::none),
       sites_(),
       imageSubscriber_(),
@@ -125,8 +141,15 @@ namespace visp_tracker
     initCallback_t initCallback =
       boost::bind(&TrackerViewer::initCallback, this, _1, _2);
 
+    reconfigureCallback_t reconfigureCallback =
+      boost::bind(&TrackerViewer::reconfigureCallback, this, _1, _2);
+
     initService_ = nodeHandle_.advertiseService
       (visp_tracker::init_service_viewer, initCallback);
+
+    reconfigureService_ = nodeHandle_.advertiseService
+        (visp_tracker::reconfigure_service_viewer, reconfigureCallback);
+
 
     boost::filesystem::ofstream modelStream;
     std::string path;
@@ -215,6 +238,9 @@ namespace visp_tracker
     // Load camera parameters.
     initializeVpCameraFromCameraInfo(cameraParameters_, info_);
     tracker_.setCameraParameters(cameraParameters_);
+
+    // Load the common parameters from ROS messages
+    loadCommonParameters();
   }
 
   void
@@ -303,11 +329,65 @@ namespace visp_tracker
   }
 
   void
+  TrackerViewer::loadCommonParameters()
+  {
+    nodeHandlePrivate_.param<std::string>("tracker_name", trackerName_, "");
+    std::string key;
+
+    bool loadParam = false;
+
+    if(trackerName_.empty())
+    {
+      if(!ros::param::search("/angle_appear",key)){
+        trackerName_ = "tracker_mbt";
+        if(!ros::param::search(trackerName_ + "/angle_appear",key))
+        {
+          ROS_WARN_STREAM("No tracker has been found with the default name value \""
+                          << trackerName_ << "/angle_appear\".\n"
+                          << "Tracker name parameter (tracker_name) should be provided for this node (tracker_viewer).\n"
+                          << "Polygon visibility might not work well in the viewer window.");
+        }
+        else loadParam = true;
+      }
+      else loadParam = true;
+    }
+    else loadParam = true;
+
+    // Reading common parameters
+    if(loadParam)
+    {
+      if (ros::param::search(trackerName_ + "/angle_appear",key))
+      {
+        double value;
+        if(ros::param::get(key,value)){
+          // ROS_WARN_STREAM("Angle Appear Viewer: " << value);
+          tracker_.setAngleAppear(vpMath::rad(value));
+        }
+      }
+      else
+      {
+        ROS_WARN_STREAM("No tracker has been found with the provided parameter "
+                        << "(tracker_name=\"" << trackerName_ << "\")\n"
+                        << "Polygon visibility might not work well in the viewer window");
+      }
+
+      if (ros::param::search(trackerName_ + "/angle_disappear",key))
+      {
+        double value;
+        if(ros::param::get(key,value)){
+          // ROS_WARN_STREAM("Angle Disappear Viewer: " << value);
+          tracker_.setAngleDisappear(vpMath::rad(value));
+        }
+      }
+    }
+  }
+
+  void
   TrackerViewer::initializeTracker()
   {
     try
       {
-    //ROS_WARN_STREAM("Trying to load the model Viewer: " << modelPath_);
+    // ROS_WARN_STREAM("Trying to load the model Viewer: " << modelPath_);
     tracker_.loadModel(modelPath_.native().c_str());
       }
     catch(...)
@@ -316,7 +396,7 @@ namespace visp_tracker
     fmt % modelPath_;
 	throw std::runtime_error(fmt.str());
       }
-    ROS_WARN("Model has been successfully loaded.");
+    // ROS_WARN("Model has been successfully loaded.");
   }
 
   void
@@ -409,27 +489,22 @@ namespace visp_tracker
   void
   TrackerViewer::timerCallback()
   {
-    const unsigned threshold = 3 * countAll_;
-
-    if (countImages_ < threshold
-	|| countCameraInfo_ < threshold
-	|| countTrackingResult_ < threshold
-  || countMovingEdgeSites_ < threshold
-  || countKltPoints_ < threshold)
-      {
-	boost::format fmt
-	  ("[visp_tracker] Low number of synchronized tuples received.\n"
-	   "Images: %d\n"
-	   "Camera info: %d\n"
-	   "Tracking result: %d\n"
-	   "Moving edge sites: %d\n"
-	   "Synchronized tuples: %d\n"
-     "Threshold: %d\n"
-	   "Possible issues:\n"
-	   "\t* The network is too slow.");
-	fmt % countImages_ % countCameraInfo_
-    % countTrackingResult_ % countMovingEdgeSites_ % countAll_ % threshold;
-	ROS_WARN_STREAM_THROTTLE(10, fmt.str());
-      }
+    if (countTrackingResult_ != countMovingEdgeSites_
+        || countKltPoints_ != countMovingEdgeSites_)
+    {
+      boost::format fmt
+          ("[visp_tracker] Low number of synchronized tuples received.\n"
+           "Images: %d\n"
+           "Camera info: %d\n"
+           "Tracking result: %d\n"
+           "Moving edge sites: %d\n"
+           "KLT points: %d\n"
+           "Synchronized tuples: %d\n"
+           "Possible issues:\n"
+           "\t* The network is too slow.");
+      fmt % countImages_ % countCameraInfo_
+          % countTrackingResult_ % countMovingEdgeSites_ % countKltPoints_ % countAll_;
+      ROS_WARN_STREAM_THROTTLE(10, fmt.str());
+    }
   }
 } // end of namespace visp_tracker.
