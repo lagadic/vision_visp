@@ -2,6 +2,12 @@
 Changelog for package visp_bridge
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.8.1 (2015-04-08)
+------------------
+* indigo-0.8.0
+* Prepare changelogs
+* Contributors: Fabien Spindler
+
 0.8.0 (2015-03-31)
 ------------------
 * Merge branch 'indigo-devel' into indigo

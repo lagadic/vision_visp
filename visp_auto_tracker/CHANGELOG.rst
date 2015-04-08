@@ -2,6 +2,14 @@
 Changelog for package visp_auto_tracker
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.8.1 (2015-04-08)
+------------------
+* Fix warning detected with bloom
+* indigo-0.8.0
+* Prepare changelogs
+* Merge branch 'indigo-devel' into indigo
+* Contributors: Fabien Spindler
+
 0.8.0 (2015-03-31)
 ------------------
 * Merge branch 'indigo-devel' into indigo
