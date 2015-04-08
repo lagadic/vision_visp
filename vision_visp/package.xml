@@ -1,6 +1,6 @@
 <package>
   <name>vision_visp</name>
-  <version>0.8.0</version>
+  <version>0.8.1</version>
   <description>
     Virtual package providing ViSP related packages.
   </description>
