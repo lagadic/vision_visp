@@ -139,24 +139,40 @@ namespace visp_tracker
     // Check for subscribed topics.
     checkInputs();
 
+    // Camera subscriber.
+    cameraSubscriber_ = imageTransport_.subscribeCamera
+      (rectifiedImageTopic_, queueSize_,
+       bindImageCallback(image_, header_, info_));
+
+    // Model loading.
+    bModelPath_ = getModelFileFromModelName(modelName_, modelPath_);
+    bInitPath_ = getInitFileFromModelName(modelName_, modelPath_);
+
+    ROS_INFO_STREAM("Model file: " << bModelPath_);
+    ROS_INFO_STREAM("Init file: " << bInitPath_);
+
+    // Load the 3d model.
+    loadModel();
+
     // Set callback for dynamic reconfigure.
-    if(trackerType_!="klt"){
-      vpMbEdgeTracker* t = dynamic_cast<vpMbEdgeTracker*>(tracker_);
-      t->setMovingEdge(movingEdge_);
-    }
-    
-    if(trackerType_!="mbt"){
-      vpMbKltTracker* t = dynamic_cast<vpMbKltTracker*>(tracker_);
-      t->setKltOpencv(kltTracker_);
-    }
-    
+    // No more necessary as it is done via the reconfigure server
+//    if(trackerType_!="klt"){
+//      vpMbEdgeTracker* t = dynamic_cast<vpMbEdgeTracker*>(tracker_);
+//      t->setMovingEdge(movingEdge_);
+//    }
+
+//    if(trackerType_!="mbt"){
+//      vpMbKltTracker* t = dynamic_cast<vpMbKltTracker*>(tracker_);
+//      t->setKltOpencv(kltTracker_);
+//    }
+
     // Dynamic reconfigure.
     if(trackerType_=="mbt+klt"){ // Hybrid Tracker reconfigure
       reconfigureSrv_ = new reconfigureSrvStruct<visp_tracker::ModelBasedSettingsConfig>::reconfigureSrv_t(mutex_, nodeHandlePrivate_);
       reconfigureSrvStruct<visp_tracker::ModelBasedSettingsConfig>::reconfigureSrv_t::CallbackType f =
         boost::bind(&reconfigureCallback, boost::ref(tracker_),
                     boost::ref(image_), boost::ref(movingEdge_), boost::ref(kltTracker_),
-                    boost::ref(trackerType_), boost::ref(mutex_), _1, _2);
+                    boost::ref(mutex_), _1, _2);
       reconfigureSrv_->setCallback(f);
     }
     else if(trackerType_=="mbt"){ // Edge Tracker reconfigure
@@ -176,22 +192,6 @@ namespace visp_tracker
       reconfigureKltSrv_->setCallback(f);
     }
 
-
-    // Camera subscriber.
-    cameraSubscriber_ = imageTransport_.subscribeCamera
-      (rectifiedImageTopic_, queueSize_,
-       bindImageCallback(image_, header_, info_));
-
-    // Model loading.
-    bModelPath_ = getModelFileFromModelName(modelName_, modelPath_);
-    bInitPath_ = getInitFileFromModelName(modelName_, modelPath_);
-
-    ROS_INFO_STREAM("Model file: " << bModelPath_);
-    ROS_INFO_STREAM("Init file: " << bInitPath_);
-
-    // Load the 3d model.
-    loadModel();
-
     // Wait for the image to be initialized.
     waitForImage();
     if (this->exiting())
@@ -205,17 +205,22 @@ namespace visp_tracker
     tracker_->setCameraParameters(cameraParameters_);
     tracker_->setDisplayFeatures(true);
 
+    ROS_INFO_STREAM(convertVpMbTrackerToRosMessage(tracker_));
     // - Moving edges.
     if(trackerType_!="klt"){
-      movingEdge_.initMask();
-      vpMbEdgeTracker* t = dynamic_cast<vpMbEdgeTracker*>(tracker_);
-      t->setMovingEdge(movingEdge_);
-      movingEdge_.print();
+      // No more necessary as it has been done via the reconfigure server
+//      movingEdge_.initMask();
+//      vpMbEdgeTracker* t = dynamic_cast<vpMbEdgeTracker*>(tracker_);
+//      t->setMovingEdge(movingEdge_);
+      ROS_INFO_STREAM(convertVpMeToRosMessage(tracker_, movingEdge_));
+      //movingEdge_.print();
     }
     
     if(trackerType_!="mbt"){
-      vpMbKltTracker* t = dynamic_cast<vpMbKltTracker*>(tracker_);
-      t->setKltOpencv(kltTracker_);
+      // No more necessary as it has been done via the reconfigure server
+//      vpMbKltTracker* t = dynamic_cast<vpMbKltTracker*>(tracker_);
+//      t->setKltOpencv(kltTracker_);
+      ROS_INFO_STREAM(convertVpKltOpencvToRosMessage(tracker_,kltTracker_));
     }
 
     // Display camera parameters and moving edges settings.
@@ -391,12 +396,12 @@ namespace visp_tracker
     if (clientViewer.call(srv))
     {
       if (srv.response.initialization_succeed)
-        ROS_INFO("Tracker initialized with success.");
+        ROS_INFO("Tracker Viewer initialized with success.");
       else
-        throw std::runtime_error("failed to initialize tracker.");
+        throw std::runtime_error("failed to initialize tracker viewer.");
     }
     else
-      throw std::runtime_error("failed to call service init");
+       ROS_INFO("No Tracker Viewer node to initialize from service");
   }
 
   void

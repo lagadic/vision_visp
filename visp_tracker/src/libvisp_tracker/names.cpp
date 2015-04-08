@@ -11,6 +11,7 @@ namespace visp_tracker
   std::string camera_velocity_topic("camera_velocity");
   std::string init_service("init_tracker");
   std::string init_service_viewer("init_tracker_viewer");
+  std::string reconfigure_service_viewer("reconfigure_tracker_viewer");
 
   std::string default_model_path("package://visp_tracker/models");
 
