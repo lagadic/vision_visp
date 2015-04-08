@@ -104,3 +104,23 @@ Changelog for package visp_tracker
 * Prepare changelogs
 * Contributors: Aurelien Yol, Fabien Spindler
 
+0.8.1 (2015-04-08)
+------------------
+* Merge branch 'master' into hydro-devel
+* Improve data synchronization test based only on pose, klt points, and
+  moving edges features
+* Make ROS warn messages more explicit
+* Make dynamic reconfigure working with ViSP 2.9.0.
+  Ensure that the image is ready (test image size != 0) during dynamic
+  reconfigure initialisation.
+* Use VP_VERSION_INT
+* Fix compat with ViSP 2.9.0. Fix ROS_INFO message. Code indentation.
+* Improve ROS debug messages to be more generic.
+  Remove parameters that should not be modified by the user in dynamic reconfigure files.
+* Improve viewer node to handle dynamic reconfigure modifications.
+  Modify tutorials so that they use the new functionnalities.
+* Fix bug in visp_tracker_client to work without visp_tracker_viewer.
+* hydro-0.8.0
+* Prepare changelogs
+* Contributors: Aurelien Yol, Fabien Spindler
+

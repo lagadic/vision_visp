@@ -72,3 +72,9 @@ Changelog for package visp_bridge
 * Revert previous commit that breaks compat
 * Contributors: Fabien Spindler, Riccardo Spica
 
+0.8.1 (2015-04-08)
+------------------
+* hydro-0.8.0
+* Prepare changelogs
+* Contributors: Fabien Spindler
+

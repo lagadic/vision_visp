@@ -51,4 +51,10 @@ Changelog for package visp_hand2eye_calibration
 * Prepare changelogs
 * Contributors: Fabien Spindler
 
+0.8.1 (2015-04-08)
+------------------
+* hydro-0.8.0
+* Prepare changelogs
+* Contributors: Fabien Spindler
+
 

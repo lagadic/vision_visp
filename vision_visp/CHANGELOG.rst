@@ -2,6 +2,12 @@
 Changelog for package vision_visp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.8.1 (2015-04-08)
+------------------
+* hydro-0.8.0
+* Prepare changelogs
+* Contributors: Fabien Spindler
+
 0.8.0 (2015-04-01)
 ------------------
 * Merge branch 'hydro-devel' into hydro
