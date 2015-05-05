@@ -13,8 +13,14 @@
 #include <visp/vpTranslationVector.h>
 #include <visp/vpQuaternionVector.h>
 
+#if VISP_VERSION_INT < VP_VERSION_INT(2,10,0)
+# define protected public
+#endif
 # include <visp/vpMbEdgeTracker.h>
 # include <visp/vpMbKltTracker.h>
+#if VISP_VERSION_INT < VP_VERSION_INT(2,10,0)
+# undef protected
+#endif
 
 #include "conversion.hh"
 
@@ -31,40 +37,37 @@ void rosImageToVisp(vpImage<unsigned char>& dst,
 
   // Resize the image if necessary.
   if (src->width != dst.getWidth() || src->height != dst.getHeight())
-    {
-      ROS_INFO
-	("dst is %dx%d but src size is %dx%d, resizing.",
-	 src->width, src->height,
-	 dst.getWidth (), dst.getHeight ());
-      dst.resize (src->height, src->width);
-    }
+  {
+    ROS_INFO("dst is %dx%d but src size is %dx%d, resizing.",
+             dst.getWidth (), dst.getHeight (), src->width, src->height);
+    dst.resize (src->height, src->width);
+  }
 
-  if(src->encoding == MONO8)
-    memcpy(dst.bitmap,
-	   &src->data[0],
-	   dst.getHeight () * src->step * sizeof(unsigned char));
+  if(src->encoding == MONO8) {
+    memcpy(dst.bitmap, &src->data[0], dst.getHeight () * src->step * sizeof(unsigned char));
+  }
   else if(src->encoding == RGB8 || src->encoding == RGBA8
-	  || src->encoding == BGR8 || src->encoding == BGRA8)
-    {
-      unsigned nc = numChannels(src->encoding);
-      unsigned cEnd =
-	(src->encoding == RGBA8 || src->encoding == BGRA8) ? nc - 1 : nc;
+          || src->encoding == BGR8 || src->encoding == BGRA8)
+  {
+    unsigned nc = numChannels(src->encoding);
+    unsigned cEnd =
+        (src->encoding == RGBA8 || src->encoding == BGRA8) ? nc - 1 : nc;
 
-      for(unsigned i = 0; i < dst.getWidth (); ++i)
-	for(unsigned j = 0; j < dst.getHeight (); ++j)
-	  {
-	    int acc = 0;
-	    for(unsigned c = 0; c < cEnd; ++c)
-	      acc += src->data[j * src->step + i * nc + c];
-	    dst[j][i] =  acc / nc;
-	  }
-    }
+    for(unsigned i = 0; i < dst.getWidth (); ++i)
+      for(unsigned j = 0; j < dst.getHeight (); ++j)
+      {
+        int acc = 0;
+        for(unsigned c = 0; c < cEnd; ++c)
+          acc += src->data[j * src->step + i * nc + c];
+        dst[j][i] =  acc / nc;
+      }
+  }
   else
-    {
-      boost::format fmt("bad encoding '%1'");
-      fmt % src->encoding;
-      throw std::runtime_error(fmt.str());
-    }
+  {
+    boost::format fmt("bad encoding '%1'");
+    fmt % src->encoding;
+    throw std::runtime_error(fmt.str());
+  }
 }
 
 void vispImageToRos(sensor_msgs::Image& dst,
@@ -83,14 +86,28 @@ void vispImageToRos(sensor_msgs::Image& dst,
 
 std::string convertVpMbTrackerToRosMessage(const vpMbTracker* tracker)
 {
-#if VISP_VERSION_INT >= VP_VERSION_INT(2,10,0)
   std::stringstream stream;
+#if VISP_VERSION_INT >= VP_VERSION_INT(2,10,0)
   stream << "Model Based Tracker Common Setttings\n" <<
             " Angle for polygons apparition...." << vpMath::deg(tracker->getAngleAppear()) <<" degrees\n" <<
             " Angle for polygons disparition..." << vpMath::deg(tracker->getAngleDisappear()) << " degrees\n";
-
-  return stream.str();
+#else
+  const vpMbEdgeTracker* tracker_edge = dynamic_cast<const vpMbEdgeTracker*>(tracker);
+  if (tracker_edge != NULL) {
+    stream << "Model Based Tracker Common Setttings\n" <<
+              " Angle for polygons apparition...." << vpMath::deg(tracker_edge->getAngleAppear()) <<" degrees\n" <<
+              " Angle for polygons disparition..." << vpMath::deg(tracker_edge->getAngleDisappear()) << " degrees\n";
+  }
+  else {
+    const vpMbKltTracker* tracker_klt = dynamic_cast<const vpMbKltTracker*>(tracker);
+    if (tracker_klt != NULL) {
+      stream << "Model Based Tracker Common Setttings\n" <<
+                " Angle for polygons apparition...." << vpMath::deg(tracker_klt->getAngleAppear()) <<" degrees\n" <<
+                " Angle for polygons disparition..." << vpMath::deg(tracker_klt->getAngleDisappear()) << " degrees\n";
+    }
+  }
 #endif
+  return stream.str();
 }
 
 std::string convertVpMeToRosMessage(const vpMbTracker* tracker, const vpMe& moving_edge)
@@ -189,20 +206,48 @@ void transformToVpHomogeneousMatrix(vpHomogeneousMatrix& dst,
 }
 
 void convertVpMbTrackerToInitRequest(const vpMbTracker* tracker,
-            visp_tracker::Init& srv)
+                                     visp_tracker::Init& srv)
 {
 #if VISP_VERSION_INT >= VP_VERSION_INT(2,10,0)
   srv.request.tracker_param.angle_appear = vpMath::deg(tracker->getAngleAppear());
   srv.request.tracker_param.angle_disappear = vpMath::deg(tracker->getAngleDisappear());
+#else
+  const vpMbEdgeTracker* tracker_edge = dynamic_cast<const vpMbEdgeTracker*>(tracker);
+  if (tracker_edge != NULL) {
+    ROS_INFO("Set service angle from edge");
+    srv.request.tracker_param.angle_appear = vpMath::deg(tracker_edge->getAngleAppear());
+    srv.request.tracker_param.angle_disappear = vpMath::deg(tracker_edge->getAngleDisappear());
+  }
+  else {
+    const vpMbKltTracker* tracker_klt = dynamic_cast<const vpMbKltTracker*>(tracker);
+    if (tracker_klt != NULL) {
+      ROS_INFO("Set service angle from klt");
+      srv.request.tracker_param.angle_appear = vpMath::deg(tracker_klt->getAngleAppear());
+      srv.request.tracker_param.angle_disappear = vpMath::deg(tracker_klt->getAngleDisappear());
+    }
+  }
 #endif
 }
 
 void convertInitRequestToVpMbTracker(const visp_tracker::Init::Request& req,
-            vpMbTracker* tracker)
+                                     vpMbTracker* tracker)
 {
 #if VISP_VERSION_INT >= VP_VERSION_INT(2,10,0)
   tracker->setAngleAppear(vpMath::rad(req.tracker_param.angle_appear));
   tracker->setAngleDisappear(vpMath::rad(req.tracker_param.angle_disappear));
+#else
+  vpMbEdgeTracker* tracker_edge = dynamic_cast<vpMbEdgeTracker*>(tracker);
+  if (tracker_edge != NULL) { // Also valid for hybrid
+    tracker_edge->setAngleAppear(vpMath::rad(req.tracker_param.angle_appear));
+    tracker_edge->setAngleDisappear(vpMath::rad(req.tracker_param.angle_disappear));
+  }
+  else {
+    vpMbKltTracker* tracker_klt = dynamic_cast<vpMbKltTracker*>(tracker);
+    if (tracker_klt != NULL) {
+      tracker_klt->setAngleAppear(vpMath::rad(req.tracker_param.angle_appear));
+      tracker_klt->setAngleDisappear(vpMath::rad(req.tracker_param.angle_disappear));
+    }
+  }
 #endif
 }
 

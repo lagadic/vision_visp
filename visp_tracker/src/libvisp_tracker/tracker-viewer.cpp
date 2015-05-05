@@ -336,15 +336,16 @@ namespace visp_tracker
 
     bool loadParam = false;
 
-    if(trackerName_ == "")
+    if(trackerName_.empty())
     {
       if(!ros::param::search("/angle_appear",key)){
         trackerName_ = "tracker_mbt";
         if(!ros::param::search(trackerName_ + "/angle_appear",key))
         {
-          ROS_WARN_STREAM("No tracker has been found with the default name value.\n" <<
-                   "Tracker name parameter (tracker_name) should be provided for this node (tracker_viewer).\n"
-                   "Polygon visibility might not work well in the viewer window.");
+          ROS_WARN_STREAM("No tracker has been found with the default name value \""
+                          << trackerName_ << "/angle_appear\".\n"
+                          << "Tracker name parameter (tracker_name) should be provided for this node (tracker_viewer).\n"
+                          << "Polygon visibility might not work well in the viewer window.");
         }
         else loadParam = true;
       }
@@ -365,8 +366,9 @@ namespace visp_tracker
       }
       else
       {
-        ROS_WARN_STREAM("No tracker has been found with the provided name parameter (tracker_name)\n" <<
-                 "Polygon visibility might not work well in the viewer window");
+        ROS_WARN_STREAM("No tracker has been found with the provided parameter "
+                        << "(tracker_name=\"" << trackerName_ << "\")\n"
+                        << "Polygon visibility might not work well in the viewer window");
       }
 
       if (ros::param::search(trackerName_ + "/angle_disappear",key))
@@ -487,27 +489,22 @@ namespace visp_tracker
   void
   TrackerViewer::timerCallback()
   {
-    const unsigned threshold = 3 * countAll_;
-
-    if (countImages_ < threshold
-	|| countCameraInfo_ < threshold
-	|| countTrackingResult_ < threshold
-  || countMovingEdgeSites_ < threshold
-  || countKltPoints_ < threshold)
-      {
-	boost::format fmt
-	  ("[visp_tracker] Low number of synchronized tuples received.\n"
-	   "Images: %d\n"
-	   "Camera info: %d\n"
-	   "Tracking result: %d\n"
-	   "Moving edge sites: %d\n"
-	   "Synchronized tuples: %d\n"
-     "Threshold: %d\n"
-	   "Possible issues:\n"
-	   "\t* The network is too slow.");
-	fmt % countImages_ % countCameraInfo_
-    % countTrackingResult_ % countMovingEdgeSites_ % countAll_ % threshold;
-	ROS_WARN_STREAM_THROTTLE(10, fmt.str());
-      }
+    if (countTrackingResult_ != countMovingEdgeSites_
+        || countKltPoints_ != countMovingEdgeSites_)
+    {
+      boost::format fmt
+          ("[visp_tracker] Low number of synchronized tuples received.\n"
+           "Images: %d\n"
+           "Camera info: %d\n"
+           "Tracking result: %d\n"
+           "Moving edge sites: %d\n"
+           "KLT points: %d\n"
+           "Synchronized tuples: %d\n"
+           "Possible issues:\n"
+           "\t* The network is too slow.");
+      fmt % countImages_ % countCameraInfo_
+          % countTrackingResult_ % countMovingEdgeSites_ % countKltPoints_ % countAll_;
+      ROS_WARN_STREAM_THROTTLE(10, fmt.str());
+    }
   }
 } // end of namespace visp_tracker.
