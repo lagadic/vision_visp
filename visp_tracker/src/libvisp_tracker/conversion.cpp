@@ -257,6 +257,18 @@ void convertVpMeToInitRequest(const vpMe& moving_edge,
 {
   const vpMbEdgeTracker* t = dynamic_cast<const vpMbEdgeTracker*>(tracker);
   
+
+#if VISP_VERSION_INT >= VP_VERSION_INT(2,10,0)
+  srv.request.moving_edge.first_threshold = t->getGoodMovingEdgesRatioThreshold();
+  srv.request.moving_edge.mask_size = moving_edge.getMaskSize();
+  srv.request.moving_edge.range = moving_edge.getRange();
+  srv.request.moving_edge.threshold = moving_edge.getThreshold();
+  srv.request.moving_edge.mu1 = moving_edge.getMu1();
+  srv.request.moving_edge.mu2 = moving_edge.getMu2();
+  srv.request.moving_edge.sample_step = moving_edge.getSampleStep();
+  srv.request.moving_edge.strip = moving_edge.getStrip();
+#else
+  srv.request.moving_edge.first_threshold = t->getFirstThreshold();
   srv.request.moving_edge.mask_size = moving_edge.mask_size;
   srv.request.moving_edge.range = moving_edge.range;
   srv.request.moving_edge.threshold = moving_edge.threshold;
@@ -264,11 +276,6 @@ void convertVpMeToInitRequest(const vpMe& moving_edge,
   srv.request.moving_edge.mu2 = moving_edge.mu2;
   srv.request.moving_edge.sample_step = moving_edge.sample_step;
   srv.request.moving_edge.strip = moving_edge.strip;
-
-#if VISP_VERSION_INT >= VP_VERSION_INT(2,10,0)
-  srv.request.moving_edge.first_threshold = t->getGoodMovingEdgesRatioThreshold();
-#else
-  srv.request.moving_edge.first_threshold = t->getFirstThreshold();
 #endif
 }
 
@@ -278,6 +285,17 @@ void convertInitRequestToVpMe(const visp_tracker::Init::Request& req,
 {
   vpMbEdgeTracker* t = dynamic_cast<vpMbEdgeTracker*>(tracker);
   
+#if VISP_VERSION_INT >= VP_VERSION_INT(2,10,0)
+  t->setGoodMovingEdgesRatioThreshold(req.moving_edge.first_threshold);
+  moving_edge.setMaskSize( req.moving_edge.mask_size );
+  moving_edge.setRange( req.moving_edge.range );
+  moving_edge.setThreshold( req.moving_edge.threshold );
+  moving_edge.setMu1( req.moving_edge.mu1 );
+  moving_edge.setMu2( req.moving_edge.mu2 );
+  moving_edge.setSampleStep( req.moving_edge.sample_step );
+  moving_edge.setStrip( req.moving_edge.strip );
+#else
+  t->setFirstThreshold(req.moving_edge.first_threshold);
   moving_edge.mask_size = req.moving_edge.mask_size;
   moving_edge.range = req.moving_edge.range;
   moving_edge.threshold = req.moving_edge.threshold;
@@ -285,11 +303,6 @@ void convertInitRequestToVpMe(const visp_tracker::Init::Request& req,
   moving_edge.mu2 = req.moving_edge.mu2;
   moving_edge.sample_step = req.moving_edge.sample_step;
   moving_edge.strip = req.moving_edge.strip;
-
-#if VISP_VERSION_INT >= VP_VERSION_INT(2,10,0)
-  t->setGoodMovingEdgesRatioThreshold(req.moving_edge.first_threshold);
-#else
-  t->setFirstThreshold(req.moving_edge.first_threshold);
 #endif
 
   //FIXME: not sure if this is needed.
