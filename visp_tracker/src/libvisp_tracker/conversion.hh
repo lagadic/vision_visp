@@ -154,19 +154,25 @@ void convertModelBasedSettingsConfigToVpMe(const ConfigType& config,
 {
   vpMbEdgeTracker* t = dynamic_cast<vpMbEdgeTracker*>(tracker);
 
+
+#if VISP_VERSION_INT >= VP_VERSION_INT(2,10,0)
+  t->setGoodMovingEdgesRatioThreshold(config.first_threshold);
+  moving_edge.setThreshold( config.threshold );
+  moving_edge.setMaskSize( config.mask_size );
+  moving_edge.setRange( config.range );
+  moving_edge.setMu1( config.mu1 );
+  moving_edge.setMu2( config.mu2 );
+  moving_edge.setSampleStep( config.sample_step );
+  moving_edge.setStrip( config.strip );
+#else
+  t->setFirstThreshold(config.first_threshold);
+  moving_edge.threshold = config.threshold;
   moving_edge.mask_size = config.mask_size;
   moving_edge.range = config.range;
-  moving_edge.threshold = config.threshold;
   moving_edge.mu1 = config.mu1;
   moving_edge.mu2 = config.mu2;
   moving_edge.sample_step = config.sample_step;
   moving_edge.strip = config.strip;
-
-#if VISP_VERSION_INT >= VP_VERSION_INT(2,10,0)
-  t->setGoodMovingEdgesRatioThreshold(config.first_threshold);
-
-#else
-  t->setFirstThreshold(config.first_threshold);
 #endif
 
   //FIXME: not sure if this is needed.
@@ -182,18 +188,25 @@ void convertVpMeToModelBasedSettingsConfig(const vpMe& moving_edge,
 {
   const vpMbEdgeTracker* t = dynamic_cast<const vpMbEdgeTracker*>(tracker);
 
+
+#if VISP_VERSION_INT >= VP_VERSION_INT(2,10,0)
+  config.first_threshold = t->getGoodMovingEdgesRatioThreshold();
+  config.threshold = moving_edge.getThreshold();
+  config.mask_size = moving_edge.getMaskSize();
+  config.range = moving_edge.getRange();
+  config.mu1 = moving_edge.getMu1();
+  config.mu2 = moving_edge.getMu2();
+  config.sample_step = moving_edge.getSampleStep();
+  config.strip = moving_edge.getStrip();
+#else
+  config.first_threshold = t->getFirstThreshold();
+  config.threshold = moving_edge.threshold;
   config.mask_size = moving_edge.mask_size;
   config.range = moving_edge.range;
-  config.threshold = moving_edge.threshold;
   config.mu1 = moving_edge.mu1;
   config.mu2 = moving_edge.mu2;
   config.sample_step = moving_edge.sample_step;
   config.strip = moving_edge.strip;
-
-#if VISP_VERSION_INT >= VP_VERSION_INT(2,10,0)
-  config.first_threshold = t->getGoodMovingEdgesRatioThreshold();
-#else
-  config.first_threshold = t->getFirstThreshold();
 #endif
 }
 

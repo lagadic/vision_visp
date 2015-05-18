@@ -171,16 +171,25 @@ namespace visp_tracker
 
         if (line && line->isVisible() && line->meline)
         {
-          std::list<vpMeSite>::const_iterator sitesIterator =
-              line->meline->list.begin();
+#if VISP_VERSION_INT >= VP_VERSION_INT(2,10,0) // ViSP < 2.10.0
+          std::list<vpMeSite>::const_iterator sitesIterator = line->meline->getMeList().begin();
+          if (line->meline->getMeList().empty())
+            ROS_DEBUG_THROTTLE(10, "no moving edge for a line");
+          for (; sitesIterator != line->meline->getMeList().end(); ++sitesIterator)
+          {
+#else
+          std::list<vpMeSite>::const_iterator sitesIterator = line->meline->list.begin();
           if (line->meline->list.empty())
             ROS_DEBUG_THROTTLE(10, "no moving edge for a line");
           for (; sitesIterator != line->meline->list.end(); ++sitesIterator)
           {
+#endif
             visp_tracker::MovingEdgeSite movingEdgeSite;
             movingEdgeSite.x = sitesIterator->ifloat;
             movingEdgeSite.y = sitesIterator->jfloat;
+#if VISP_VERSION_INT < VP_VERSION_INT(2,10,0) // ViSP < 2.10.0
             movingEdgeSite.suppress = sitesIterator->suppress;
+#endif
             sites->moving_edge_sites.push_back (movingEdgeSite);
           }
           noVisibleLine = false;
