@@ -7,7 +7,7 @@ build_dir="/tmp/_travis/build"
 install_dir="/tmp/_travis/install"
 
 # Source ROS setup file
-. "$root_dir/setup.sh"
+#. "$root_dir/setup.sh"
 
 # Create layout.
 rm -rf "$build_dir" "$install_dir"
