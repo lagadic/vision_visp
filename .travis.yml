@@ -1,27 +1,43 @@
+# Use Ubuntu 14.04 trusty
+sudo: required
+dist: trusty
+
 branches:
   only:
-  - fuerte
-  - fuerte-devel
-  - groovy
-  - groovy-devel
-  - hydro
-  - hydro-devel
-  - indigo
-  - indigo-devel
   - master
+#  - fuerte
+#  - fuerte-devel
+#  - groovy
+#  - groovy-devel
+#  - hydro
+#  - hydro-devel
+#  - indigo
+#  - indigo-devel
+
 matrix:
   allow_failures:
   - compiler: clang
+
 notifications:
   email:
   - hpp-source@laas.fr
+  - Fabien.Spindler@inria.fr
+  on_success: change
+  on_failure: always
+
 env:
   global:
     secure: ldI5kV88XCBoLIVeA8sFAeDX+OwAfHpEvfB0cwuSdRKAnhcK4DRsfIYPkQoibZ70AzuWF6OfD84QNcq90hGgDeUFnhnmFy1J5IrPtT3YawYfxvM75jQECgwGPb4v8RSBzzVZEYxGFVJMm8xiBZ7jiN8GjaV2gr22C3dtgOS6HNY=
+
 script: ./.travis/build
+
 before_install: ./.travis/before_install
+
 language: cpp
+
 compiler:
 - clang
 - gcc
+
 after_success:: ./.travis/after_success
+
