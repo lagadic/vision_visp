@@ -27,6 +27,10 @@ ls $root_dir
 echo "build_dir: $build_dir"
 ls $build_dir
 
+echo "ls /opt/ros/jade/bin:"
+ls /opt/ros/jade/bin
+echo "content of PATH var: $PATH"
+
 cd "$root_dir"
 catkin_init_workspace
 cd "$build_dir"
