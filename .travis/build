@@ -31,7 +31,7 @@ echo "ls /opt/ros/jade/bin:"
 ls /opt/ros/jade/bin
 echo "content of PATH var: $PATH"
 
-#. /opt/ros/jade/setup.bash
+. /opt/ros/jade/setup.bash
 
 #echo "content of PATH var after source: $PATH"
 
