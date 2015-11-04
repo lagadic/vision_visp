@@ -31,11 +31,11 @@ echo "ls /opt/ros/jade/bin:"
 ls /opt/ros/jade/bin
 echo "content of PATH var: $PATH"
 
-. /opt/ros/jade/setup.bash
 
 #echo "content of PATH var after source: $PATH"
 
 cd "$root_dir"
+. /opt/ros/jade/setup.bash
 catkin_init_workspace
 cd "$build_dir"
 cmake "$root_dir" -DCMAKE_INSTALL_PREFIX="$install_dir"
