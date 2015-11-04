@@ -29,11 +29,11 @@ ls $build_dir
 
 echo "ls /opt/ros/jade/bin:"
 ls /opt/ros/jade/bin
-echo "content of PATH var before source: $PATH"
+echo "content of PATH var: $PATH"
 
-source /opt/ros/jade/setup.bash
+#. /opt/ros/jade/setup.bash
 
-echo "content of PATH var after source: $PATH"
+#echo "content of PATH var after source: $PATH"
 
 cd "$root_dir"
 catkin_init_workspace

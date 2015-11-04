@@ -37,6 +37,6 @@ sudo apt-get install -qq ros-$ROS_VERSION-ros-base ros-$ROS_VERSION-image-common
 sudo rosdep init
 
 rosdep update
-source /opt/ros/$ROS_VERSION/setup.bash
+. /opt/ros/$ROS_VERSION/setup.bash
 
 #rosdep install vision_visp
