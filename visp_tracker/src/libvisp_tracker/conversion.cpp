@@ -13,8 +13,14 @@
 #include <visp/vpTranslationVector.h>
 #include <visp/vpQuaternionVector.h>
 
+#if VISP_VERSION_INT < VP_VERSION_INT(2,10,0)
+# define protected public
+#endif
 # include <visp/vpMbEdgeTracker.h>
 # include <visp/vpMbKltTracker.h>
+#if VISP_VERSION_INT < VP_VERSION_INT(2,10,0)
+# undef protected
+#endif
 
 #include "conversion.hh"
 
@@ -31,40 +37,37 @@ void rosImageToVisp(vpImage<unsigned char>& dst,
 
   // Resize the image if necessary.
   if (src->width != dst.getWidth() || src->height != dst.getHeight())
-    {
-      ROS_INFO
-	("dst is %dx%d but src size is %dx%d, resizing.",
-	 src->width, src->height,
-	 dst.getWidth (), dst.getHeight ());
-      dst.resize (src->height, src->width);
-    }
+  {
+    ROS_INFO("dst is %dx%d but src size is %dx%d, resizing.",
+             dst.getWidth (), dst.getHeight (), src->width, src->height);
+    dst.resize (src->height, src->width);
+  }
 
-  if(src->encoding == MONO8)
-    memcpy(dst.bitmap,
-	   &src->data[0],
-	   dst.getHeight () * src->step * sizeof(unsigned char));
+  if(src->encoding == MONO8) {
+    memcpy(dst.bitmap, &src->data[0], dst.getHeight () * src->step * sizeof(unsigned char));
+  }
   else if(src->encoding == RGB8 || src->encoding == RGBA8
-	  || src->encoding == BGR8 || src->encoding == BGRA8)
-    {
-      unsigned nc = numChannels(src->encoding);
-      unsigned cEnd =
-	(src->encoding == RGBA8 || src->encoding == BGRA8) ? nc - 1 : nc;
+          || src->encoding == BGR8 || src->encoding == BGRA8)
+  {
+    unsigned nc = numChannels(src->encoding);
+    unsigned cEnd =
+        (src->encoding == RGBA8 || src->encoding == BGRA8) ? nc - 1 : nc;
 
-      for(unsigned i = 0; i < dst.getWidth (); ++i)
-	for(unsigned j = 0; j < dst.getHeight (); ++j)
-	  {
-	    int acc = 0;
-	    for(unsigned c = 0; c < cEnd; ++c)
-	      acc += src->data[j * src->step + i * nc + c];
-	    dst[j][i] =  acc / nc;
-	  }
-    }
+    for(unsigned i = 0; i < dst.getWidth (); ++i)
+      for(unsigned j = 0; j < dst.getHeight (); ++j)
+      {
+        int acc = 0;
+        for(unsigned c = 0; c < cEnd; ++c)
+          acc += src->data[j * src->step + i * nc + c];
+        dst[j][i] =  acc / nc;
+      }
+  }
   else
-    {
-      boost::format fmt("bad encoding '%1'");
-      fmt % src->encoding;
-      throw std::runtime_error(fmt.str());
-    }
+  {
+    boost::format fmt("bad encoding '%1'");
+    fmt % src->encoding;
+    throw std::runtime_error(fmt.str());
+  }
 }
 
 void vispImageToRos(sensor_msgs::Image& dst,
@@ -78,6 +81,71 @@ void vispImageToRos(sensor_msgs::Image& dst,
   for(unsigned i = 0; i < src.getWidth (); ++i)
     for(unsigned j = 0; j < src.getHeight (); ++j)
       dst.data[j * dst.step + i] = src[j][i];
+}
+
+
+std::string convertVpMbTrackerToRosMessage(const vpMbTracker* tracker)
+{
+  std::stringstream stream;
+#if VISP_VERSION_INT >= VP_VERSION_INT(2,10,0)
+  stream << "Model Based Tracker Common Setttings\n" <<
+            " Angle for polygons apparition...." << vpMath::deg(tracker->getAngleAppear()) <<" degrees\n" <<
+            " Angle for polygons disparition..." << vpMath::deg(tracker->getAngleDisappear()) << " degrees\n";
+#else
+  const vpMbEdgeTracker* tracker_edge = dynamic_cast<const vpMbEdgeTracker*>(tracker);
+  if (tracker_edge != NULL) {
+    stream << "Model Based Tracker Common Setttings\n" <<
+              " Angle for polygons apparition...." << vpMath::deg(tracker_edge->getAngleAppear()) <<" degrees\n" <<
+              " Angle for polygons disparition..." << vpMath::deg(tracker_edge->getAngleDisappear()) << " degrees\n";
+  }
+  else {
+    const vpMbKltTracker* tracker_klt = dynamic_cast<const vpMbKltTracker*>(tracker);
+    if (tracker_klt != NULL) {
+      stream << "Model Based Tracker Common Setttings\n" <<
+                " Angle for polygons apparition...." << vpMath::deg(tracker_klt->getAngleAppear()) <<" degrees\n" <<
+                " Angle for polygons disparition..." << vpMath::deg(tracker_klt->getAngleDisappear()) << " degrees\n";
+    }
+  }
+#endif
+  return stream.str();
+}
+
+std::string convertVpMeToRosMessage(const vpMbTracker* tracker, const vpMe& moving_edge)
+{
+  const vpMbEdgeTracker* t = dynamic_cast<const vpMbEdgeTracker*>(tracker);
+  std::stringstream stream;
+  stream  << "Moving Edge Setttings\n" <<
+             " Size of the convolution masks...." << moving_edge.getMaskSize() <<"x"<< moving_edge.getMaskSize() <<" pixels\n" <<
+             " Query range +/- J................" << moving_edge.getRange() <<" pixels\n" <<
+             " Likelihood test ratio............" << moving_edge.getThreshold() << "\n" <<
+             " Contrast tolerance +/-..........." << moving_edge.getMu1() * 100 << "% and " << moving_edge.getMu2() * 100 << "% \n" <<
+             " Sample step......................" << moving_edge.getSampleStep() <<" pixels\n" <<
+             " Strip............................" << moving_edge.getStrip() << " pixels\n";
+
+#if VISP_VERSION_INT >= VP_VERSION_INT(2,10,0)
+  stream  << " Good moving edge threshold......." << t->getGoodMovingEdgesRatioThreshold()*100 << "%\n";
+#else
+  stream  << " Good moving edge threshold......." << t->getFirstThreshold()*100 << "%\n";
+#endif
+
+  return stream.str();
+}
+
+std::string convertVpKltOpencvToRosMessage(const vpMbTracker* tracker, const vpKltOpencv& klt)
+{
+  const vpMbKltTracker* t = dynamic_cast<const vpMbKltTracker*>(tracker);
+  std::stringstream stream;
+  stream << "KLT Setttings\n" <<
+            " Window size......................" << klt.getWindowSize() <<"x"<< klt.getWindowSize() <<" pixels\n" <<
+            " Mask border......................" << t->getMaskBorder() << " pixels\n" <<
+            " Maximum number of features......." << klt.getMaxFeatures() <<"\n" <<
+            " Detected points quality.........." << klt.getQuality() << "\n" <<
+            " Minimum distance between points.." << klt.getMinDistance() << " pixels\n" <<
+            " Harris free parameter............" << klt.getHarrisFreeParameter() <<"\n" <<
+            " Block size......................." << klt.getBlockSize() << "x" << klt.getBlockSize() << " pixels\n" <<
+            " Number of pyramid levels........." << klt.getPyramidLevels() << "\n";
+
+  return stream.str();
 }
 
 void vpHomogeneousMatrixToTransform(geometry_msgs::Transform& dst,
@@ -138,20 +206,48 @@ void transformToVpHomogeneousMatrix(vpHomogeneousMatrix& dst,
 }
 
 void convertVpMbTrackerToInitRequest(const vpMbTracker* tracker,
-            visp_tracker::Init& srv)
+                                     visp_tracker::Init& srv)
 {
 #if VISP_VERSION_INT >= VP_VERSION_INT(2,10,0)
   srv.request.tracker_param.angle_appear = vpMath::deg(tracker->getAngleAppear());
   srv.request.tracker_param.angle_disappear = vpMath::deg(tracker->getAngleDisappear());
+#else
+  const vpMbEdgeTracker* tracker_edge = dynamic_cast<const vpMbEdgeTracker*>(tracker);
+  if (tracker_edge != NULL) {
+    ROS_INFO("Set service angle from edge");
+    srv.request.tracker_param.angle_appear = vpMath::deg(tracker_edge->getAngleAppear());
+    srv.request.tracker_param.angle_disappear = vpMath::deg(tracker_edge->getAngleDisappear());
+  }
+  else {
+    const vpMbKltTracker* tracker_klt = dynamic_cast<const vpMbKltTracker*>(tracker);
+    if (tracker_klt != NULL) {
+      ROS_INFO("Set service angle from klt");
+      srv.request.tracker_param.angle_appear = vpMath::deg(tracker_klt->getAngleAppear());
+      srv.request.tracker_param.angle_disappear = vpMath::deg(tracker_klt->getAngleDisappear());
+    }
+  }
 #endif
 }
 
 void convertInitRequestToVpMbTracker(const visp_tracker::Init::Request& req,
-            vpMbTracker* tracker)
+                                     vpMbTracker* tracker)
 {
 #if VISP_VERSION_INT >= VP_VERSION_INT(2,10,0)
   tracker->setAngleAppear(vpMath::rad(req.tracker_param.angle_appear));
   tracker->setAngleDisappear(vpMath::rad(req.tracker_param.angle_disappear));
+#else
+  vpMbEdgeTracker* tracker_edge = dynamic_cast<vpMbEdgeTracker*>(tracker);
+  if (tracker_edge != NULL) { // Also valid for hybrid
+    tracker_edge->setAngleAppear(vpMath::rad(req.tracker_param.angle_appear));
+    tracker_edge->setAngleDisappear(vpMath::rad(req.tracker_param.angle_disappear));
+  }
+  else {
+    vpMbKltTracker* tracker_klt = dynamic_cast<vpMbKltTracker*>(tracker);
+    if (tracker_klt != NULL) {
+      tracker_klt->setAngleAppear(vpMath::rad(req.tracker_param.angle_appear));
+      tracker_klt->setAngleDisappear(vpMath::rad(req.tracker_param.angle_disappear));
+    }
+  }
 #endif
 }
 
@@ -161,26 +257,25 @@ void convertVpMeToInitRequest(const vpMe& moving_edge,
 {
   const vpMbEdgeTracker* t = dynamic_cast<const vpMbEdgeTracker*>(tracker);
   
+
+#if VISP_VERSION_INT >= VP_VERSION_INT(2,10,0)
+  srv.request.moving_edge.first_threshold = t->getGoodMovingEdgesRatioThreshold();
+  srv.request.moving_edge.mask_size = moving_edge.getMaskSize();
+  srv.request.moving_edge.range = moving_edge.getRange();
+  srv.request.moving_edge.threshold = moving_edge.getThreshold();
+  srv.request.moving_edge.mu1 = moving_edge.getMu1();
+  srv.request.moving_edge.mu2 = moving_edge.getMu2();
+  srv.request.moving_edge.sample_step = moving_edge.getSampleStep();
+  srv.request.moving_edge.strip = moving_edge.getStrip();
+#else
+  srv.request.moving_edge.first_threshold = t->getFirstThreshold();
   srv.request.moving_edge.mask_size = moving_edge.mask_size;
-  srv.request.moving_edge.n_mask = moving_edge.n_mask;
   srv.request.moving_edge.range = moving_edge.range;
   srv.request.moving_edge.threshold = moving_edge.threshold;
   srv.request.moving_edge.mu1 = moving_edge.mu1;
   srv.request.moving_edge.mu2 = moving_edge.mu2;
   srv.request.moving_edge.sample_step = moving_edge.sample_step;
-  srv.request.moving_edge.ntotal_sample = moving_edge.ntotal_sample;
-
   srv.request.moving_edge.strip = moving_edge.strip;
-  srv.request.moving_edge.min_samplestep = moving_edge.min_samplestep;
-  srv.request.moving_edge.aberration = moving_edge.aberration;
-  srv.request.moving_edge.init_aberration = moving_edge.init_aberration;
-
-  srv.request.moving_edge.lambda = t->getLambda();
-
-#if VISP_VERSION_INT >= VP_VERSION_INT(2,10,0)
-  srv.request.moving_edge.first_threshold = t->getGoodMovingEdgesRatioThreshold();
-#else
-  srv.request.moving_edge.first_threshold = t->getFirstThreshold();
 #endif
 }
 
@@ -190,31 +285,29 @@ void convertInitRequestToVpMe(const visp_tracker::Init::Request& req,
 {
   vpMbEdgeTracker* t = dynamic_cast<vpMbEdgeTracker*>(tracker);
   
+#if VISP_VERSION_INT >= VP_VERSION_INT(2,10,0)
+  t->setGoodMovingEdgesRatioThreshold(req.moving_edge.first_threshold);
+  moving_edge.setMaskSize( req.moving_edge.mask_size );
+  moving_edge.setRange( req.moving_edge.range );
+  moving_edge.setThreshold( req.moving_edge.threshold );
+  moving_edge.setMu1( req.moving_edge.mu1 );
+  moving_edge.setMu2( req.moving_edge.mu2 );
+  moving_edge.setSampleStep( req.moving_edge.sample_step );
+  moving_edge.setStrip( req.moving_edge.strip );
+#else
+  t->setFirstThreshold(req.moving_edge.first_threshold);
   moving_edge.mask_size = req.moving_edge.mask_size;
-  moving_edge.n_mask = req.moving_edge.n_mask;
   moving_edge.range = req.moving_edge.range;
   moving_edge.threshold = req.moving_edge.threshold;
   moving_edge.mu1 = req.moving_edge.mu1;
   moving_edge.mu2 = req.moving_edge.mu2;
   moving_edge.sample_step = req.moving_edge.sample_step;
-  moving_edge.ntotal_sample = req.moving_edge.ntotal_sample;
-
   moving_edge.strip = req.moving_edge.strip;
-  moving_edge.min_samplestep = req.moving_edge.min_samplestep;
-  moving_edge.aberration = req.moving_edge.aberration;
-  moving_edge.init_aberration = req.moving_edge.init_aberration;
-
-  t->setLambda(req.moving_edge.lambda);
-#if VISP_VERSION_INT >= VP_VERSION_INT(2,10,0)
-  t->setGoodMovingEdgesRatioThreshold(req.moving_edge.first_threshold);
-#else
-  t->setFirstThreshold(req.moving_edge.first_threshold);
 #endif
 
   //FIXME: not sure if this is needed.
   moving_edge.initMask();
   //Reset the tracker and the node state.
-  //FIXME: not sure if this is needed.
   t->setMovingEdge(moving_edge);
 }
 
@@ -249,7 +342,6 @@ void convertInitRequestToVpKltOpencv(const visp_tracker::Init::Request& req,
   klt.setPyramidLevels(req.klt_param.pyramid_lvl);
   t->setMaskBorder((unsigned)req.klt_param.mask_border);
 
-  //FIXME: not sure if this is needed.
   t->setKltOpencv(klt);
 }
 

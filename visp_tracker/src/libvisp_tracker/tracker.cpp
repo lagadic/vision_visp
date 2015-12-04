@@ -37,7 +37,7 @@ namespace visp_tracker
 {
   bool
   Tracker::initCallback(visp_tracker::Init::Request& req,
-			visp_tracker::Init::Response& res)
+                        visp_tracker::Init::Response& res)
   {
     ROS_INFO("Initialization request received.");
 
@@ -45,16 +45,16 @@ namespace visp_tracker
 
     // If something goes wrong, rollback all changes.
     BOOST_SCOPE_EXIT((&res)(tracker_)(&state_)
-		     (&lastTrackedImage_)(&trackerType_))
+                     (&lastTrackedImage_)(&trackerType_))
+    {
+      if(!res.initialization_succeed)
       {
-	if(!res.initialization_succeed)
-	  {
         tracker_->resetTracker();
-	    state_ = WAITING_FOR_INITIALIZATION;
-	    lastTrackedImage_ = 0;
+        state_ = WAITING_FOR_INITIALIZATION;
+        lastTrackedImage_ = 0;
 
-	  }
-      } BOOST_SCOPE_EXIT_END;
+      }
+    } BOOST_SCOPE_EXIT_END;
 
     std::string fullModelPath;
     boost::filesystem::ofstream modelStream;
@@ -63,61 +63,58 @@ namespace visp_tracker
     if (!makeModelFile(modelStream, fullModelPath))
       return true;
 
-    // Load moving edges.     
-    vpMe movingEdge;
     tracker_->resetTracker();
 
     // Common parameters
     convertInitRequestToVpMbTracker(req, tracker_);
-    
+
     if(trackerType_!="klt"){ // for mbt and hybrid
-      convertInitRequestToVpMe(req, tracker_, movingEdge);
+      convertInitRequestToVpMe(req, tracker_, movingEdge_);
     }
-    
-    vpKltOpencv klt;
+
     if(trackerType_!="mbt"){ // for klt and hybrid
-      convertInitRequestToVpKltOpencv(req, tracker_, klt);
+      convertInitRequestToVpKltOpencv(req, tracker_, kltTracker_);
     }
 
     if(trackerType_=="mbt+klt"){ // Hybrid Tracker reconfigure
       visp_tracker::ModelBasedSettingsConfig config;
       convertVpMbTrackerToModelBasedSettingsConfig<visp_tracker::ModelBasedSettingsConfig>(tracker_, config);
       reconfigureSrv_->updateConfig(config);
-      convertVpMeToModelBasedSettingsConfig<visp_tracker::ModelBasedSettingsConfig>(movingEdge, tracker_, config);
+      convertVpMeToModelBasedSettingsConfig<visp_tracker::ModelBasedSettingsConfig>(movingEdge_, tracker_, config);
       reconfigureSrv_->updateConfig(config);
-      convertVpKltOpencvToModelBasedSettingsConfig<visp_tracker::ModelBasedSettingsConfig>(klt, tracker_, config);
+      convertVpKltOpencvToModelBasedSettingsConfig<visp_tracker::ModelBasedSettingsConfig>(kltTracker_, tracker_, config);
       reconfigureSrv_->updateConfig(config);
     }
     else if(trackerType_=="mbt"){ // Edge Tracker reconfigure
       visp_tracker::ModelBasedSettingsEdgeConfig config;
       convertVpMbTrackerToModelBasedSettingsConfig<visp_tracker::ModelBasedSettingsEdgeConfig>(tracker_, config);
       reconfigureEdgeSrv_->updateConfig(config);
-      convertVpMeToModelBasedSettingsConfig<visp_tracker::ModelBasedSettingsEdgeConfig>(movingEdge, tracker_, config);
+      convertVpMeToModelBasedSettingsConfig<visp_tracker::ModelBasedSettingsEdgeConfig>(movingEdge_, tracker_, config);
       reconfigureEdgeSrv_->updateConfig(config);
     }
     else{ // KLT Tracker reconfigure
       visp_tracker::ModelBasedSettingsKltConfig config;
       convertVpMbTrackerToModelBasedSettingsConfig<visp_tracker::ModelBasedSettingsKltConfig>(tracker_, config);
       reconfigureKltSrv_->updateConfig(config);
-      convertVpKltOpencvToModelBasedSettingsConfig<visp_tracker::ModelBasedSettingsKltConfig>(klt, tracker_, config);
+      convertVpKltOpencvToModelBasedSettingsConfig<visp_tracker::ModelBasedSettingsKltConfig>(kltTracker_, tracker_, config);
       reconfigureKltSrv_->updateConfig(config);
     }
-    
+
     state_ = WAITING_FOR_INITIALIZATION;
     lastTrackedImage_ = 0;
 
     // Load the model.
     try
-      {
-    ROS_DEBUG_STREAM("Trying to load the model Tracker: " << fullModelPath);
-	tracker_->loadModel(fullModelPath.c_str());
-	modelStream.close();
-      }
+    {
+      ROS_DEBUG_STREAM("Trying to load the model Tracker: " << fullModelPath);
+      tracker_->loadModel(fullModelPath.c_str());
+      modelStream.close();
+    }
     catch(...)
-      {
-	ROS_ERROR_STREAM("Failed to load the model: " << fullModelPath);
-	return true;
-      }
+    {
+      ROS_ERROR_STREAM("Failed to load the model: " << fullModelPath);
+      return true;
+    }
     ROS_DEBUG("Model has been successfully loaded.");
 
     // Load the initial cMo.
@@ -129,16 +126,24 @@ namespace visp_tracker
     // Try to initialize the tracker.
     ROS_INFO_STREAM("Initializing tracker with cMo:\n" << cMo_);
     try
-      {
-	tracker_->initFromPose(image_, cMo_);
-	ROS_INFO("Tracker successfully initialized.");
+    {
+      // Bug between setPose() and initFromPose() not present here due to previous call to resetTracker()
+      tracker_->initFromPose(image_, cMo_);
+      ROS_INFO("Tracker successfully initialized.");
 
-	movingEdge.print();
-      }
+      //movingEdge.print();
+      ROS_INFO_STREAM(convertVpMbTrackerToRosMessage(tracker_));
+      // - Moving edges.
+      if(trackerType_!="klt")
+        ROS_INFO_STREAM(convertVpMeToRosMessage(tracker_, movingEdge_));
+
+      if(trackerType_!="mbt")
+        ROS_INFO_STREAM(convertVpKltOpencvToRosMessage(tracker_,kltTracker_));
+    }
     catch(const std::string& str)
-      {
-	ROS_ERROR_STREAM("Tracker initialization has failed: " << str);
-      }
+    {
+      ROS_ERROR_STREAM("Tracker initialization has failed: " << str);
+    }
 
     // Initialization is valid.
     res.initialization_succeed = true;
@@ -164,22 +169,48 @@ namespace visp_tracker
       {
         vpMbtDistanceLine* line = *linesIterator;
 
+#if VISP_VERSION_INT >= VP_VERSION_INT(3,0,0) // ViSP >= 3.0.0
+        if (line && line->isVisible() && ! line->meline.empty())
+#else
         if (line && line->isVisible() && line->meline)
+#endif
         {
-          std::list<vpMeSite>::const_iterator sitesIterator =
-              line->meline->list.begin();
+#if VISP_VERSION_INT >= VP_VERSION_INT(3,0,0) // ViSP >= 3.0.0
+          for(unsigned int a = 0 ; a < line->meline.size() ; a++)
+          {
+            if(line->meline[a] != NULL) {
+              std::list<vpMeSite>::const_iterator sitesIterator = line->meline[a]->getMeList().begin();
+              if (line->meline[a]->getMeList().empty())
+                ROS_DEBUG_THROTTLE(10, "no moving edge for a line");
+              for (; sitesIterator != line->meline[a]->getMeList().end(); ++sitesIterator)
+              {
+#elif VISP_VERSION_INT >= VP_VERSION_INT(2,10,0) // ViSP >= 2.10.0
+          std::list<vpMeSite>::const_iterator sitesIterator = line->meline->getMeList().begin();
+          if (line->meline->getMeList().empty())
+            ROS_DEBUG_THROTTLE(10, "no moving edge for a line");
+          for (; sitesIterator != line->meline->getMeList().end(); ++sitesIterator)
+          {
+#else
+          std::list<vpMeSite>::const_iterator sitesIterator = line->meline->list.begin();
           if (line->meline->list.empty())
             ROS_DEBUG_THROTTLE(10, "no moving edge for a line");
           for (; sitesIterator != line->meline->list.end(); ++sitesIterator)
           {
+#endif
             visp_tracker::MovingEdgeSite movingEdgeSite;
             movingEdgeSite.x = sitesIterator->ifloat;
             movingEdgeSite.y = sitesIterator->jfloat;
+#if VISP_VERSION_INT < VP_VERSION_INT(2,10,0) // ViSP < 2.10.0
             movingEdgeSite.suppress = sitesIterator->suppress;
+#endif
             sites->moving_edge_sites.push_back (movingEdgeSite);
           }
           noVisibleLine = false;
         }
+#if VISP_VERSION_INT >= VP_VERSION_INT(3,0,0) // ViSP >= 3.0.0
+      }
+    }
+#endif
       }
       if (noVisibleLine)
         ROS_DEBUG_THROTTLE(10, "no distance lines");
@@ -192,7 +223,7 @@ namespace visp_tracker
     if (!klt)
       return;
 
-#if VISP_VERSION_INT < (2<<16 | 10<<8 | 0) // ViSP < 2.10.0
+#if VISP_VERSION_INT < VP_VERSION_INT(2,10,0) // ViSP < 2.10.0
     vpMbHiddenFaces<vpMbtKltPolygon> *poly_lst;
     std::map<int, vpImagePoint> *map_klt;
 
@@ -372,30 +403,33 @@ namespace visp_tracker
       ("object_position_hint", queueSize_, callback);
 
     // Initialization.
-    movingEdge_.initMask();
-    if(trackerType_!="klt"){
-      vpMbEdgeTracker* t = dynamic_cast<vpMbEdgeTracker*>(tracker_);
-      t->setMovingEdge(movingEdge_);
-    }
+    // No more necessary as it is done via the reconfigure server
+//    movingEdge_.initMask();
+//    if(trackerType_!="klt"){
+//      vpMbEdgeTracker* t = dynamic_cast<vpMbEdgeTracker*>(tracker_);
+//      t->setMovingEdge(movingEdge_);
+//    }
     
-    if(trackerType_!="mbt"){
-      vpMbKltTracker* t = dynamic_cast<vpMbKltTracker*>(tracker_);
-      t->setKltOpencv(kltTracker_);
-    }
+//    if(trackerType_!="mbt"){
+//      vpMbKltTracker* t = dynamic_cast<vpMbKltTracker*>(tracker_);
+//      t->setKltOpencv(kltTracker_);
+//    }
     
     // Dynamic reconfigure.
     if(trackerType_=="mbt+klt"){ // Hybrid Tracker reconfigure
       reconfigureSrv_ = new reconfigureSrvStruct<visp_tracker::ModelBasedSettingsConfig>::reconfigureSrv_t(mutex_, nodeHandlePrivate_);
       reconfigureSrvStruct<visp_tracker::ModelBasedSettingsConfig>::reconfigureSrv_t::CallbackType f =
-        boost::bind(&reconfigureCallback, boost::ref(tracker_),
+        boost::bind(&reconfigureCallbackAndInitViewer,
+                    boost::ref(nodeHandle_), boost::ref(tracker_),
                     boost::ref(image_), boost::ref(movingEdge_), boost::ref(kltTracker_),
-                    boost::ref(trackerType_), boost::ref(mutex_), _1, _2);
+                    boost::ref(mutex_), _1, _2);
       reconfigureSrv_->setCallback(f);
     }
     else if(trackerType_=="mbt"){ // Edge Tracker reconfigure
       reconfigureEdgeSrv_ = new reconfigureSrvStruct<visp_tracker::ModelBasedSettingsEdgeConfig>::reconfigureSrv_t(mutex_, nodeHandlePrivate_);
       reconfigureSrvStruct<visp_tracker::ModelBasedSettingsEdgeConfig>::reconfigureSrv_t::CallbackType f =
-        boost::bind(&reconfigureEdgeCallback, boost::ref(tracker_),
+        boost::bind(&reconfigureEdgeCallbackAndInitViewer,
+                    boost::ref(nodeHandle_), boost::ref(tracker_),
                     boost::ref(image_), boost::ref(movingEdge_),
                     boost::ref(mutex_), _1, _2);
       reconfigureEdgeSrv_->setCallback(f);
@@ -403,7 +437,8 @@ namespace visp_tracker
     else{ // KLT Tracker reconfigure
       reconfigureKltSrv_ = new reconfigureSrvStruct<visp_tracker::ModelBasedSettingsKltConfig>::reconfigureSrv_t(mutex_, nodeHandlePrivate_);
       reconfigureSrvStruct<visp_tracker::ModelBasedSettingsKltConfig>::reconfigureSrv_t::CallbackType f =
-        boost::bind(&reconfigureKltCallback, boost::ref(tracker_),
+        boost::bind(&reconfigureKltCallbackAndInitViewer,
+                    boost::ref(nodeHandle_), boost::ref(tracker_),
                     boost::ref(image_), boost::ref(kltTracker_),
                     boost::ref(mutex_), _1, _2);
       reconfigureKltSrv_->setCallback(f);

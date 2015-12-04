@@ -104,11 +104,12 @@ namespace visp_camera_calibration
     double py = cam.get_px();
     double u0 = req.sample_width/2;
     double v0 = req.sample_height/2;
+    double error = 0.;
 
     cam.initPersProjWithoutDistortion(px, py, u0, v0);
     vpCalibration::setLambda(lambda);
 
-    vpCalibration::computeCalibrationMulti(vpCalibration::vpCalibrationMethodType(req.method),calibrations_.size(),&(calibrations_[0]),cam,false);
+    vpCalibration::computeCalibrationMulti(vpCalibration::vpCalibrationMethodType(req.method), calibrations_, cam, error, false);
 
     for(std::vector<vpCalibration>::iterator i=calibrations_.begin();
         i!=calibrations_.end();
