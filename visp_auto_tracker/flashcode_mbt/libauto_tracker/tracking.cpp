@@ -537,9 +537,21 @@ namespace tracking{
     {
       vpMbtDistanceLine* line = *linesIterator;
 
+#if VISP_VERSION_INT >= VP_VERSION_INT(3,0,0) // ViSP >= 3.0.0
+      if (line && line->isVisible() && ! line->meline.empty())
+#else
       if (line && line->isVisible() && line->meline)
+#endif
       {
-#if VISP_VERSION_INT > VP_VERSION_INT(2,10,0)// ViSP >= 2.10.0
+#if VISP_VERSION_INT >= VP_VERSION_INT(3,0,0) // ViSP >= 3.0.0
+        for(unsigned int a = 0 ; a < line->meline.size() ; a++)
+        {
+          if(line->meline[a] != NULL) {
+            std::list<vpMeSite>::const_iterator sitesIterator = line->meline[a]->getMeList().begin();
+            if (line->meline[a]->getMeList().empty())
+              ROS_DEBUG_THROTTLE(10, "no moving edge for a line");
+            for (; sitesIterator != line->meline[a]->getMeList().end(); ++sitesIterator)
+#elif VISP_VERSION_INT >= VP_VERSION_INT(2,10,0) // ViSP >= 2.10.0
         if (line->meline->getMeList().empty()) {
           ROS_DEBUG_THROTTLE(10, "no moving edge for a line");
         }
@@ -564,8 +576,11 @@ namespace tracking{
           sites->moving_edge_sites.push_back (movingEdgeSite);
         }
         noVisibleLine = false;
-
       }
+#if VISP_VERSION_INT >= VP_VERSION_INT(3,0,0) // ViSP >= 3.0.0
+      }
+    }
+#endif
     }
     if (noVisibleLine)
       ROS_DEBUG_THROTTLE(10, "no distance lines");
