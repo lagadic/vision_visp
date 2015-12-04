@@ -279,10 +279,10 @@ namespace visp_tracker
             vpDisplay::display(image_);
             mutex_.lock ();
             tracker_->track(image_);
+            tracker_->getPose(cMo);
             tracker_->display(image_, cMo, cameraParameters_,
                               vpColor::red, 2);
             vpDisplay::displayFrame(image_, cMo, cameraParameters_,frameSize_,vpColor::none,2);
-            tracker_->getPose(cMo);
             mutex_.unlock();
             vpDisplay::displayCharString
                 (image_, point, "tracking, click to initialize tracker",
