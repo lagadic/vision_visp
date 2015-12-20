@@ -12,10 +12,10 @@ find_package(catkin REQUIRED COMPONENTS
   nodelet
   resource_retriever
   roscpp
+  rospy
   sensor_msgs
   std_msgs
   tf
-  rospy
   )
 
 # ViSP cannot be found by Catkin.
@@ -25,20 +25,22 @@ find_package(VISP REQUIRED)
 
 # Generate messages and services.
 add_message_files(
-  DIRECTORY msg
+  DIRECTORY 
+    msg
   FILES
-  TrackerSettings.msg
-  KltPoint.msg
-  KltPoints.msg
-  KltSettings.msg
-  MovingEdgeSettings.msg
-  MovingEdgeSite.msg
-  MovingEdgeSites.msg
+    KltPoint.msg
+    KltPoints.msg
+    KltSettings.msg
+    MovingEdgeSettings.msg
+    MovingEdgeSite.msg
+    MovingEdgeSites.msg
+    TrackerSettings.msg
   )
 add_service_files(
-  DIRECTORY srv
+  DIRECTORY 
+    srv
   FILES
-  Init.srv
+    Init.srv
   )
 generate_messages(DEPENDENCIES geometry_msgs sensor_msgs std_msgs)
 
@@ -50,19 +52,21 @@ generate_dynamic_reconfigure_options(
 
 
 catkin_package(
-   LIBRARIES visp_tracker trackerNodelet
+   LIBRARIES
+     trackerNodelet
+     visp_tracker 
 
    CATKIN_DEPENDS
-   geometry_msgs
-   message_runtime
-   roscpp
-   nodelet
-   sensor_msgs
-   std_msgs
-   dynamic_reconfigure
+     dynamic_reconfigure
+     geometry_msgs
+     message_runtime
+     nodelet
+     roscpp
+     sensor_msgs
+     std_msgs
 
    DEPENDS
-   VISP
+     VISP
    )
 
 include_directories(SYSTEM
@@ -99,12 +103,12 @@ add_library(visp_tracker
   src/libvisp_tracker/file.hh
   src/libvisp_tracker/names.cpp
   src/libvisp_tracker/names.hh
-  src/libvisp_tracker/tracker.cpp
-  src/libvisp_tracker/tracker.hh
   src/libvisp_tracker/tracker-client.cpp
   src/libvisp_tracker/tracker-client.hh
   src/libvisp_tracker/tracker-viewer.cpp
-  src/libvisp_tracker/tracker-viewer.hh)
+  src/libvisp_tracker/tracker-viewer.hh
+  src/libvisp_tracker/tracker.cpp
+  src/libvisp_tracker/tracker.hh)
 
 target_link_libraries(visp_tracker
   ${Boost_LIBRARIES}
@@ -142,8 +146,8 @@ install(DIRECTORY cfg/cpp/${PROJECT_NAME}/
 
 # Tracker, client, viewer nodelets.
 add_library(trackerNodelet
-  src/nodelets/tracker.cpp
   src/nodelets/client.cpp
+  src/nodelets/tracker.cpp
   src/nodelets/viewer.cpp)
 
 target_link_libraries(trackerNodelet visp_tracker)
@@ -153,7 +157,7 @@ target_link_libraries(trackerNodelet
   ${VISP_LIBRARIES}
   )
 
-install(TARGETS visp_tracker trackerNodelet
+install(TARGETS trackerNodelet visp_tracker
    ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
    LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
    RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
