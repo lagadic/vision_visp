@@ -26,3 +26,14 @@ Changelog for package vision_visp
 * Prepare changelogs
 * Contributors: Fabien Spindler
 
+0.9.0 (2015-12-20)
+------------------
+* jade-0.8.0
+* Prepare changelogs
+* Fix doc url location
+* 0.7.3
+* Prepare changelogs
+* indigo-0.7.2
+* Prepare changelogs
+* Contributors: Fabien Spindler
+

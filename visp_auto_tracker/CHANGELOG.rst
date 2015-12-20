@@ -65,3 +65,12 @@ Changelog for package visp_auto_tracker
 * Prepare changelogs
 * Contributors: Aurelien Yol, Fabien Spindler
 
+0.9.0 (2015-12-20)
+------------------
+* Fix catkin_lint error and issues
+* Compat with ViSP 3.0.0
+* Fix to build with ViSP 2.10.0 when VISP_BUILD_DEPRECATED=OFF
+* jade-0.8.0
+* Prepare changelogs
+* Contributors: Aurelien Yol, Fabien Spindler
+
