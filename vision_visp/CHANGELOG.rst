@@ -18,3 +18,11 @@ Changelog for package vision_visp
 * Prepare changelogs
 * Contributors: Fabien Spindler
 
+0.8.0 (2015-04-01)
+------------------
+* Fix doc url location
+* 0.7.3
+* Prepare changelogs
+* Prepare changelogs
+* Contributors: Fabien Spindler
+

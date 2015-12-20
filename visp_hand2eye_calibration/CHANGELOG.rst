@@ -21,3 +21,13 @@ Changelog for package visp_hand2eye_calibration
 * Prepare changelogs
 * Contributors: Fabien Spindler
 
+0.8.0 (2015-04-01)
+------------------
+* Remove catkin_lint issues and warnings
+* Fix doc url location
+* Update and fix content of README files
+* 0.7.3
+* Prepare changelogs
+* Prepare changelogs
+* Contributors: Fabien Spindler
+

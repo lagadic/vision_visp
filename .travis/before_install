@@ -2,7 +2,7 @@
 set -ev
 
 export UBUNTU_CODENAME=`lsb_release -s -c`
-export ROS_VERSION=hydro
+export ROS_VERSION=jade
 
 echo "Ubuntu codename: $UBUNTU_CODENAME"
 echo "ROS version: $ROS_VERSION"
@@ -11,7 +11,7 @@ if `test x$UBUNTU_CODENAME = x`; then
     echo "failed to determine Ubuntu codename"
     return 1
 fi
-if `test x$UBUNTU_CODENAME = x`; then
+if `test x$ROS_VERSION = x`; then
     echo "failed to determine ROS version"
     return 1
 fi
