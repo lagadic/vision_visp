@@ -61,10 +61,10 @@ target_link_libraries(visp_auto_tracker_cmd_line
 
 if(VISP_VERSION VERSION_LESS 2.10.0)
   add_library(visp_auto_tracker_qrcode_detector
-    flashcode_mbt/detectors/detector_base.h
     flashcode_mbt/detectors/detector_base.cpp
-    flashcode_mbt/detectors/qrcode/detector.h
+    flashcode_mbt/detectors/detector_base.h
     flashcode_mbt/detectors/qrcode/detector.cpp
+    flashcode_mbt/detectors/qrcode/detector.h
   )
   target_link_libraries(visp_auto_tracker_qrcode_detector
     ${resource_retriever_LIBRARIES}
@@ -73,10 +73,10 @@ if(VISP_VERSION VERSION_LESS 2.10.0)
     zbar)
 
   add_library(visp_auto_tracker_datamatrix_detector
-    flashcode_mbt/detectors/detector_base.h
-    flashcode_mbt/detectors/detector_base.cpp
-    flashcode_mbt/detectors/datamatrix/detector.h
     flashcode_mbt/detectors/datamatrix/detector.cpp
+    flashcode_mbt/detectors/datamatrix/detector.h
+    flashcode_mbt/detectors/detector_base.cpp
+    flashcode_mbt/detectors/detector_base.h
   )
   target_link_libraries(visp_auto_tracker_datamatrix_detector
     ${resource_retriever_LIBRARIES}
@@ -86,13 +86,13 @@ if(VISP_VERSION VERSION_LESS 2.10.0)
 endif()
 
 add_library(auto_tracker
-  flashcode_mbt/libauto_tracker/states.hpp
   flashcode_mbt/libauto_tracker/events.h
-  flashcode_mbt/libauto_tracker/tracking.h
-  flashcode_mbt/libauto_tracker/tracking.cpp
   flashcode_mbt/libauto_tracker/logfilewriter.hpp
+  flashcode_mbt/libauto_tracker/states.hpp
+  flashcode_mbt/libauto_tracker/threading.cpp
   flashcode_mbt/libauto_tracker/threading.h
-  flashcode_mbt/libauto_tracker/threading.cpp)
+  flashcode_mbt/libauto_tracker/tracking.cpp
+  flashcode_mbt/libauto_tracker/tracking.h)
 
 if(VISP_VERSION VERSION_LESS 2.10.0)
   target_link_libraries(auto_tracker
@@ -117,10 +117,10 @@ endif()
 
 add_executable(visp_auto_tracker
   src/main.cpp
-  src/node.cpp
-  src/node.h
   src/names.cpp
   src/names.h
+  src/node.cpp
+  src/node.h
   )
 
 add_dependencies(visp_auto_tracker visp_auto_tracker_bag)
@@ -140,11 +140,11 @@ if(VISP_VERSION VERSION_LESS 2.10.0)
 
   install(
     TARGETS
-      visp_auto_tracker
       auto_tracker
-      visp_auto_tracker_qrcode_detector
-      visp_auto_tracker_datamatrix_detector
+      visp_auto_tracker
       visp_auto_tracker_cmd_line
+      visp_auto_tracker_datamatrix_detector
+      visp_auto_tracker_qrcode_detector
     ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
     LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
     RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
@@ -158,8 +158,8 @@ else()
 
   install(
     TARGETS
-      visp_auto_tracker
       auto_tracker
+      visp_auto_tracker
       visp_auto_tracker_cmd_line
     ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
     LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}

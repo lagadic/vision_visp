@@ -23,11 +23,6 @@ include_directories(
   ${VISP_INCLUDE_DIRS}
   ${catkin_INCLUDE_DIRS}
 )
-#link_directories(
-#  ${Boost_LIBRARY_DIRS}
-#  ${VISP_LIBRARY_DIRS}
-#  ${catkin_LIBRARY_DIRS}
-#  )
 
 # Generate messages and services.
 add_message_files(
@@ -48,11 +43,11 @@ generate_messages(DEPENDENCIES geometry_msgs sensor_msgs std_msgs)
 
 catkin_package(
   CATKIN_DEPENDS
+    geometry_msgs
     message_runtime
     roscpp
     sensor_msgs
     std_msgs
-    geometry_msgs
 )
 
 add_library(visp_hand2eye_calibration_common

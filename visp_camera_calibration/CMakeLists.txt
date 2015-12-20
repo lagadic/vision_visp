@@ -33,8 +33,8 @@ add_message_files(
   DIRECTORY
     msg
   FILES
-    CalibPointArray.msg
     CalibPoint.msg
+    CalibPointArray.msg
     ImageAndPoints.msg
     ImagePoint.msg
   )
@@ -48,10 +48,10 @@ generate_messages(DEPENDENCIES geometry_msgs sensor_msgs std_msgs)
 
 catkin_package(
   CATKIN_DEPENDS
+    geometry_msgs
     message_runtime
     sensor_msgs
     std_msgs
-    geometry_msgs
   DEPENDS
     VISP
 )
@@ -104,10 +104,10 @@ add_dependencies(visp_camera_calibration_camera
 
 install(
   TARGETS
-    visp_camera_calibration_common
     visp_camera_calibration_calibrator
-    visp_camera_calibration_image_processing
     visp_camera_calibration_camera
+    visp_camera_calibration_common
+    visp_camera_calibration_image_processing
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
