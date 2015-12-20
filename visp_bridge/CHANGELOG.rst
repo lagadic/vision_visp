@@ -2,6 +2,14 @@
 Changelog for package visp_bridge
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.9.0 (2015-12-20)
+------------------
+* Fix catkin_lint errors and warnings
+* Changed input to conversion functions to const
+* indigo-0.8.1
+* Prepare changelogs
+* Contributors: Fabien Spindler, Riccardo Spica
+
 0.8.1 (2015-04-08)
 ------------------
 * indigo-0.8.0

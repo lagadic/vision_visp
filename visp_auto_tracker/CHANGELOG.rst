@@ -2,6 +2,15 @@
 Changelog for package visp_auto_tracker
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.9.0 (2015-12-20)
+------------------
+* Fix catkin_lint errors and warnings
+* Compat with ViSP 3.0.0
+* Fix to build with ViSP 2.10.0 when VISP_BUILD_DEPRECATED=OFF
+* indigo-0.8.1
+* Prepare changelogs
+* Contributors: Aurelien Yol, Fabien Spindler
+
 0.8.1 (2015-04-08)
 ------------------
 * Fix warning detected with bloom

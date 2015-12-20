@@ -2,6 +2,13 @@
 Changelog for package visp_hand2eye_calibration
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.9.0 (2015-12-20)
+------------------
+* Fix catkin_lint errors and warnings
+* indigo-0.8.1
+* Prepare changelogs
+* Contributors: Fabien Spindler
+
 0.8.1 (2015-04-08)
 ------------------
 * indigo-0.8.0
