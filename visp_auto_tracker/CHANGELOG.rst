@@ -74,3 +74,10 @@ Changelog for package visp_auto_tracker
 * Prepare changelogs
 * Contributors: Aurelien Yol, Fabien Spindler
 
+0.9.1 (2015-12-21)
+------------------
+* Revert build_depend visp removal that is mandatory.
+* jade-0.9.0
+* Prepare changelogs
+* Contributors: Fabien Spindler
+
