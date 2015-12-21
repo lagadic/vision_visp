@@ -2,6 +2,13 @@
 Changelog for package visp_bridge
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.9.1 (2015-12-21)
+------------------
+* Revert build_depend visp removal that is mandatory.
+* indigo-0.9.0
+* Prepare changelogs
+* Contributors: Fabien Spindler
+
 0.9.0 (2015-12-20)
 ------------------
 * Fix catkin_lint errors and warnings
