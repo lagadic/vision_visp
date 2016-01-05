@@ -32,3 +32,18 @@ Changelog for package visp_camera_calibration
 * Prepare changelogs
 * Contributors: Fabien Spindler
 
+0.9.0 (2015-12-20)
+------------------
+* Fix catkin_lint error and issues
+* Fix to build with ViSP 2.10.0 when VISP_BUILD_DEPRECATED=OFF
+* jade-0.8.0
+* Prepare changelogs
+* Contributors: Fabien Spindler
+
+0.9.1 (2015-12-21)
+------------------
+* Revert build_depend visp removal that is mandatory.
+* jade-0.9.0
+* Prepare changelogs
+* Contributors: Fabien Spindler
+

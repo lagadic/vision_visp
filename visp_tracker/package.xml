@@ -1,6 +1,6 @@
 <package>
   <name>visp_tracker</name>
-  <version>0.8.0</version>
+  <version>0.9.1</version>
   <description>
     Wraps the ViSP moving edge tracker provided by the ViSP visual
     servoing library into a ROS package.
@@ -33,7 +33,10 @@
   <build_depend>image_transport</build_depend>
   <build_depend>resource_retriever</build_depend>
   <build_depend>tf</build_depend>
-  <!--build_depend>visp</build_depend-->
+  <!-- catkin_lint produce an error arround build_depend visp. -->
+  <!-- This error shouldn't be considered. If build_depend visp is removed, -->
+  <!-- the package is not able to build on ros buildfarm. -->
+  <build_depend>visp</build_depend>
 
   <run_depend>message_runtime</run_depend>
   <run_depend>message_generation</run_depend>

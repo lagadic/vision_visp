@@ -39,3 +39,18 @@ Changelog for package visp_bridge
 * Prepare changelogs
 * Contributors: Fabien Spindler, Riccardo Spica
 
+0.9.0 (2015-12-20)
+------------------
+* Fix catkin_lint error and issues
+* Changed input to conversion functions to const
+* jade-0.8.0
+* Prepare changelogs
+* Contributors: Fabien Spindler, Riccardo Spica
+
+0.9.1 (2015-12-21)
+------------------
+* Revert build_depend visp removal that is mandatory.
+* jade-0.9.0
+* Prepare changelogs
+* Contributors: Fabien Spindler
+
