@@ -24,8 +24,8 @@ Branches come in two flavors:
  * release branch
 
 Package for each ROS release is maintained on separate
-branches. I.e. `jade-devel` is the Jade development branch whereas
-`jade` is the Jade release branch.
+branches. I.e. `kinetic-devel` is the Kinetic Kade development branch whereas
+`kinetic` is the Kinetic Kame release branch.
 
 `master` means the next ROS release.
 
@@ -63,6 +63,7 @@ This stack supports the following ROS releases:
  * Fuerte
  * Indigo
  * Jade
+ * Kinetic
 
 The master branch holds the development that will be available in the
 next ROS release.
