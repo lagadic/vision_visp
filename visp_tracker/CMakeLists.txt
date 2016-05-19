@@ -79,9 +79,6 @@ include_directories(SYSTEM
 include_directories(
   "${CMAKE_CURRENT_SOURCE_DIR}/src/libvisp_tracker")
 
-# Add package definitions
-add_definitions(${VISP_DEFINITIONS})
-
 # Make sure Boost.Filesystem v3 is used.
 add_definitions(-DBOOST_FILESYSTEM_VERSION=3)
 

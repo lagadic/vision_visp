@@ -15,9 +15,6 @@ find_package(catkin REQUIRED COMPONENTS
 # see https://github.com/ros/catkin/issues/606
 find_package(VISP REQUIRED)
 
-
-add_definitions(${VISP_DEFINITIONS})
-
 include_directories(
   ${Boost_INCLUDE_DIRS}
   ${VISP_INCLUDE_DIRS}
