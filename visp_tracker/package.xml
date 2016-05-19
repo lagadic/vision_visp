@@ -1,6 +1,6 @@
 <package>
   <name>visp_tracker</name>
-  <version>0.9.1</version>
+  <version>0.9.2</version>
   <description>
     Wraps the ViSP moving edge tracker provided by the ViSP visual
     servoing library into a ROS package.
