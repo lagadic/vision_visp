@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>visp_hand2eye_calibration</name>
-  <version>0.9.2</version>
+  <version>0.9.3</version>
 
   <description>
      visp_hand2eye_calibration estimates the camera position with respect
