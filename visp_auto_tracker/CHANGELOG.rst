@@ -81,3 +81,10 @@ Changelog for package visp_auto_tracker
 * Prepare changelogs
 * Contributors: Fabien Spindler
 
+0.9.3 (2016-05-20)
+------------------
+* Fix CMAKE_CXX_FLAGS as separated list
+* kinetic-0.9.2
+* Contributors: Fabien Spindler
+
+

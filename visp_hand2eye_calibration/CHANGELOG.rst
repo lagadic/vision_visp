@@ -31,6 +31,16 @@ Changelog for package visp_hand2eye_calibration
 * Prepare changelogs
 * Contributors: Fabien Spindler
 
+0.9.3 (2016-05-20)
+------------------
+* kinetic-0.9.2
+* Cleanify code
+* jade-0.9.1
+* Prepare changelogs
+* Contributors: Fabien Spindler
+
+
+
 0.9.0 (2015-12-20)
 ------------------
 * Fix catkin_lint error and issues

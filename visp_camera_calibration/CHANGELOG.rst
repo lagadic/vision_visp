@@ -47,3 +47,12 @@ Changelog for package visp_camera_calibration
 * Prepare changelogs
 * Contributors: Fabien Spindler
 
+0.9.3 (2016-05-20)
+------------------
+* kinetic-0.9.2
+* Cleanify code
+* jade-0.9.1
+* Prepare changelogs
+* Contributors: Fabien Spindler
+
+
