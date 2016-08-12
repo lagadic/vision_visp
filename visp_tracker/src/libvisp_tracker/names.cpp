@@ -8,6 +8,7 @@ namespace visp_tracker
   ("object_position_covariance");
   std::string moving_edge_sites_topic("moving_edge_sites");
   std::string klt_points_topic("klt_points");
+  std::string tracker_status_topic("tracker_mbt/status");
   std::string camera_velocity_topic("camera_velocity");
   std::string init_service("init_tracker");
   std::string init_service_viewer("init_tracker_viewer");
