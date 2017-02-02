@@ -87,10 +87,12 @@ void reconfigureCallback(vpMbTracker* tracker,
 
       // Check if the image is ready to use
       if (I.getHeight() != 0 && I.getWidth() != 0) {
+#if VISP_VERSION_INT < VP_VERSION_INT(3,0,0)
         // Could not use just initFromPose() for hybrid tracker
         // init() function from edge tracker has to be fixed in the trunk first
         // It might have to reset the meLines
         tracker->setPose(I, cMo);
+#endif
         tracker->initFromPose(I, cMo);
       }
     }
