@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>visp_auto_tracker</name>
-  <version>0.9.3</version>
+  <version>0.10.0</version>
 
   <description>
     Online automated pattern-based object tracker relying on visual servoing.
