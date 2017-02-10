@@ -45,35 +45,36 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/flashcode_mbt)
 add_definitions(${VISP_DEFINITIONS})
 
 # Library gathering libauto_tracker used by all nodes.
-add_library(visp_auto_tracker_cmd_line
+add_library(${PROJECT_NAME}_cmd_line
   flashcode_mbt/cmd_line/cmd_line.cpp
   flashcode_mbt/cmd_line/cmd_line.h
 )
-target_link_libraries(visp_auto_tracker_cmd_line
+target_link_libraries(${PROJECT_NAME}_cmd_line
   ${resource_retriever_LIBRARIES}
   ${catkin_LIBRARIES}
   ${Boost_LIBRARIES})
 
-if(VISP_VERSION VERSION_LESS 2.10.0)
-  add_library(visp_auto_tracker_qrcode_detector
+#catkin_lint: ignore unquoted_string_op
+if(VISP_VERSION VERSION_LESS "2.10.0")
+  add_library(${PROJECT_NAME}_qrcode_detector
     flashcode_mbt/detectors/detector_base.cpp
     flashcode_mbt/detectors/detector_base.h
     flashcode_mbt/detectors/qrcode/detector.cpp
     flashcode_mbt/detectors/qrcode/detector.h
   )
-  target_link_libraries(visp_auto_tracker_qrcode_detector
+  target_link_libraries(${PROJECT_NAME}_qrcode_detector
     ${resource_retriever_LIBRARIES}
     ${catkin_LIBRARIES}
     ${Boost_LIBRARIES}
     zbar)
 
-  add_library(visp_auto_tracker_datamatrix_detector
+  add_library(${PROJECT_NAME}_datamatrix_detector
     flashcode_mbt/detectors/datamatrix/detector.cpp
     flashcode_mbt/detectors/datamatrix/detector.h
     flashcode_mbt/detectors/detector_base.cpp
     flashcode_mbt/detectors/detector_base.h
   )
-  target_link_libraries(visp_auto_tracker_datamatrix_detector
+  target_link_libraries(${PROJECT_NAME}_datamatrix_detector
     ${resource_retriever_LIBRARIES}
     ${catkin_LIBRARIES}
     ${Boost_LIBRARIES}
@@ -89,25 +90,26 @@ add_library(auto_tracker
   flashcode_mbt/libauto_tracker/tracking.cpp
   flashcode_mbt/libauto_tracker/tracking.h)
 
-if(VISP_VERSION VERSION_LESS 2.10.0)
+#catkin_lint: ignore unquoted_string_op
+if(VISP_VERSION VERSION_LESS "2.10.0")
   target_link_libraries(auto_tracker
-      visp_auto_tracker_cmd_line
-      visp_auto_tracker_qrcode_detector
-      visp_auto_tracker_datamatrix_detector
+      ${PROJECT_NAME}_cmd_line
+      ${PROJECT_NAME}_qrcode_detector
+      ${PROJECT_NAME}_datamatrix_detector
       ${resource_retriever_LIBRARIES}
       ${catkin_LIBRARIES}
       ${Boost_LIBRARIES}
   )
 else()
   target_link_libraries(auto_tracker
-      visp_auto_tracker_cmd_line
+      ${PROJECT_NAME}_cmd_line
       ${resource_retriever_LIBRARIES}
       ${catkin_LIBRARIES}
       ${Boost_LIBRARIES}
   )
 endif()
 
-add_executable(visp_auto_tracker
+add_executable(${PROJECT_NAME}
   src/main.cpp
   src/names.cpp
   src/names.h
@@ -115,17 +117,22 @@ add_executable(visp_auto_tracker
   src/node.h
   )
 
-add_dependencies(visp_auto_tracker visp_auto_tracker_bag)
+if(EXTRA_CXX_FLAGS)
+  set_target_properties(${PROJECT_NAME} PROPERTIES COMPILE_FLAGS ${EXTRA_CXX_FLAGS})
+endif()
 
-if(VISP_VERSION VERSION_LESS 2.10.0)
-  target_link_libraries(visp_auto_tracker
+add_dependencies(${PROJECT_NAME} ${PROJECT_NAME}_bag)
+
+#catkin_lint: ignore unquoted_string_op
+if(VISP_VERSION VERSION_LESS "2.10.0")
+  target_link_libraries(${PROJECT_NAME}
     auto_tracker
-    visp_auto_tracker_qrcode_detector
-    visp_auto_tracker_datamatrix_detector
-    visp_auto_tracker_cmd_line
+    ${PROJECT_NAME}_qrcode_detector
+    ${PROJECT_NAME}_datamatrix_detector
+    ${PROJECT_NAME}_cmd_line
     dmtx zbar)
 
-  target_link_libraries(visp_auto_tracker
+  target_link_libraries(${PROJECT_NAME}
     ${resource_retriever_LIBRARIES}
     ${catkin_LIBRARIES}
     ${Boost_LIBRARIES})
@@ -133,16 +140,16 @@ if(VISP_VERSION VERSION_LESS 2.10.0)
   install(
     TARGETS
       auto_tracker
-      visp_auto_tracker
-      visp_auto_tracker_cmd_line
-      visp_auto_tracker_datamatrix_detector
-      visp_auto_tracker_qrcode_detector
+      ${PROJECT_NAME}
+      ${PROJECT_NAME}_cmd_line
+      ${PROJECT_NAME}_datamatrix_detector
+      ${PROJECT_NAME}_qrcode_detector
     ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
     LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
     RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
   )
 else()
-  target_link_libraries(visp_auto_tracker
+  target_link_libraries(${PROJECT_NAME}
     auto_tracker
     ${resource_retriever_LIBRARIES}
     ${catkin_LIBRARIES}
@@ -151,8 +158,8 @@ else()
   install(
     TARGETS
       auto_tracker
-      visp_auto_tracker
-      visp_auto_tracker_cmd_line
+      ${PROJECT_NAME}
+      ${PROJECT_NAME}_cmd_line
     ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
     LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
     RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
@@ -174,7 +181,7 @@ install(DIRECTORY models
 # Tutorial
 if(CATKIN_ENABLE_TESTING)
   catkin_download_test_data(
-    visp_auto_tracker_bag
+    ${PROJECT_NAME}_bag
     https://github.com/lagadic/vision_visp/releases/download/vision_visp-0.5.0/tutorial-qrcode.bag
     DESTINATION ${CATKIN_DEVEL_PREFIX}/${CATKIN_PACKAGE_SHARE_DESTINATION}/bag
     MD5 0f80ceea2610b8400591ca7aff764dfa)

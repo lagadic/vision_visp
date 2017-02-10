@@ -49,57 +49,57 @@ catkin_package(
     VISP
 )
 
-add_library(visp_camera_calibration_common src/names.cpp src/names.h)
-target_link_libraries(visp_camera_calibration_common
+add_library(${PROJECT_NAME}_common src/names.cpp src/names.h)
+target_link_libraries(${PROJECT_NAME}_common
   ${catkin_LIBRARIES}
   ${roscpp_LIBRARIES}
   )
 
-add_executable(visp_camera_calibration_calibrator
+add_executable(${PROJECT_NAME}_calibrator
   src/calibrator.cpp
   src/calibrator.h
   src/calibrator_main.cpp)
-target_link_libraries(visp_camera_calibration_calibrator
-  visp_camera_calibration_common
+target_link_libraries(${PROJECT_NAME}_calibrator
+  ${PROJECT_NAME}_common
   ${catkin_LIBRARIES}
   ${roscpp_LIBRARIES}
   ${VISP_LIBRARIES})
-add_dependencies(visp_camera_calibration_calibrator
+add_dependencies(${PROJECT_NAME}_calibrator
   ${catkin_EXPORTED_TARGETS} ${PROJECT_NAME}_gencpp)
 
-add_executable(visp_camera_calibration_image_processing
+add_executable(${PROJECT_NAME}_image_processing
   src/image_processing.cpp
   src/image_processing.h
   src/image_processing_main.cpp)
-target_link_libraries(visp_camera_calibration_image_processing
-  visp_camera_calibration_common
+target_link_libraries(${PROJECT_NAME}_image_processing
+  ${PROJECT_NAME}_common
   ${catkin_LIBRARIES}
   ${roscpp_LIBRARIES}
   ${VISP_LIBRARIES}
   )
-add_dependencies(visp_camera_calibration_image_processing
+add_dependencies(${PROJECT_NAME}_image_processing
   ${catkin_EXPORTED_TARGETS}
   ${PROJECT_NAME}_gencpp
   ${VISP_LIBRARIES})
 
-add_executable(visp_camera_calibration_camera
+add_executable(${PROJECT_NAME}_camera
   src/camera.cpp
   src/camera.h
   src/camera_main.cpp)
-target_link_libraries(visp_camera_calibration_camera
-  visp_camera_calibration_common
+target_link_libraries(${PROJECT_NAME}_camera
+  ${PROJECT_NAME}_common
   ${catkin_LIBRARIES}
   ${roscpp_LIBRARIES}
   ${VISP_LIBRARIES})
-add_dependencies(visp_camera_calibration_camera
+add_dependencies(${PROJECT_NAME}_camera
   ${catkin_EXPORTED_TARGETS} ${PROJECT_NAME}_gencpp)
 
 install(
   TARGETS
-    visp_camera_calibration_calibrator
-    visp_camera_calibration_camera
-    visp_camera_calibration_common
-    visp_camera_calibration_image_processing
+    ${PROJECT_NAME}_calibrator
+    ${PROJECT_NAME}_camera
+    ${PROJECT_NAME}_common
+    ${PROJECT_NAME}_image_processing
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}

@@ -55,23 +55,23 @@ add_definitions(-DBOOST_FILESYSTEM_VERSION=3)
 add_definitions(${VISP_DEFINITIONS})
 
 ## Declare a cpp library
-add_library(visp_bridge
-  include/visp_bridge/3dpose.h
-  include/visp_bridge/camera.h
-  include/visp_bridge/image.h
-  include/visp_bridge/vpQuaternionVector.h
+add_library(${PROJECT_NAME}
+  include/${PROJECT_NAME}/3dpose.h
+  include/${PROJECT_NAME}/camera.h
+  include/${PROJECT_NAME}/image.h
+  include/${PROJECT_NAME}/vpQuaternionVector.h
   src/compat/vpQuaternionVector.cpp
   src/conversions/3dpose.cpp
   src/conversions/camera.cpp
   src/conversions/image.cpp
 )
-target_link_libraries(visp_bridge ${VISP_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} ${VISP_LIBRARIES})
 
-add_executable(visp_bridge_convert_camera_parameters src/conversions/convert_cam_param_file.cpp)
-target_link_libraries(visp_bridge_convert_camera_parameters ${VISP_LIBRARIES} ${catkin_LIBRARIES} ${Boost_LIBRARIES} visp_bridge)
+add_executable(${PROJECT_NAME}_convert_camera_parameters src/conversions/convert_cam_param_file.cpp)
+target_link_libraries(${PROJECT_NAME}_convert_camera_parameters ${VISP_LIBRARIES} ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${PROJECT_NAME})
 
 ## Mark executables and/or libraries for installation
-install(TARGETS ${PROJECT_NAME} visp_bridge_convert_camera_parameters 
+install(TARGETS ${PROJECT_NAME} ${PROJECT_NAME}_convert_camera_parameters 
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
