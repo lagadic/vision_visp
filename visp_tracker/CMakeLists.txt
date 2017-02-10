@@ -55,7 +55,7 @@ generate_dynamic_reconfigure_options(
 catkin_package(
    LIBRARIES
      trackerNodelet
-     visp_tracker 
+     ${PROJECT_NAME} 
 
    CATKIN_DEPENDS
      dynamic_reconfigure
@@ -77,7 +77,7 @@ include_directories(SYSTEM
   )
 
 include_directories(
-  "${CMAKE_CURRENT_SOURCE_DIR}/src/libvisp_tracker")
+  "${CMAKE_CURRENT_SOURCE_DIR}/src/lib${PROJECT_NAME}")
 
 # Make sure Boost.Filesystem v3 is used.
 add_definitions(-DBOOST_FILESYSTEM_VERSION=3)
@@ -87,27 +87,27 @@ add_definitions(-DBOOST_FILESYSTEM_VERSION=3)
 #############
 
 # Library gathering libvisp_tracker used by all nodes.
-add_library(visp_tracker
-  src/libvisp_tracker/callbacks.cpp
-  src/libvisp_tracker/callbacks.hh
-  src/libvisp_tracker/conversion.cpp
-  src/libvisp_tracker/conversion.hh
-  src/libvisp_tracker/file.cpp
-  src/libvisp_tracker/file.hh
-  src/libvisp_tracker/names.cpp
-  src/libvisp_tracker/names.hh
-  src/libvisp_tracker/tracker-client.cpp
-  src/libvisp_tracker/tracker-client.hh
-  src/libvisp_tracker/tracker-viewer.cpp
-  src/libvisp_tracker/tracker-viewer.hh
-  src/libvisp_tracker/tracker.cpp
-  src/libvisp_tracker/tracker.hh)
+add_library(${PROJECT_NAME}
+  src/lib${PROJECT_NAME}/callbacks.cpp
+  src/lib${PROJECT_NAME}/callbacks.hh
+  src/lib${PROJECT_NAME}/conversion.cpp
+  src/lib${PROJECT_NAME}/conversion.hh
+  src/lib${PROJECT_NAME}/file.cpp
+  src/lib${PROJECT_NAME}/file.hh
+  src/lib${PROJECT_NAME}/names.cpp
+  src/lib${PROJECT_NAME}/names.hh
+  src/lib${PROJECT_NAME}/tracker-client.cpp
+  src/lib${PROJECT_NAME}/tracker-client.hh
+  src/lib${PROJECT_NAME}/tracker-viewer.cpp
+  src/lib${PROJECT_NAME}/tracker-viewer.hh
+  src/lib${PROJECT_NAME}/tracker.cpp
+  src/lib${PROJECT_NAME}/tracker.hh)
 
-target_link_libraries(visp_tracker
+target_link_libraries(${PROJECT_NAME}
   ${Boost_LIBRARIES}
   ${VISP_LIBRARIES}
   )
-target_link_libraries(visp_tracker
+target_link_libraries(${PROJECT_NAME}
   ${dynamic_reconfigure_LIBRARIES}
   ${geometry_msgs_LIBRARIES}
   ${image_proc_LIBRARIES}
@@ -121,8 +121,8 @@ target_link_libraries(visp_tracker
   ${tf_LIBRARIES}
   )
 
-add_dependencies(visp_tracker ${PROJECT_NAME}_gencpp visp_tracker_bag)
-add_dependencies(visp_tracker ${${PROJECT_NAME}_EXPORTED_TARGETS})
+add_dependencies(${PROJECT_NAME} ${PROJECT_NAME}_gencpp ${PROJECT_NAME}_bag)
+add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
 install(DIRECTORY src/lib${PROJECT_NAME}/
   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
@@ -143,14 +143,14 @@ add_library(trackerNodelet
   src/nodelets/tracker.cpp
   src/nodelets/viewer.cpp)
 
-target_link_libraries(trackerNodelet visp_tracker)
+target_link_libraries(trackerNodelet ${PROJECT_NAME})
 target_link_libraries(trackerNodelet
   ${roscpp_LIBRARIES}
   ${nodelet_LIBRARIES}
   ${VISP_LIBRARIES}
   )
 
-install(TARGETS trackerNodelet visp_tracker
+install(TARGETS trackerNodelet ${PROJECT_NAME}
    ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
    LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
    RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
@@ -203,7 +203,7 @@ install(FILES nodelet_plugins.xml
 # Tutorial
 if(CATKIN_ENABLE_TESTING)
   catkin_download_test_data(
-    visp_tracker_bag
+    ${PROJECT_NAME}_bag
     https://github.com/lagadic/vision_visp/releases/download/vision_visp-0.5.0/tutorial-static-box.bag
     DESTINATION ${CATKIN_DEVEL_PREFIX}/${CATKIN_PACKAGE_SHARE_DESTINATION}/bag
     MD5 1578dedd48d3f9f5515a8737845ae882)
