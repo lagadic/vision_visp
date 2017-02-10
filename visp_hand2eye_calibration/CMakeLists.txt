@@ -50,51 +50,50 @@ catkin_package(
     std_msgs
 )
 
-add_library(visp_hand2eye_calibration_common
+add_library(${PROJECT_NAME}_common
   src/names.cpp
   src/names.h
 )
-target_link_libraries(visp_hand2eye_calibration_common
+target_link_libraries(${PROJECT_NAME}_common
   ${catkin_LIBRARIES}
   ${roscpp_LIBRARIES}
   )
 
-add_executable(visp_hand2eye_calibration_calibrator
+add_executable(${PROJECT_NAME}_calibrator
   src/calibrator.cpp
   src/calibrator.h
   src/calibrator_main.cpp
 )
-target_link_libraries(visp_hand2eye_calibration_calibrator
-  visp_hand2eye_calibration_common
+target_link_libraries(${PROJECT_NAME}_calibrator
+  ${PROJECT_NAME}_common
   ${catkin_LIBRARIES}
   ${roscpp_LIBRARIES}
   )
-add_dependencies(visp_hand2eye_calibration_calibrator
+add_dependencies(${PROJECT_NAME}_calibrator
   ${catkin_EXPORTED_TARGETS}
   ${PROJECT_NAME}_gencpp)
 
-add_executable(visp_hand2eye_calibration_client
+add_executable(${PROJECT_NAME}_client
   src/client.cpp
   src/client.h
   src/client_main.cpp
 )
-target_link_libraries(visp_hand2eye_calibration_client
-  visp_hand2eye_calibration_common
+target_link_libraries(${PROJECT_NAME}_client
+  ${PROJECT_NAME}_common
   ${catkin_LIBRARIES}
   ${roscpp_LIBRARIES}
   )
-add_dependencies(visp_hand2eye_calibration_client
+add_dependencies(${PROJECT_NAME}_client
   ${catkin_EXPORTED_TARGETS}
   ${PROJECT_NAME}_gencpp)
 
 install(
   TARGETS
-    visp_hand2eye_calibration_calibrator
-    visp_hand2eye_calibration_client
-    visp_hand2eye_calibration_common
+    ${PROJECT_NAME}_calibrator
+    ${PROJECT_NAME}_client
+    ${PROJECT_NAME}_common
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
-
 
