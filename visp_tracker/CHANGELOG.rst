@@ -2,6 +2,14 @@
 Changelog for package visp_tracker
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.10.0 (2017-02-13)
+-------------------
+* Fix catkin_lint warnings level 2
+* Fix OpenCV issue when reconfiguring the visp_tracker (Closes `#58 <https://github.com/lagadic/vision_visp/issues/58>`_)
+* jade-0.9.1
+* Prepare changelogs
+* Contributors: Fabien Spindler
+
 0.7.0 (2014-03-12)
 ------------------
 * visp_tracker/package.xml: swithc license to GPLv2 to match the other packages.

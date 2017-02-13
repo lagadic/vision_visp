@@ -2,6 +2,12 @@
 Changelog for package vision_visp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.10.0 (2017-02-13)
+-------------------
+* jade-0.9.1
+* Prepare changelogs
+* Contributors: Fabien Spindler
+
 0.7.0 (2014-03-12)
 ------------------
 * Add missing CMakeLists.txt to vision_visp metapackage
