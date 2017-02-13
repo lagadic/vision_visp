@@ -2,6 +2,12 @@
 Changelog for package vision_visp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.10.0 (2017-02-13)
+-------------------
+* indigo-0.9.1
+* Prepare changelogs
+* Contributors: Fabien Spindler
+
 0.9.1 (2015-12-21)
 ------------------
 * indigo-0.9.0

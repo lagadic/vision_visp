@@ -2,6 +2,14 @@
 Changelog for package visp_tracker
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.10.0 (2017-02-13)
+-------------------
+* Fix catkin_lint warnings level 2
+* Fix OpenCV issue when reconfiguring the visp_tracker (Closes `#58 <https://github.com/lagadic/vision_visp/issues/58>`_)
+* indigo-0.9.1
+* Prepare changelogs
+* Contributors: Fabien Spindler
+
 0.9.1 (2015-12-21)
 ------------------
 * Revert build_depend visp removal that is mandatory.
