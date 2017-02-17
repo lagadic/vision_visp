@@ -1,7 +1,0 @@
-#!/bin/sh
-set -ev
-
-git config --global user.name "Travis CI"
-git config --global user.email "thomas.moulard+travis@gmail.com"
-git remote set-url origin https://thomas-moulard:${GH_TOKEN}@github.com/laas/vision_visp.git
-git fetch origin gh-pages:gh-pages
