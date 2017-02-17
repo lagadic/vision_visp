@@ -385,6 +385,8 @@ namespace visp_tracker
     kltPointsPublisher_ =
       nodeHandle_.advertise<visp_tracker::KltPoints>
       (visp_tracker::klt_points_topic, queueSize_);
+    // Tracker status publisher.
+    status_publisher_ = nodeHandle_.advertise<std_msgs::Int8>(tracker_status_topic, queueSize_);
 
     // Camera subscriber.
     cameraSubscriber_ =
@@ -668,6 +670,15 @@ namespace visp_tracker
                             header_.frame_id,
                             childFrameId_));
               }
+
+              // Publish state machine status.
+              if (status_publisher_.getNumSubscribers	() > 0)
+              {
+                  std_msgs::Int8 status;
+                  status.data = (unsigned char)(state_);
+                  status_publisher_.publish(status);
+              }
+
           }
 
           lastHeader = header_;

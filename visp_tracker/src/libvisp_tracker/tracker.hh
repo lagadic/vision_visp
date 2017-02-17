@@ -11,6 +11,8 @@
 
 # include <geometry_msgs/TwistStamped.h>
 
+# include <std_msgs/Int8.h>
+
 # include <sensor_msgs/Image.h>
 # include <sensor_msgs/CameraInfo.h>
 
@@ -122,6 +124,7 @@ namespace visp_tracker
     tf::TransformBroadcaster tfBroadcaster_;
     ros::Publisher movingEdgeSitesPublisher_;
     ros::Publisher kltPointsPublisher_;
+    ros::Publisher status_publisher_;
 
     ros::ServiceServer initService_;
 
