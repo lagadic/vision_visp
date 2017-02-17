@@ -1,9 +1,6 @@
 sudo: required
 dist: trusty
 language: generic
-branches:
-  only:
-  - master
 notifications:
   email:
   - Fabien.Spindler@inria.fr
