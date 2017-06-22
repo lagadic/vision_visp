@@ -24,8 +24,8 @@ Branches come in two flavors:
  * release branch
 
 Package for each ROS release is maintained on separate
-branches. I.e. `kinetic-devel` is the Kinetic Kade development branch whereas
-`kinetic` is the Kinetic Kame release branch.
+branches. I.e. `lunar-devel` is the Lunar Loggerhead development branch whereas
+`lunar` is the Lunar Loggerhead release branch.
 
 `master` means the next ROS release.
 
@@ -64,6 +64,7 @@ This stack supports the following ROS releases:
  * Indigo
  * Jade
  * Kinetic
+ * Lunar
 
 The master branch holds the development that will be available in the
 next ROS release.
@@ -72,6 +73,7 @@ next ROS release.
 | ROS Release   | Development Branch           | Release Branch |
 | ------------- | ---------------------------- | -------------- |
 | Master        | [![Build Status](https://travis-ci.org/lagadic/vision_visp.png?branch=master)](https://travis-ci.org/lagadic/vision_visp) | N/A |
+| Lunar         | [![Build Status](https://travis-ci.org/lagadic/vision_visp.png?branch=lunar-devel)](https://travis-ci.org/lagadic/vision_visp) | [![Build Status](https://travis-ci.org/lagadic/vision_visp.png?branch=lunar)](https://travis-ci.org/lagadic/vision_visp) |
 | Kinetic       | [![Build Status](https://travis-ci.org/lagadic/vision_visp.png?branch=kinetic-devel)](https://travis-ci.org/lagadic/vision_visp) | [![Build Status](https://travis-ci.org/lagadic/vision_visp.png?branch=kinetic)](https://travis-ci.org/lagadic/vision_visp) |
 | Jade          | [![Build Status](https://travis-ci.org/lagadic/vision_visp.png?branch=jade-devel)](https://travis-ci.org/lagadic/vision_visp) | [![Build Status](https://travis-ci.org/lagadic/vision_visp.png?branch=jade)](https://travis-ci.org/lagadic/vision_visp) |
 | Indigo         | [![Build Status](https://travis-ci.org/lagadic/vision_visp.png?branch=indigo-devel)](https://travis-ci.org/lagadic/vision_visp) | [![Build Status](https://travis-ci.org/lagadic/vision_visp.png?branch=indigo)](https://travis-ci.org/lagadic/vision_visp) |
