@@ -68,6 +68,7 @@
 #include "visp/vpDot.h"
 #include "visp/vpDot2.h"
 #include "visp/vpCalibration.h"
+#include <boost/format.hpp>
 #include <iostream>
 
 
