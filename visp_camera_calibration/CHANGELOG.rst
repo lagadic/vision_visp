@@ -55,4 +55,11 @@ Changelog for package visp_camera_calibration
 * Prepare changelogs
 * Contributors: Fabien Spindler
 
+0.10.0 (2017-06-23)
+-------------------
+* Fix compilation on 17.04 by adding missing boost/format.hpp inclusion (`#63 <https://github.com/lagadic/vision_visp/issues/63>`_)
+* Fix catkin_lint warnings level 2
+* kinetic-0.9.3
+* Prepare changelogs
+* Contributors: Fabien Spindler, Marco Esposito
 
