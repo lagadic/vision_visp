@@ -58,5 +58,4 @@ namespace visp_tracker
 
 } // end of namespace visp_tracker.
 
-PLUGINLIB_DECLARE_CLASS(visp_tracker, Tracker,
-			visp_tracker::TrackerNodelet, nodelet::Nodelet);
+PLUGINLIB_EXPORT_CLASS(visp_tracker::TrackerNodelet, nodelet::Nodelet);
