@@ -50,8 +50,12 @@
 #include "calibrator.h"
 #include <visp_bridge/3dpose.h>
 #include "names.h"
-#include <visp/vpCalibration.h>
-#include <visp/vpHomogeneousMatrix.h>
+#if VISP_VERSION_INT >= (3<<16 | 2<<8 | 0)
+#  include <visp3/vision/vpHandEyeCalibration.h>
+#else
+#  include <visp3/vision/vpCalibration.h>
+#endif
+#include <visp3/core/vpHomogeneousMatrix.h>
 
 
 namespace visp_hand2eye_calibration
@@ -84,11 +88,14 @@ namespace visp_hand2eye_calibration
 
     ROS_INFO("computing %d values...",(int)wMe_vec_.size());
     vpHomogeneousMatrix eMc;
-    #if VISP_VERSION_INT > (2<<16 | 6<<8 | 1)
+
+#if VISP_VERSION_INT >= (3<<16 | 2<<8 | 0)
+    vpHandEyeCalibration::calibrate(cMo_vec_, wMe_vec_, eMc);
+#elif VISP_VERSION_INT > (2<<16 | 6<<8 | 1)
     vpCalibration::calibrationTsai(cMo_vec_, wMe_vec_, eMc);
-    #else
-    vpCalibration::calibrationTsai(cMo_vec_.size(),&(cMo_vec_[0]),&(wMe_vec_[0]),eMc);
-    #endif
+#else
+    vpCalibration::calibrationTsai(cMo_vec_.size(), &(cMo_vec_[0]), &(wMe_vec_[0]), eMc);
+#endif
     geometry_msgs::Transform trans;
     trans = visp_bridge::toGeometryMsgsTransform(eMc);
 
@@ -116,11 +123,13 @@ namespace visp_hand2eye_calibration
 
     ROS_INFO("computing...");
     vpHomogeneousMatrix eMc;
-    #if VISP_VERSION_INT > (2<<16 | 6<<8 | 1)
+#if VISP_VERSION_INT >= (3<<16 | 2<<8 | 0)
+    vpHandEyeCalibration::calibrate(cMo_vec, wMe_vec, eMc);
+#elif VISP_VERSION_INT > (2<<16 | 6<<8 | 1)
     vpCalibration::calibrationTsai(cMo_vec, wMe_vec, eMc);
-    #else
-    vpCalibration::calibrationTsai(cMo_vec.size(),&(cMo_vec[0]),&(wMe_vec[0]),eMc);
-    #endif
+#else
+    vpCalibration::calibrationTsai(cMo_vec.size(), &(cMo_vec[0]), &(wMe_vec[0]),eMc);
+#endif
     geometry_msgs::Transform trans;
     trans = visp_bridge::toGeometryMsgsTransform(eMc);
     res.effector_camera = trans;
