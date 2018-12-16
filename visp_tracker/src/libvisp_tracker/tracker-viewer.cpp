@@ -46,12 +46,11 @@ namespace visp_tracker
     //ROS_WARN_STREAM("Make model Viewer: " << path.c_str());
     ROS_INFO_STREAM("Model loaded from the service.");
     modelPath_ = path;
-
     tracker_.resetTracker();
     initializeTracker();
 
     // Common parameters
-    convertInitRequestToVpMbTracker(req, &tracker_);
+    convertInitRequestToVpMbTracker(req, tracker_);
 
     res.initialization_succeed = true;
     return true;
@@ -63,7 +62,7 @@ namespace visp_tracker
   {
     // Common parameters
     ROS_INFO_STREAM("Reconfiguring Tracker Viewer.");
-    convertInitRequestToVpMbTracker(req, &tracker_);
+    convertInitRequestToVpMbTracker(req, tracker_);
 
     res.initialization_succeed = true;
     return true;

@@ -8,7 +8,7 @@
 # include <string>
 
 # include <visp/vpImage.h>
-# include <visp/vpMbTracker.h>
+# include <visp3/mbt/vpMbGenericTracker.h>
 # include <visp/vpMe.h>
 # include <visp/vpKltOpencv.h>
 
@@ -37,7 +37,7 @@ bindImageCallback(vpImage<unsigned char>& image,
 		  sensor_msgs::CameraInfoConstPtr& info);
 
 
-void reconfigureCallback(vpMbTracker* tracker,
+void reconfigureCallback(vpMbGenericTracker &tracker,
 			 vpImage<unsigned char>& I,
 			 vpMe& moving_edge,
        vpKltOpencv& kltTracker,
@@ -45,14 +45,14 @@ void reconfigureCallback(vpMbTracker* tracker,
        visp_tracker::ModelBasedSettingsConfig& config,
        uint32_t level);
 
-void reconfigureEdgeCallback(vpMbTracker* tracker,
+void reconfigureEdgeCallback(vpMbGenericTracker &tracker,
        vpImage<unsigned char>& I,
        vpMe& moving_edge,
        boost::recursive_mutex& mutex,
        visp_tracker::ModelBasedSettingsEdgeConfig& config,
        uint32_t level);
 
-void reconfigureKltCallback(vpMbTracker* tracker,
+void reconfigureKltCallback(vpMbGenericTracker &tracker,
        vpImage<unsigned char>& I,
        vpKltOpencv& kltTracker,
        boost::recursive_mutex& mutex,
@@ -60,10 +60,10 @@ void reconfigureKltCallback(vpMbTracker* tracker,
        uint32_t level);
 
 void reInitViewerCommonParameters(ros::NodeHandle& nh,
-                                  vpMbTracker* tracker);
+                                  vpMbGenericTracker &tracker);
 
 void reconfigureCallbackAndInitViewer(ros::NodeHandle& nh,
-       vpMbTracker* tracker,
+       vpMbGenericTracker &tracker,
        vpImage<unsigned char>& I,
        vpMe& moving_edge,
        vpKltOpencv& kltTracker,
@@ -72,7 +72,7 @@ void reconfigureCallbackAndInitViewer(ros::NodeHandle& nh,
        uint32_t level);
 
 void reconfigureEdgeCallbackAndInitViewer(ros::NodeHandle& nh,
-       vpMbTracker* tracker,
+       vpMbGenericTracker &tracker,
        vpImage<unsigned char>& I,
        vpMe& moving_edge,
        boost::recursive_mutex& mutex,
@@ -80,7 +80,7 @@ void reconfigureEdgeCallbackAndInitViewer(ros::NodeHandle& nh,
        uint32_t level);
 
 void reconfigureKltCallbackAndInitViewer(ros::NodeHandle& nh,
-       vpMbTracker* tracker,
+       vpMbGenericTracker &tracker,
        vpImage<unsigned char>& I,
        vpKltOpencv& kltTracker,
        boost::recursive_mutex& mutex,
