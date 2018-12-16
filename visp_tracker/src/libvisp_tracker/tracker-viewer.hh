@@ -23,7 +23,7 @@
 
 # include <visp/vpCameraParameters.h>
 # include <visp/vpImage.h>
-# include <visp/vpMbEdgeTracker.h>
+# include <visp3/mbt/vpMbGenericTracker.h>
 
 namespace visp_tracker
 {
@@ -146,7 +146,7 @@ namespace visp_tracker
     image_proc::AdvertisementChecker checkInputs_;
 
     /// \brief ViSP edge tracker.
-    vpMbEdgeTracker tracker_;
+    vpMbGenericTracker tracker_;
     /// \brief ViSP camera parameters.
     vpCameraParameters cameraParameters_;
     /// \brief ViSP image.

@@ -28,7 +28,7 @@
 # include <visp/vpCameraParameters.h>
 # include <visp/vpHomogeneousMatrix.h>
 # include <visp/vpImage.h>
-# include <visp/vpMbTracker.h>
+# include <visp3/mbt/vpMbGenericTracker.h>
 # include <visp/vpMe.h>
 # include <visp/vpKltOpencv.h>
 # include <visp/vpPose.h>
@@ -127,7 +127,7 @@ namespace visp_tracker
     vpMe movingEdge_;
     vpKltOpencv kltTracker_;
     vpCameraParameters cameraParameters_;
-    vpMbTracker *tracker_;
+    vpMbGenericTracker tracker_;
 
     bool startFromSavedPose_;
     bool confirmInit_;
