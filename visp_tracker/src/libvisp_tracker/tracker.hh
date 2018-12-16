@@ -26,10 +26,9 @@
 
 # include <visp/vpCameraParameters.h>
 # include <visp/vpHomogeneousMatrix.h>
-# include <visp/vpImage.h>
+# include <visp3/core/vpImage.h>
 
-# include <visp/vpMbTracker.h>
-# include <visp/vpMbEdgeKltTracker.h>
+# include <visp3/mbt/vpMbGenericTracker.h>
 
 # include <visp/vpMe.h>
 # include <string>
@@ -124,14 +123,13 @@ namespace visp_tracker
     ros::Publisher kltPointsPublisher_;
 
     ros::ServiceServer initService_;
-
     std_msgs::Header header_;
     sensor_msgs::CameraInfoConstPtr info_;
 
     vpKltOpencv kltTracker_;
     vpMe movingEdge_;
     vpCameraParameters cameraParameters_;
-    vpMbTracker* tracker_;
+    vpMbGenericTracker tracker_;
 
     unsigned lastTrackedImage_;
 

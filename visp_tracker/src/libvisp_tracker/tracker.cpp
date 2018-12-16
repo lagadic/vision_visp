@@ -44,12 +44,12 @@ namespace visp_tracker
     res.initialization_succeed = false;
 
     // If something goes wrong, rollback all changes.
-    BOOST_SCOPE_EXIT((&res)(tracker_)(&state_)
+    BOOST_SCOPE_EXIT((&res)(&tracker_)(&state_)
                      (&lastTrackedImage_)(&trackerType_))
     {
       if(!res.initialization_succeed)
       {
-        tracker_->resetTracker();
+        tracker_.resetTracker();
         state_ = WAITING_FOR_INITIALIZATION;
         lastTrackedImage_ = 0;
 
@@ -63,7 +63,7 @@ namespace visp_tracker
     if (!makeModelFile(modelStream, fullModelPath))
       return true;
 
-    tracker_->resetTracker();
+    tracker_.resetTracker();
 
     // Common parameters
     convertInitRequestToVpMbTracker(req, tracker_);
@@ -107,7 +107,7 @@ namespace visp_tracker
     try
     {
       ROS_DEBUG_STREAM("Trying to load the model Tracker: " << fullModelPath);
-      tracker_->loadModel(fullModelPath.c_str());
+      tracker_.loadModel(fullModelPath.c_str());
       modelStream.close();
     }
     catch(...)
@@ -121,14 +121,14 @@ namespace visp_tracker
     transformToVpHomogeneousMatrix(cMo_, req.initial_cMo);
 
     // Enable covariance matrix.
-    tracker_->setCovarianceComputation(true);
+    tracker_.setCovarianceComputation(true);
 
     // Try to initialize the tracker.
     ROS_INFO_STREAM("Initializing tracker with cMo:\n" << cMo_);
     try
     {
       // Bug between setPose() and initFromPose() not present here due to previous call to resetTracker()
-      tracker_->initFromPose(image_, cMo_);
+      tracker_.initFromPose(image_, cMo_);
       ROS_INFO("Tracker successfully initialized.");
 
       //movingEdge.print();
@@ -160,7 +160,7 @@ namespace visp_tracker
     std::list<vpMbtDistanceLine*> linesList;
 
     if(trackerType_!="klt") { // For mbt and hybrid
-      dynamic_cast<vpMbEdgeTracker*>(tracker_)->getLline(linesList, 0);
+      tracker_.getLline(linesList, 0);
 
       std::list<vpMbtDistanceLine*>::iterator linesIterator = linesList.begin();
 
@@ -251,13 +251,13 @@ namespace visp_tracker
       }
     }
 #else // ViSP >= 2.10.0
-    std::list<vpMbtDistanceKltPoints*> *poly_lst;
+    std::list<vpMbtDistanceKltPoints*> poly_lst;
     std::map<int, vpImagePoint> *map_klt;
 
     if(trackerType_!="mbt") { // For klt and hybrid
-      poly_lst = &dynamic_cast<vpMbKltTracker*>(tracker_)->getFeaturesKlt();
+      poly_lst = tracker_.getFeaturesKlt();
 
-      for(std::list<vpMbtDistanceKltPoints*>::const_iterator it=poly_lst->begin(); it!=poly_lst->end(); ++it){
+      for(std::list<vpMbtDistanceKltPoints*>::const_iterator it=poly_lst.begin(); it!=poly_lst.end(); ++it){
         map_klt = &((*it)->getCurrentPoints());
 
         if((*it)->polygon->isVisible()){
@@ -329,17 +329,16 @@ namespace visp_tracker
   {
     // Set cMo to identity.
     cMo_.eye();
-    //tracker_ = new vpMbEdgeTracker();
 
     // Parameters.
     nodeHandlePrivate_.param<std::string>("camera_prefix", cameraPrefix_, "");
     nodeHandlePrivate_.param<std::string>("tracker_type", trackerType_, "mbt");
     if(trackerType_=="mbt")
-      tracker_ = new vpMbEdgeTracker();
+      tracker_.setTrackerType(vpMbGenericTracker::EDGE_TRACKER);
     else if(trackerType_=="klt")
-      tracker_ = new vpMbKltTracker();
+      tracker_.setTrackerType(vpMbGenericTracker::KLT_TRACKER);
     else
-      tracker_ = new vpMbEdgeKltTracker();
+      tracker_.setTrackerType(vpMbGenericTracker::EDGE_TRACKER | vpMbGenericTracker::KLT_TRACKER);
 
     if (cameraPrefix_.empty ())
       {
@@ -401,19 +400,6 @@ namespace visp_tracker
     objectPositionHintSubscriber_ =
       nodeHandle_.subscribe<geometry_msgs::TransformStamped>
       ("object_position_hint", queueSize_, callback);
-
-    // Initialization.
-    // No more necessary as it is done via the reconfigure server
-//    movingEdge_.initMask();
-//    if(trackerType_!="klt"){
-//      vpMbEdgeTracker* t = dynamic_cast<vpMbEdgeTracker*>(tracker_);
-//      t->setMovingEdge(movingEdge_);
-//    }
-    
-//    if(trackerType_!="mbt"){
-//      vpMbKltTracker* t = dynamic_cast<vpMbKltTracker*>(tracker_);
-//      t->setKltOpencv(kltTracker_);
-//    }
     
     // Dynamic reconfigure.
     if(trackerType_=="mbt+klt"){ // Hybrid Tracker reconfigure
@@ -474,8 +460,8 @@ namespace visp_tracker
 		"This warning is triggered is px, py, u0 or v0\n"
 		"is set to 0. or 1. (exactly).");
 
-    tracker_->setCameraParameters(cameraParameters_);
-    tracker_->setDisplayFeatures(false);
+    tracker_.setCameraParameters(cameraParameters_);
+    tracker_.setDisplayFeatures(false);
 
     ROS_INFO_STREAM(cameraParameters_);
 
@@ -489,8 +475,6 @@ namespace visp_tracker
   
   Tracker::~Tracker()
   {
-    delete tracker_;  
-
     if(reconfigureSrv_ != NULL)
       delete reconfigureSrv_;
 
@@ -538,7 +522,7 @@ namespace visp_tracker
                   cMo_ = newMold * cMo_;
 
                   mutex_.lock();
-                  tracker_->setPose(image_, cMo_);
+                  tracker_.setPose(image_, cMo_);
                   mutex_.unlock();
               }
               catch(tf::TransformException& e)
@@ -558,7 +542,7 @@ namespace visp_tracker
                               (cMo_, objectPositionHint_.transform);
 
                   mutex_.lock();
-                  tracker_->setPose(image_, cMo_);
+                  tracker_.setPose(image_, cMo_);
                   mutex_.unlock();
               }
 
@@ -569,8 +553,8 @@ namespace visp_tracker
               {
                   mutex_.lock();
                   // tracker_->setPose(image_, cMo_); // Removed as it is not necessary when the pose is not modified from outside.
-                  tracker_->track(image_);
-                  tracker_->getPose(cMo_);
+                  tracker_.track(image_);
+                  tracker_.getPose(cMo_);
                   mutex_.unlock();
               }
               catch(...)
@@ -619,7 +603,7 @@ namespace visp_tracker
                       result->pose.pose.orientation.w =
                               transformMsg.rotation.w;
                       const vpMatrix& covariance =
-                              tracker_->getCovarianceMatrix();
+                              tracker_.getCovarianceMatrix();
                       for (unsigned i = 0; i < covariance.getRows(); ++i)
                           for (unsigned j = 0; j < covariance.getCols(); ++j)
                           {

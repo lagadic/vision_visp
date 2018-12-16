@@ -2,7 +2,7 @@
 #include <boost/bind.hpp>
 #include <image_transport/image_transport.h>
 #include <sensor_msgs/Image.h>
-#include <visp/vpImage.h>
+#include <visp3/core/vpImage.h>
 
 #include <visp_tracker/Init.h>
 
@@ -10,8 +10,7 @@
 #include "conversion.hh"
 #include "callbacks.hh"
 
-# include <visp/vpMbEdgeTracker.h>
-# include <visp/vpMbKltTracker.h>
+#include <visp3/mbt/vpMbGenericTracker.h>
 
 void imageCallback(vpImage<unsigned char>& image,
 		   const sensor_msgs::Image::ConstPtr& msg,
@@ -54,7 +53,7 @@ bindImageCallback(vpImage<unsigned char>& image,
      boost::ref(image), boost::ref(header), boost::ref(info), _1, _2);
 }
 
-void reconfigureCallback(vpMbTracker* tracker,
+void reconfigureCallback(vpMbGenericTracker &tracker,
        vpImage<unsigned char>& I,
        vpMe& moving_edge,
        vpKltOpencv& kltTracker,
@@ -75,25 +74,11 @@ void reconfigureCallback(vpMbTracker* tracker,
       convertModelBasedSettingsConfigToVpKltOpencv<visp_tracker::ModelBasedSettingsConfig>(config, kltTracker, tracker);
       
       vpHomogeneousMatrix cMo;
-      tracker->getPose(cMo);
-
-#if VISP_VERSION_INT < VP_VERSION_INT(2,10,0)
-      // Work arround for ViSP 2.9.0 to allow dynamic reconfigure to work
-      // when hybrid tracker is in use and moving edges settings are changed
-      vpMbKltTracker* tracker_klt = dynamic_cast<vpMbKltTracker*>(tracker);
-      if (tracker_klt != NULL)
-        tracker_klt->firstTrack = true;
-#endif
+      tracker.getPose(cMo);
 
       // Check if the image is ready to use
       if (I.getHeight() != 0 && I.getWidth() != 0) {
-#if VISP_VERSION_INT < VP_VERSION_INT(3,0,0)
-        // Could not use just initFromPose() for hybrid tracker
-        // init() function from edge tracker has to be fixed in the trunk first
-        // It might have to reset the meLines
-        tracker->setPose(I, cMo);
-#endif
-        tracker->initFromPose(I, cMo);
+        tracker.initFromPose(I, cMo);
       }
     }
   catch (...)
@@ -104,7 +89,7 @@ void reconfigureCallback(vpMbTracker* tracker,
   mutex.unlock ();
 }
 
-void reconfigureEdgeCallback(vpMbTracker* tracker,
+void reconfigureEdgeCallback(vpMbGenericTracker &tracker,
        vpImage<unsigned char>& I,
        vpMe& moving_edge,
        boost::recursive_mutex& mutex,
@@ -124,11 +109,11 @@ void reconfigureEdgeCallback(vpMbTracker* tracker,
       // Check if the image is ready to use
       if (I.getHeight() != 0 && I.getWidth() != 0) {
         vpHomogeneousMatrix cMo;
-        tracker->getPose(cMo);
+        tracker.getPose(cMo);
         // Could not use initFromPose for edge tracker
         // init() function has to be fixed in the trunk first
         // It might have to reset the meLines
-        tracker->setPose(I, cMo);
+        tracker.setPose(I, cMo);
       }
     }
   catch (...)
@@ -139,7 +124,7 @@ void reconfigureEdgeCallback(vpMbTracker* tracker,
   mutex.unlock ();
 }
 
-void reconfigureKltCallback(vpMbTracker* tracker,
+void reconfigureKltCallback(vpMbGenericTracker &tracker,
        vpImage<unsigned char>& I,
        vpKltOpencv& kltTracker,
        boost::recursive_mutex& mutex,
@@ -157,8 +142,8 @@ void reconfigureKltCallback(vpMbTracker* tracker,
       // Check if the image is ready to use
       if (I.getHeight() != 0 && I.getWidth() != 0) {
         vpHomogeneousMatrix cMo;
-        tracker->getPose(cMo);
-        tracker->initFromPose(I, cMo);
+        tracker.getPose(cMo);
+        tracker.initFromPose(I, cMo);
       }
     }
   catch (...)
@@ -170,7 +155,7 @@ void reconfigureKltCallback(vpMbTracker* tracker,
 }
 
 void reInitViewerCommonParameters(ros::NodeHandle& nh,
-                                  vpMbTracker* tracker)
+                                  vpMbGenericTracker &tracker)
 {
   ros::ServiceClient clientViewer =
       nh.serviceClient<visp_tracker::Init>(visp_tracker::reconfigure_service_viewer);
@@ -186,7 +171,7 @@ void reInitViewerCommonParameters(ros::NodeHandle& nh,
 }
 
 void reconfigureCallbackAndInitViewer(ros::NodeHandle& nh,
-       vpMbTracker* tracker,
+       vpMbGenericTracker &tracker,
        vpImage<unsigned char>& I,
        vpMe& moving_edge,
        vpKltOpencv& kltTracker,
@@ -199,7 +184,7 @@ void reconfigureCallbackAndInitViewer(ros::NodeHandle& nh,
 }
 
 void reconfigureEdgeCallbackAndInitViewer(ros::NodeHandle& nh,
-       vpMbTracker* tracker,
+       vpMbGenericTracker &tracker,
        vpImage<unsigned char>& I,
        vpMe& moving_edge,
        boost::recursive_mutex& mutex,
@@ -211,7 +196,7 @@ void reconfigureEdgeCallbackAndInitViewer(ros::NodeHandle& nh,
 }
 
 void reconfigureKltCallbackAndInitViewer(ros::NodeHandle& nh,
-       vpMbTracker* tracker,
+       vpMbGenericTracker &tracker,
        vpImage<unsigned char>& I,
        vpKltOpencv& kltTracker,
        boost::recursive_mutex& mutex,
