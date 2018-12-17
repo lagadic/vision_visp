@@ -36,11 +36,11 @@ namespace visp_tracker
 
 
     typedef boost::function<bool (visp_tracker::Init::Request&,
-          visp_tracker::Init::Response& res)>
+                                  visp_tracker::Init::Response& res)>
     initCallback_t;
 
     typedef boost::function<bool (visp_tracker::Init::Request&,
-          visp_tracker::Init::Response& res)>
+                                  visp_tracker::Init::Response& res)>
     reconfigureCallback_t;
 
     /// \brief Synchronization policy
@@ -51,17 +51,17 @@ namespace visp_tracker
     /// The approximate time allows light differences in timestamps
     /// which are not critical as this is only a viewer.
     typedef message_filters::sync_policies::ApproximateTime<
-      sensor_msgs::Image, sensor_msgs::CameraInfo,
-      geometry_msgs::PoseWithCovarianceStamped,
-      visp_tracker::MovingEdgeSites,
-      visp_tracker::KltPoints
-      > syncPolicy_t;
+    sensor_msgs::Image, sensor_msgs::CameraInfo,
+    geometry_msgs::PoseWithCovarianceStamped,
+    visp_tracker::MovingEdgeSites,
+    visp_tracker::KltPoints
+    > syncPolicy_t;
 
     /// \brief Constructor.
     TrackerViewer(ros::NodeHandle& nh,
-		  ros::NodeHandle& privateNh,
-		  volatile bool& exiting,
-		  unsigned queueSize = 5u);
+                  ros::NodeHandle& privateNh,
+                  volatile bool& exiting,
+                  unsigned queueSize = 5u);
 
     /// \brief Display camera image, tracked object position and moving
     /// edge sites.
@@ -80,10 +80,10 @@ namespace visp_tracker
     void waitForImage();
 
     bool initCallback(visp_tracker::Init::Request& req,
-          visp_tracker::Init::Response& res);
+                      visp_tracker::Init::Response& res);
 
     bool reconfigureCallback(visp_tracker::Init::Request& req,
-          visp_tracker::Init::Response& res);
+                             visp_tracker::Init::Response& res);
 
     /// \brief Callback used to received synchronized data.
     void

@@ -49,9 +49,9 @@ namespace visp_tracker
     };
 
     TrackerClient(ros::NodeHandle& nh,
-		  ros::NodeHandle& privateNh,
-		  volatile bool& exiting,
-		  unsigned queueSize = 5u);
+                  ros::NodeHandle& privateNh,
+                  volatile bool& exiting,
+                  unsigned queueSize = 5u);
     
     ~TrackerClient();
 
@@ -69,10 +69,10 @@ namespace visp_tracker
 
     void init();
     void initPoint(unsigned& i,
-		   points_t& points,
-		   imagePoints_t& imagePoints,
-		   ros::Rate& rate,
-		   vpPose& pose);
+                   points_t& points,
+                   imagePoints_t& imagePoints,
+                   ros::Rate& rate,
+                   vpPose& pose);
 
 
     void waitForImage();
@@ -81,8 +81,8 @@ namespace visp_tracker
 
     std::string fetchResource(const std::string&);
     bool makeModelFile(boost::filesystem::ofstream& modelStream,
-		       const std::string& resourcePath,
-		       std::string& fullModelPath);
+                       const std::string& resourcePath,
+                       std::string& fullModelPath);
 
   private:
     bool exiting ()
