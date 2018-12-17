@@ -41,7 +41,7 @@ namespace visp_tracker
     typedef vpImage<unsigned char> image_t;
 
     typedef boost::function<bool (visp_tracker::Init::Request&,
-          visp_tracker::Init::Response& res)>
+                                  visp_tracker::Init::Response& res)>
     initCallback_t;
 
     template<class ConfigType>
@@ -50,24 +50,24 @@ namespace visp_tracker
     };
 
     enum State
-      {
-	WAITING_FOR_INITIALIZATION,
-	TRACKING,
-	LOST
-      };
+    {
+      WAITING_FOR_INITIALIZATION,
+      TRACKING,
+      LOST
+    };
 
 
     Tracker (ros::NodeHandle& nh,
-	     ros::NodeHandle& privateNh,
-	     volatile bool& exiting,
-	     unsigned queueSize = 5u);
+             ros::NodeHandle& privateNh,
+             volatile bool& exiting,
+             unsigned queueSize = 5u);
     
     ~Tracker();
     
     void spin();
   protected:
     bool initCallback(visp_tracker::Init::Request& req,
-		      visp_tracker::Init::Response& res);
+                      visp_tracker::Init::Response& res);
 
     void updateMovingEdgeSites(visp_tracker::MovingEdgeSitesPtr sites);
     void updateKltPoints(visp_tracker::KltPointsPtr klt);
