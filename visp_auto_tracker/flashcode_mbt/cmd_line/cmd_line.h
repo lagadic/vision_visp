@@ -6,8 +6,8 @@
 #include <boost/program_options/parsers.hpp>
 #include <exception>
 #include <string>
-#include <visp/vpConfig.h>
-#include <visp/vpPoint.h>
+#include <visp3/core/vpConfig.h>
+#include <visp3/core/vpPoint.h>
 namespace po = boost::program_options;
 class CmdLine{
  private:

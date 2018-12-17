@@ -14,17 +14,17 @@
 #include "visp_tracker/KltPoints.h"
 
 //visp includes
-#include <visp/vpDisplayX.h>
-#include <visp/vpMbEdgeKltTracker.h>
-#include <visp/vpTime.h>
+#include <visp3/gui/vpDisplayX.h>
+#include <visp3/mbt/vpMbGenericTracker.h>
+#include <visp3/core/vpTime.h>
 
 //detectors
 #if VISP_VERSION_INT < VP_VERSION_INT(2,10,0)
 #  include "detectors/datamatrix/detector.h"
 #  include "detectors/qrcode/detector.h"
 #else
-#  include <visp/vpDetectorDataMatrixCode.h>
-#  include <visp/vpDetectorQRCode.h>
+#  include <visp3/detection/vpDetectorDataMatrixCode.h>
+#  include <visp3/detection/vpDetectorQRCode.h>
 #endif
 
 #include <visp_bridge/camera.h>
@@ -137,18 +137,9 @@ namespace visp_auto_tracker{
                         detector = new vpDetectorDataMatrixCode;
 #endif
 
-#if 0
-                //init tracker based on user preference
-                if(cmd_.get_tracker_type() == CmdLine::KLT)
-                        tracker = new vpMbKltTracker();
-                else if(cmd_.get_tracker_type() == CmdLine::KLT_MBT)
-                        tracker = new vpMbEdgeKltTracker();
-                else if(cmd_.get_tracker_type() == CmdLine::MBT)
-                        tracker = new vpMbEdgeTracker();
-#else
                 // Use the best tracker
-                tracker = new vpMbEdgeKltTracker();
-#endif
+                int trackerType = vpMbGenericTracker::EDGE_TRACKER | vpMbGenericTracker::KLT_TRACKER;
+                tracker = new vpMbGenericTracker(1, trackerType);
                 tracker->setCameraParameters(cam_);
                 tracker->setDisplayFeatures(true);
 

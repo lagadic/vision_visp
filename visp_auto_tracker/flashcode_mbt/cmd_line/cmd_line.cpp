@@ -1,9 +1,9 @@
 #include "cmd_line.h"
 #include <iostream>
 #include <fstream>
-#include <visp/vpConfig.h>
-#include <visp/vpIoTools.h>
-#include <visp/vpMbEdgeTracker.h>
+#include <visp3/core/vpConfig.h>
+#include <visp3/core/vpIoTools.h>
+#include <visp3/mbt/vpMbGenericTracker.h>
 
 void CmdLine::common(){
   po::options_description general("General options");
