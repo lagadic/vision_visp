@@ -7,10 +7,10 @@
 
 # include <string>
 
-# include <visp/vpImage.h>
+# include <visp3/core/vpImage.h>
 # include <visp3/mbt/vpMbGenericTracker.h>
-# include <visp/vpMe.h>
-# include <visp/vpKltOpencv.h>
+# include <visp3/me/vpMe.h>
+# include <visp3/klt/vpKltOpencv.h>
 
 # include <visp_tracker/ModelBasedSettingsConfig.h>
 # include <visp_tracker/ModelBasedSettingsKltConfig.h>

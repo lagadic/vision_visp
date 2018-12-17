@@ -25,13 +25,13 @@
 # include <visp_tracker/ModelBasedSettingsEdgeConfig.h>
 # include <visp_tracker/MovingEdgeSites.h>
 
-# include <visp/vpCameraParameters.h>
-# include <visp/vpHomogeneousMatrix.h>
-# include <visp/vpImage.h>
+# include <visp3/core/vpCameraParameters.h>
+# include <visp3/core/vpHomogeneousMatrix.h>
+# include <visp3/core/vpImage.h>
 # include <visp3/mbt/vpMbGenericTracker.h>
-# include <visp/vpMe.h>
-# include <visp/vpKltOpencv.h>
-# include <visp/vpPose.h>
+# include <visp3/me/vpMe.h>
+# include <visp3/klt/vpKltOpencv.h>
+# include <visp3/vision/vpPose.h>
 
 
 namespace visp_tracker
