@@ -275,5 +275,9 @@ namespace visp_auto_tracker{
         std::cout << "Tracking done in " << vpTime::measureTimeMs() - t << " ms" << std::endl;
     }
     t_->process_event(tracking::finished());
+    if(debug_display_) {
+      delete d;
+    }
+    delete tracker;
   }
 }
