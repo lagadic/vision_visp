@@ -1,6 +1,5 @@
 #include "threading.h"
 
-
 TrackerThread::TrackerThread(tracking::Tracker& tracker) : tracker_(tracker){
 }
 
