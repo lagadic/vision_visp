@@ -24,13 +24,12 @@
 # include <visp_tracker/MovingEdgeSites.h>
 # include <visp_tracker/KltPoints.h>
 
-# include <visp/vpCameraParameters.h>
-# include <visp/vpHomogeneousMatrix.h>
+# include <visp3/core/vpCameraParameters.h>
+# include <visp3/core/vpHomogeneousMatrix.h>
 # include <visp3/core/vpImage.h>
-
 # include <visp3/mbt/vpMbGenericTracker.h>
+# include <visp3/me/vpMe.h>
 
-# include <visp/vpMe.h>
 # include <string>
 
 namespace visp_tracker

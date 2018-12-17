@@ -17,10 +17,10 @@
 #include <tf/transform_broadcaster.h>
 
 #include <boost/bind.hpp>
-#include <visp/vpExponentialMap.h>
-#include <visp/vpImage.h>
-#include <visp/vpImageConvert.h>
-#include <visp/vpCameraParameters.h>
+#include <visp3/core/vpExponentialMap.h>
+#include <visp3/core/vpImage.h>
+#include <visp3/core/vpImageConvert.h>
+#include <visp3/core/vpCameraParameters.h>
 
 #include "tracker.hh"
 
