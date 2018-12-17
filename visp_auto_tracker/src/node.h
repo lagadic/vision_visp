@@ -2,7 +2,7 @@
 #define __VISP_AUTO_TRACKER_NODE_H__
 #include "ros/ros.h"
 
-#include "visp/vpConfig.h"
+#include <visp3/core/vpConfig.h>
 #include "libauto_tracker/tracking.h"
 #include <string>
 

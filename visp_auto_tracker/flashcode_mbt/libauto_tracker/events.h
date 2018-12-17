@@ -1,7 +1,7 @@
 #ifndef __TEVENTS_H__
 #define __TEVENTS_H__
-#include <visp/vpImage.h>
-#include <visp/vpCameraParameters.h>
+#include <visp3/core/vpImage.h>
+#include <visp3/core/vpCameraParameters.h>
 
 namespace tracking{
 
