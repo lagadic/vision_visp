@@ -11,17 +11,15 @@
 //front-end
 #include <boost/msm/front/state_machine_def.hpp>
 #include <boost/array.hpp>
-#include <visp/vpImage.h>
 
+#include <visp3/core/vpImage.h>
+#include <visp3/core/vpRGBa.h>
+#include <visp3/core/vpHomogeneousMatrix.h>
+#include <visp3/core/vpCameraParameters.h>
 
-#include <visp/vpImage.h>
-#include <visp/vpRGBa.h>
-#include <visp/vpHomogeneousMatrix.h>
-#include <visp/vpCameraParameters.h>
-
-#include <visp/vpDisplay.h>
-#include <visp/vpHinkley.h>
-#include <visp/vpMe.h>
+#include <visp3/core/vpDisplay.h>
+#include <visp3/core/vpHinkley.h>
+#include <visp3/me/vpMe.h>
 #include <vector>
 #include <fstream>
 
@@ -118,11 +116,9 @@ namespace tracking{
 
     //constructor
     //inits tracker from a detector, a visp tracker
-#if VISP_VERSION_INT < VP_VERSION_INT(2,10,0)
-    Tracker_(CmdLine& cmd, detectors::DetectorBase* detector,vpMbTracker* tracker_,bool flush_display = true);
-#else
-    Tracker_(CmdLine& cmd, vpDetectorBase* detector,vpMbTracker* tracker_,bool flush_display = true);
-#endif
+
+    Tracker_(CmdLine& cmd, vpDetectorBase* detector, vpMbTracker *tracker_, bool flush_display = true);
+
     typedef WaitingForInput initial_state;      //initial state of our state machine tracker
 
     //Guards

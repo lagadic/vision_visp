@@ -2,27 +2,23 @@
 #include "cv.h"
 #include "highgui.h"
 #include "tracking.h"
-#include <visp/vpImageConvert.h>
-#include <visp/vpPixelMeterConversion.h>
-#include <visp/vpImagePoint.h>
-#include <visp/vpDisplayX.h>
-#include <visp/vpPose.h>
-#include <visp/vpMeterPixelConversion.h>
-#include <visp/vpTrackingException.h>
-#include <visp/vpImageIo.h>
-#include <visp/vpRect.h>
-#include <visp/vpMbKltTracker.h>
-#include <visp/vpMbEdgeTracker.h>
+#include <visp3/core/vpImageConvert.h>
+#include <visp3/core/vpPixelMeterConversion.h>
+#include <visp3/core/vpImagePoint.h>
+#include <visp3/gui/vpDisplayX.h>
+#include <visp3/vision/vpPose.h>
+#include <visp3/core/vpMeterPixelConversion.h>
+#include <visp3/core/vpTrackingException.h>
+#include <visp3/io/vpImageIo.h>
+#include <visp3/core/vpRect.h>
+#include <visp3/mbt/vpMbGenericTracker.h>
 
 #include "logfilewriter.hpp"
 
 namespace tracking{
 
-#if VISP_VERSION_INT < VP_VERSION_INT(2,10,0)
-  Tracker_:: Tracker_(CmdLine& cmd, detectors::DetectorBase* detector,vpMbTracker* tracker,bool flush_display) :
-#else
-  Tracker_:: Tracker_(CmdLine& cmd, vpDetectorBase* detector,vpMbTracker* tracker,bool flush_display) :
-#endif
+  Tracker_:: Tracker_(CmdLine& cmd, vpDetectorBase* detector, vpMbTracker* tracker,bool flush_display) :
+
   cmd(cmd),
       iter_(0),
       flashcode_center_(640/2,480/2),

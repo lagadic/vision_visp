@@ -5,12 +5,12 @@
 #include <boost/msm/back/state_machine.hpp>
 //front-end
 #include <boost/msm/front/state_machine_def.hpp>
-#include <visp/vpImage.h>
-#include <visp/vpRGBa.h>
-#include <visp/vpMeterPixelConversion.h>
-#include <visp/vpPlot.h>
-#include <visp/vpRect.h>
-#include <visp/vpDisplay.h>
+#include <visp3/core/vpImage.h>
+#include <visp3/core/vpRGBa.h>
+#include <visp3/core/vpMeterPixelConversion.h>
+#include <visp3/gui/vpPlot.h>
+#include <visp3/core/vpRect.h>
+#include <visp3/core/vpDisplay.h>
 #include <vector>
 #include <cassert>
 #include <fstream>
