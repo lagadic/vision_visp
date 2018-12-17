@@ -1,5 +1,6 @@
 #ifndef __CMD_LINE_H__
 #define __CMD_LINE_H__
+
 #include <boost/program_options/cmdline.hpp>
 #include <boost/program_options/variables_map.hpp>
 #include <boost/program_options/options_description.hpp>
@@ -8,9 +9,12 @@
 #include <string>
 #include <visp3/core/vpConfig.h>
 #include <visp3/core/vpPoint.h>
+
 namespace po = boost::program_options;
-class CmdLine{
- private:
+
+class CmdLine
+{
+private:
   boost::program_options::variables_map vm_;
   bool verbose_;
   bool show_fps_;
@@ -45,7 +49,7 @@ class CmdLine{
   int code_message_index_; // Index in the vector of code messages that were found
   void loadConfig(std::string& config_file);
   void common();
- public:
+public:
   enum DETECTOR_TYPE{
     DMTX, ZBAR
   };

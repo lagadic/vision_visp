@@ -19,12 +19,12 @@ namespace tracking{
 
   Tracker_:: Tracker_(CmdLine& cmd, vpDetectorBase* detector, vpMbTracker* tracker,bool flush_display) :
 
-  cmd(cmd),
-      iter_(0),
-      flashcode_center_(640/2,480/2),
-      detector_(detector),
-      tracker_(tracker),
-      flush_display_(flush_display){
+    cmd(cmd),
+    iter_(0),
+    flashcode_center_(640/2,480/2),
+    detector_(detector),
+    tracker_(tracker),
+    flush_display_(flush_display){
     std::cout << "starting tracker" << std::endl;
     cvTrackingBox_init_ = false;
     cvTrackingBox_.x = 0;
@@ -42,10 +42,10 @@ namespace tracking{
       for(unsigned int i=0;i<points3D_outer_.size();i++){
         vpPoint p;
         p.setWorldCoordinates(
-                  (points3D_outer_[i].get_oX()+points3D_inner_[i].get_oX())*cmd.get_adhoc_recovery_ratio(),
-                  (points3D_outer_[i].get_oY()+points3D_inner_[i].get_oY())*cmd.get_adhoc_recovery_ratio(),
-                  (points3D_outer_[i].get_oZ()+points3D_inner_[i].get_oZ())*cmd.get_adhoc_recovery_ratio()
-                );
+              (points3D_outer_[i].get_oX()+points3D_inner_[i].get_oX())*cmd.get_adhoc_recovery_ratio(),
+              (points3D_outer_[i].get_oY()+points3D_inner_[i].get_oY())*cmd.get_adhoc_recovery_ratio(),
+              (points3D_outer_[i].get_oZ()+points3D_inner_[i].get_oZ())*cmd.get_adhoc_recovery_ratio()
+              );
         points3D_middle_.push_back(p);
       }
     }
@@ -334,9 +334,9 @@ namespace tracking{
       tracker_->loadModel(cmd.get_mbt_cad_file()); // load the 3d model, to read .wrl model the 3d party library coin is required, if coin is not installed .cao file can be used.
       tracker_->setCameraParameters(cam_);
       {
-          vpCameraParameters cam;
-          tracker_->getCameraParameters(cam);
-          if (cam.get_px() != 558) ROS_INFO_STREAM("detection Camera parameters: \n" << cam_);
+        vpCameraParameters cam;
+        tracker_->getCameraParameters(cam);
+        if (cam.get_px() != 558) ROS_INFO_STREAM("detection Camera parameters: \n" << cam_);
       }
 
       tracker_->initFromPose(Igray_,cMo_);
@@ -417,11 +417,11 @@ namespace tracking{
           vpMeterPixelConversion::convertPoint(cam_,points3D_inner_[p].get_x(),points3D_inner_[p].get_y(),_u_inner,_v_inner);
 
           boost::accumulators::accumulator_set<
-                  unsigned char,
-                  boost::accumulators::stats<
-                    boost::accumulators::tag::median(boost::accumulators::with_p_square_quantile)
-                  >
-                > acc;
+              unsigned char,
+              boost::accumulators::stats<
+              boost::accumulators::tag::median(boost::accumulators::with_p_square_quantile)
+              >
+              > acc;
 
           int region_width= std::max((int)(std::abs(_u-_u_inner)*cmd.get_adhoc_recovery_size()),1);
           int region_height=std::max((int)(std::abs(_v-_v_inner)*cmd.get_adhoc_recovery_size()),1);
@@ -459,11 +459,11 @@ namespace tracking{
     vpImageConvert::convert(evt.I,Igray_);
 
     boost::accumulators::accumulator_set<
-                      double,
-                      boost::accumulators::stats<
-                        boost::accumulators::tag::mean
-                      >
-                    > acc;
+        double,
+        boost::accumulators::stats<
+        boost::accumulators::tag::mean
+        >
+        > acc;
 
     for(unsigned int i=0;i<points3D_outer_.size();i++){
       points3D_outer_[i].project(cMo_);
@@ -574,33 +574,57 @@ namespace tracking{
         noVisibleLine = false;
       }
 #if VISP_VERSION_INT >= VP_VERSION_INT(3,0,0) // ViSP >= 3.0.0
-      }
     }
-#endif
-    }
-    if (noVisibleLine)
-      ROS_DEBUG_THROTTLE(10, "no distance lines");
   }
+#endif
+}
+if (noVisibleLine)
+ROS_DEBUG_THROTTLE(10, "no distance lines");
+}
 
-  void
-  Tracker_::updateKltPoints(visp_tracker::KltPointsPtr klt)
-  {
-    if (!klt)
-      return;
+void
+Tracker_::updateKltPoints(visp_tracker::KltPointsPtr klt)
+{
+  if (!klt)
+    return;
 
 #if VISP_VERSION_INT < VP_VERSION_INT(2,10,0)// ViSP < 2.10.0
-    vpMbHiddenFaces<vpMbtKltPolygon> *poly_lst;
-    std::map<int, vpImagePoint> *map_klt;
+  vpMbHiddenFaces<vpMbtKltPolygon> *poly_lst;
+  std::map<int, vpImagePoint> *map_klt;
 
-    if(cmd.get_tracker_type() != CmdLine::MBT) // For klt and hybrid
-      poly_lst = &dynamic_cast<vpMbKltTracker*>(tracker_)->getFaces();
+  if(cmd.get_tracker_type() != CmdLine::MBT) // For klt and hybrid
+    poly_lst = &dynamic_cast<vpMbKltTracker*>(tracker_)->getFaces();
 
-    for(unsigned int i = 0 ; i < poly_lst->size() ; i++)
+  for(unsigned int i = 0 ; i < poly_lst->size() ; i++)
+  {
+    if((*poly_lst)[i])
     {
-      if((*poly_lst)[i])
-      {
-        map_klt = &((*poly_lst)[i]->getCurrentPoints());
+      map_klt = &((*poly_lst)[i]->getCurrentPoints());
 
+      if(map_klt->size() > 3)
+      {
+        for (std::map<int, vpImagePoint>::iterator it=map_klt->begin(); it!=map_klt->end(); ++it)
+        {
+          visp_tracker::KltPoint kltPoint;
+          kltPoint.id = it->first;
+          kltPoint.i = it->second.get_i();
+          kltPoint.j = it->second.get_j();
+          klt->klt_points_positions.push_back (kltPoint);
+        }
+      }
+    }
+  }
+#else // ViSP >= 2.10.0
+  std::list<vpMbtDistanceKltPoints*> *poly_lst;
+  std::map<int, vpImagePoint> *map_klt;
+
+  if(cmd.get_tracker_type() != CmdLine::MBT) { // For klt and hybrid
+    poly_lst = &dynamic_cast<vpMbKltTracker*>(tracker_)->getFeaturesKlt();
+
+    for(std::list<vpMbtDistanceKltPoints*>::const_iterator it=poly_lst->begin(); it!=poly_lst->end(); ++it){
+      map_klt = &((*it)->getCurrentPoints());
+
+      if((*it)->polygon->isVisible()){
         if(map_klt->size() > 3)
         {
           for (std::map<int, vpImagePoint>::iterator it=map_klt->begin(); it!=map_klt->end(); ++it)
@@ -614,32 +638,8 @@ namespace tracking{
         }
       }
     }
-#else // ViSP >= 2.10.0
-    std::list<vpMbtDistanceKltPoints*> *poly_lst;
-    std::map<int, vpImagePoint> *map_klt;
-
-    if(cmd.get_tracker_type() != CmdLine::MBT) { // For klt and hybrid
-      poly_lst = &dynamic_cast<vpMbKltTracker*>(tracker_)->getFeaturesKlt();
-
-      for(std::list<vpMbtDistanceKltPoints*>::const_iterator it=poly_lst->begin(); it!=poly_lst->end(); ++it){
-        map_klt = &((*it)->getCurrentPoints());
-
-        if((*it)->polygon->isVisible()){
-        if(map_klt->size() > 3)
-          {
-            for (std::map<int, vpImagePoint>::iterator it=map_klt->begin(); it!=map_klt->end(); ++it)
-            {
-              visp_tracker::KltPoint kltPoint;
-              kltPoint.id = it->first;
-              kltPoint.i = it->second.get_i();
-              kltPoint.j = it->second.get_j();
-              klt->klt_points_positions.push_back (kltPoint);
-            }
-          }
-        }
-      }
-    }
-#endif
   }
+#endif
+}
 }
 
