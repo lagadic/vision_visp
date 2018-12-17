@@ -16,33 +16,33 @@
 #include <sstream>
 
 namespace visp_auto_tracker{
-        class Node{
-        private:
-                boost::mutex lock_;
-                ros::NodeHandle n_;
-                unsigned long queue_size_;
-                std::string tracker_config_path_;
-                std::string model_description_;
-                std::string model_path_;
-                std::string model_name_;
-                std::string code_message_;
-                bool debug_display_;
+  class Node{
+  private:
+    boost::mutex lock_;
+    ros::NodeHandle n_;
+    unsigned long queue_size_;
+    std::string tracker_config_path_;
+    std::string model_description_;
+    std::string model_path_;
+    std::string model_name_;
+    std::string code_message_;
+    bool debug_display_;
 
-                vpImage<vpRGBa> I_; // Image used for debug display
-                std_msgs::Header image_header_;
-                bool got_image_;
-                vpCameraParameters cam_;
+    vpImage<vpRGBa> I_; // Image used for debug display
+    std_msgs::Header image_header_;
+    bool got_image_;
+    vpCameraParameters cam_;
 
-                tracking::Tracker* t_;
-                CmdLine cmd_;
+    tracking::Tracker* t_;
+    CmdLine cmd_;
 
-            void waitForImage();
+    void waitForImage();
 
-            void frameCallback(const sensor_msgs::ImageConstPtr& image, const sensor_msgs::CameraInfoConstPtr& cam_info);
+    void frameCallback(const sensor_msgs::ImageConstPtr& image, const sensor_msgs::CameraInfoConstPtr& cam_info);
 
-        public:
-                Node();
-                void spin();
-        };
+  public:
+    Node();
+    void spin();
+  };
 };
 #endif

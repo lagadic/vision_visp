@@ -23,20 +23,20 @@ namespace msm = boost::msm;
 
 namespace tracking{
   struct WaitingForInput : public msm::front::state<>{
-      template <class Event, class Fsm>
-      void on_entry(Event const&, Fsm& fsm){
-        if(fsm.get_cmd().get_verbose())
-          std::cout <<"entering: WaitingForInput" << std::endl;
+    template <class Event, class Fsm>
+    void on_entry(Event const&, Fsm& fsm){
+      if(fsm.get_cmd().get_verbose())
+        std::cout <<"entering: WaitingForInput" << std::endl;
+    }
+    template <class Event, class Fsm>
+    void on_exit(Event const& evt, Fsm& fsm){
+      if(fsm.get_cmd().get_verbose())
+        std::cout <<"leaving: WaitingForInput" << std::endl;
+      if(fsm.get_flush_display()){
+        vpDisplay::display(evt.I);
+        vpDisplay::flush(evt.I);
       }
-      template <class Event, class Fsm>
-      void on_exit(Event const& evt, Fsm& fsm){
-        if(fsm.get_cmd().get_verbose())
-          std::cout <<"leaving: WaitingForInput" << std::endl;
-        if(fsm.get_flush_display()){
-          vpDisplay::display(evt.I);
-          vpDisplay::flush(evt.I);
-        }
-      }
+    }
 
   };
 
@@ -87,83 +87,83 @@ namespace tracking{
 
   struct DetectFlashcodeGeneric : public msm::front::state<>
   {
-      vpImagePoint corner0;
-      vpImagePoint corner1;
-      vpImagePoint corner2;
-      vpImagePoint corner3;
-      virtual vpColor getColor() = 0;
-      template <class Fsm>
-      void on_entry(finished const& evt, Fsm& fsm){}
+    vpImagePoint corner0;
+    vpImagePoint corner1;
+    vpImagePoint corner2;
+    vpImagePoint corner3;
+    virtual vpColor getColor() = 0;
+    template <class Fsm>
+    void on_entry(finished const& evt, Fsm& fsm){}
 
-      template <class Fsm>
-      void on_exit(finished const& evt, Fsm& fsm){}
+    template <class Fsm>
+    void on_exit(finished const& evt, Fsm& fsm){}
 
-      template <class Event, class Fsm>
-      void on_entry(Event const&, Fsm& fsm)
-      {
-        if(fsm.get_cmd().get_verbose())
-          std::cout <<"entering: DetectFlashcode" << std::endl;
+    template <class Event, class Fsm>
+    void on_entry(Event const&, Fsm& fsm)
+    {
+      if(fsm.get_cmd().get_verbose())
+        std::cout <<"entering: DetectFlashcode" << std::endl;
+    }
+    template <class Event, class Fsm>
+    void on_exit(Event const& evt, Fsm& fsm)
+    {
+      if(fsm.get_cmd().get_verbose())
+        std::cout <<"leaving: DetectFlashcode" << std::endl;
+      if(fsm.get_flush_display()) {
+        vpDisplay::display(evt.I);
       }
-      template <class Event, class Fsm>
-      void on_exit(Event const& evt, Fsm& fsm)
-      {
-        if(fsm.get_cmd().get_verbose())
-          std::cout <<"leaving: DetectFlashcode" << std::endl;
-        if(fsm.get_flush_display()) {
-          vpDisplay::display(evt.I);
-        }
 #if VISP_VERSION_INT < VP_VERSION_INT(2,10,0)
-        std::vector<cv::Point>& polygon = fsm.get_detector().get_polygon();
-        if(polygon.size()!=4) {
-          if(fsm.get_flush_display()) vpDisplay::flush(evt.I);
-          return;
-        }
-        corner0 = vpImagePoint (polygon[0].y,polygon[0].x);
-        corner1 = vpImagePoint (polygon[1].y,polygon[1].x);
-        corner2 = vpImagePoint (polygon[2].y,polygon[2].x);
-        corner3 = vpImagePoint (polygon[3].y,polygon[3].x);
+      std::vector<cv::Point>& polygon = fsm.get_detector().get_polygon();
+      if(polygon.size()!=4) {
+        if(fsm.get_flush_display()) vpDisplay::flush(evt.I);
+        return;
+      }
+      corner0 = vpImagePoint (polygon[0].y,polygon[0].x);
+      corner1 = vpImagePoint (polygon[1].y,polygon[1].x);
+      corner2 = vpImagePoint (polygon[2].y,polygon[2].x);
+      corner3 = vpImagePoint (polygon[3].y,polygon[3].x);
 #else
-        // TODO: add a parameter to be able to select the QRcode from it's message
-        // For the moment we get the position of the first code that is the largest in the image
-        std::vector< std::vector< vpImagePoint > > polygons = fsm.get_detector().getPolygon();
-        std::vector< vpImagePoint > polygon(4);
-        if (polygons.size())
-          polygon = polygons[0];
-        if(polygon.size()!=4) {
-          if(fsm.get_flush_display()) vpDisplay::flush(evt.I);
-          return;
-        }
-        corner0 = polygon[0];
-        corner1 = polygon[1];
-        corner2 = polygon[2];
-        corner3 = polygon[3];
+      // TODO: add a parameter to be able to select the QRcode from it's message
+      // For the moment we get the position of the first code that is the largest in the image
+      std::vector< std::vector< vpImagePoint > > polygons = fsm.get_detector().getPolygon();
+      std::vector< vpImagePoint > polygon(4);
+      if (polygons.size())
+        polygon = polygons[0];
+      if(polygon.size()!=4) {
+        if(fsm.get_flush_display()) vpDisplay::flush(evt.I);
+        return;
+      }
+      corner0 = polygon[0];
+      corner1 = polygon[1];
+      corner2 = polygon[2];
+      corner3 = polygon[3];
 #endif
 
 #if VISP_VERSION_INT < VP_VERSION_INT(2,10,0)
-        if(0){//fsm.get_flush_display()){
-          vpDisplay::displayRectangle(evt.I,fsm.template get_tracking_box< vpRect > (),getColor(),false,2);
-          if(polygon.size()==0){
-            vpDisplay::displayCharString(evt.I,vpImagePoint(0,0),"TRACKING LOST",vpColor::red);
-            vpDisplay::flush(evt.I);
-            return;
-          }
-
-          std::vector<std::pair<cv::Point,cv::Point> >& lines = fsm.get_detector().get_lines();
-          for(std::vector<std::pair<cv::Point,cv::Point> >::iterator i = lines.begin();
-              i!=lines.end();
-              i++
-          ){
-            vpDisplay::displayLine(evt.I,vpImagePoint(i->first.y,i->first.x),vpImagePoint(i->second.y,i->second.x),getColor(),2);
-          }
-          vpDisplay::displayCharString(evt.I,corner0,"1",vpColor::blue);
-          vpDisplay::displayCharString(evt.I,corner1,"2",vpColor::yellow);
-          vpDisplay::displayCharString(evt.I,corner2,"3",vpColor::cyan);
-          vpDisplay::displayCharString(evt.I,corner3,"4",vpColor::darkRed);
-
+      if(0){//fsm.get_flush_display()){
+        vpDisplay::displayRectangle(evt.I,fsm.template get_tracking_box< vpRect > (),getColor(),false,2);
+        if(polygon.size()==0){
+          vpDisplay::displayCharString(evt.I,vpImagePoint(0,0),"TRACKING LOST",vpColor::red);
+          vpDisplay::flush(evt.I);
+          return;
         }
-#endif
-        vpDisplay::flush(evt.I);
+
+        std::vector<std::pair<cv::Point,cv::Point> >& lines = fsm.get_detector().get_lines();
+        for(std::vector<std::pair<cv::Point,cv::Point> >::iterator i = lines.begin();
+            i!=lines.end();
+            i++
+            ){
+          vpDisplay::displayLine(evt.I,vpImagePoint(i->first.y,i->first.x),vpImagePoint(i->second.y,i->second.x),getColor(),2);
+        }
+        vpDisplay::displayCharString(evt.I,corner0,"1",vpColor::blue);
+        vpDisplay::displayCharString(evt.I,corner1,"2",vpColor::yellow);
+        vpDisplay::displayCharString(evt.I,corner2,"3",vpColor::cyan);
+        vpDisplay::displayCharString(evt.I,corner3,"4",vpColor::darkRed);
+
       }
+#endif
+      vpDisplay::flush(evt.I);
+    }
   };
 
   struct DetectFlashcode: public DetectFlashcodeGeneric {
@@ -181,69 +181,69 @@ namespace tracking{
 
   struct DetectModel : public msm::front::state<>
   {
-      std::vector<vpImagePoint> model_inner_corner;
-      std::vector<vpImagePoint> model_outer_corner;
-      vpHomogeneousMatrix cMo;
+    std::vector<vpImagePoint> model_inner_corner;
+    std::vector<vpImagePoint> model_outer_corner;
+    vpHomogeneousMatrix cMo;
 
-      DetectModel() : model_inner_corner(4),model_outer_corner(4){}
-      template <class Fsm>
-      void on_entry(finished const& evt, Fsm& fsm){}
+    DetectModel() : model_inner_corner(4),model_outer_corner(4){}
+    template <class Fsm>
+    void on_entry(finished const& evt, Fsm& fsm){}
 
-      template <class Fsm>
-      void on_exit(finished const& evt, Fsm& fsm){}
+    template <class Fsm>
+    void on_exit(finished const& evt, Fsm& fsm){}
 
-      template <class Event, class Fsm>
-      void on_entry(Event const&, Fsm& fsm)
-      {
-        if(fsm.get_cmd().get_verbose())
-          std::cout <<"entering: DetectModel" << std::endl;
+    template <class Event, class Fsm>
+    void on_entry(Event const&, Fsm& fsm)
+    {
+      if(fsm.get_cmd().get_verbose())
+        std::cout <<"entering: DetectModel" << std::endl;
+    }
+    template <class Event, class Fsm>
+    void on_exit(Event const& evt, Fsm& fsm)
+    {
+      if(fsm.get_cmd().get_verbose())
+        std::cout <<"leaving: DetectModel" << std::endl;
+      std::vector<vpPoint>& points3D_inner = fsm.get_points3D_inner();
+      std::vector<vpPoint>& points3D_outer = fsm.get_points3D_outer();
+
+      fsm.get_mbt().getPose(cMo);
+
+      for(unsigned int i=0;i<4;i++){
+        vpMeterPixelConversion::convertPoint(fsm.get_cam(),points3D_outer[i].get_x(),points3D_outer[i].get_y(),model_outer_corner[i]);
+        vpMeterPixelConversion::convertPoint(fsm.get_cam(),points3D_inner[i].get_x(),points3D_inner[i].get_y(),model_inner_corner[i]);
       }
-      template <class Event, class Fsm>
-      void on_exit(Event const& evt, Fsm& fsm)
-      {
-        if(fsm.get_cmd().get_verbose())
-          std::cout <<"leaving: DetectModel" << std::endl;
-        std::vector<vpPoint>& points3D_inner = fsm.get_points3D_inner();
-        std::vector<vpPoint>& points3D_outer = fsm.get_points3D_outer();
+      if(fsm.get_flush_display()){
+        vpImage<vpRGBa>& I = fsm.get_I();
+        vpDisplay::displayCharString(I,model_inner_corner[0],"mi1",vpColor::blue);
+        vpDisplay::displayCross(I,model_inner_corner[0],2,vpColor::blue,2);
+        vpDisplay::displayCharString(I,model_inner_corner[1],"mi2",vpColor::yellow);
+        vpDisplay::displayCross(I,model_inner_corner[1],2,vpColor::yellow,2);
+        vpDisplay::displayCharString(I,model_inner_corner[2],"mi3",vpColor::cyan);
+        vpDisplay::displayCross(I,model_inner_corner[2],2,vpColor::cyan,2);
+        vpDisplay::displayCharString(I,model_inner_corner[3],"mi4",vpColor::darkRed);
+        vpDisplay::displayCross(I,model_inner_corner[3],2,vpColor::darkRed,2);
 
-        fsm.get_mbt().getPose(cMo);
+        vpDisplay::displayCharString(I,model_outer_corner[0],"mo1",vpColor::blue);
+        vpDisplay::displayCross(I,model_outer_corner[0],2,vpColor::blue,2);
+        vpDisplay::displayCharString(I,model_outer_corner[1],"mo2",vpColor::yellow);
+        vpDisplay::displayCross(I,model_outer_corner[1],2,vpColor::yellow,2);
+        vpDisplay::displayCharString(I,model_outer_corner[2],"mo3",vpColor::cyan);
+        vpDisplay::displayCross(I,model_outer_corner[2],2,vpColor::cyan,2);
+        vpDisplay::displayCharString(I,model_outer_corner[3],"mo4",vpColor::darkRed);
+        vpDisplay::displayCross(I,model_outer_corner[3],2,vpColor::darkRed,2);
 
-        for(unsigned int i=0;i<4;i++){
-          vpMeterPixelConversion::convertPoint(fsm.get_cam(),points3D_outer[i].get_x(),points3D_outer[i].get_y(),model_outer_corner[i]);
-          vpMeterPixelConversion::convertPoint(fsm.get_cam(),points3D_inner[i].get_x(),points3D_inner[i].get_y(),model_inner_corner[i]);
+        try {
+          fsm.get_mbt().display(I, cMo, fsm.get_cam(), vpColor::blue, 1);// display the model at the computed pose.
         }
-        if(fsm.get_flush_display()){
-          vpImage<vpRGBa>& I = fsm.get_I();
-          vpDisplay::displayCharString(I,model_inner_corner[0],"mi1",vpColor::blue);
-          vpDisplay::displayCross(I,model_inner_corner[0],2,vpColor::blue,2);
-          vpDisplay::displayCharString(I,model_inner_corner[1],"mi2",vpColor::yellow);
-          vpDisplay::displayCross(I,model_inner_corner[1],2,vpColor::yellow,2);
-          vpDisplay::displayCharString(I,model_inner_corner[2],"mi3",vpColor::cyan);
-          vpDisplay::displayCross(I,model_inner_corner[2],2,vpColor::cyan,2);
-          vpDisplay::displayCharString(I,model_inner_corner[3],"mi4",vpColor::darkRed);
-          vpDisplay::displayCross(I,model_inner_corner[3],2,vpColor::darkRed,2);
-
-          vpDisplay::displayCharString(I,model_outer_corner[0],"mo1",vpColor::blue);
-          vpDisplay::displayCross(I,model_outer_corner[0],2,vpColor::blue,2);
-          vpDisplay::displayCharString(I,model_outer_corner[1],"mo2",vpColor::yellow);
-          vpDisplay::displayCross(I,model_outer_corner[1],2,vpColor::yellow,2);
-          vpDisplay::displayCharString(I,model_outer_corner[2],"mo3",vpColor::cyan);
-          vpDisplay::displayCross(I,model_outer_corner[2],2,vpColor::cyan,2);
-          vpDisplay::displayCharString(I,model_outer_corner[3],"mo4",vpColor::darkRed);
-          vpDisplay::displayCross(I,model_outer_corner[3],2,vpColor::darkRed,2);
-
-          try {
-            fsm.get_mbt().display(I, cMo, fsm.get_cam(), vpColor::blue, 1);// display the model at the computed pose.
-          }
-          catch(vpException& e)
-          {
-            std::cout << "Cannot display the model" << std::endl;
-          }
-
-          vpDisplay::flush(I);
+        catch(vpException& e)
+        {
+          std::cout << "Cannot display the model" << std::endl;
         }
 
+        vpDisplay::flush(I);
       }
+
+    }
   };
 
   class TrackModel : public msm::front::state<>
@@ -302,18 +302,18 @@ namespace tracking{
             int u=(int)_u;
             int v=(int)_v;
             vpDisplay::displayRectangle(
-                evt.I,
-                vpImagePoint(
+                  evt.I,
+                  vpImagePoint(
                     std::max(v-region_height,0),
                     std::max(u-region_width,0)
-                ),
-                vpImagePoint(
+                    ),
+                  vpImagePoint(
                     std::max(0, std::min(v+region_height,(int)evt.I.getHeight())),
                     std::max(0, std::min(u+region_width,(int)evt.I.getWidth()))
-                ),
-                vpColor::cyan,
-                true
-                );
+                    ),
+                  vpColor::cyan,
+                  true
+                  );
           }
         }
         vpDisplay::flush(evt.I);
