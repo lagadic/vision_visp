@@ -19,7 +19,7 @@
 #include "conversion.hh"
 
 void rosImageToVisp(vpImage<unsigned char>& dst,
-		    const sensor_msgs::Image::ConstPtr& src)
+                    const sensor_msgs::Image::ConstPtr& src)
 {
   using sensor_msgs::image_encodings::RGB8;
   using sensor_msgs::image_encodings::RGBA8;
@@ -65,7 +65,7 @@ void rosImageToVisp(vpImage<unsigned char>& dst,
 }
 
 void vispImageToRos(sensor_msgs::Image& dst,
-		    const vpImage<unsigned char>& src)
+                    const vpImage<unsigned char>& src)
 {
   dst.width = src.getWidth();
   dst.height = src.getHeight();
@@ -120,7 +120,7 @@ std::string convertVpKltOpencvToRosMessage(const vpMbGenericTracker &tracker, co
 }
 
 void vpHomogeneousMatrixToTransform(geometry_msgs::Transform& dst,
-				    const vpHomogeneousMatrix& src)
+                                    const vpHomogeneousMatrix& src)
 {
   vpQuaternionVector quaternion;
   src.extract(quaternion);
@@ -136,7 +136,7 @@ void vpHomogeneousMatrixToTransform(geometry_msgs::Transform& dst,
 }
 
 void transformToVpHomogeneousMatrix(vpHomogeneousMatrix& dst,
-				    const geometry_msgs::Transform& src)
+                                    const geometry_msgs::Transform& src)
 {
   vpTranslationVector translation(src.translation.x,src.translation.y,src.translation.z);
   vpQuaternionVector quaternion(src.rotation.x,src.rotation.y,src.rotation.z,src.rotation.w);
@@ -144,11 +144,11 @@ void transformToVpHomogeneousMatrix(vpHomogeneousMatrix& dst,
 }
 
 void transformToVpHomogeneousMatrix(vpHomogeneousMatrix& dst,
-				    const geometry_msgs::Pose& src)
+                                    const geometry_msgs::Pose& src)
 {
   vpQuaternionVector quaternion
-    (src.orientation.x, src.orientation.y, src.orientation.z,
-     src.orientation.w);
+      (src.orientation.x, src.orientation.y, src.orientation.z,
+       src.orientation.w);
   vpRotationMatrix rotation(quaternion);
 
   // Copy the rotation component.
@@ -163,7 +163,7 @@ void transformToVpHomogeneousMatrix(vpHomogeneousMatrix& dst,
 }
 
 void transformToVpHomogeneousMatrix(vpHomogeneousMatrix& dst,
-				    const tf::Transform& src)
+                                    const tf::Transform& src)
 {
   // Copy the rotation component.
   for(unsigned i = 0; i < 3; ++i)
@@ -191,8 +191,8 @@ void convertInitRequestToVpMbTracker(const visp_tracker::Init::Request& req,
 }
 
 void convertVpMeToInitRequest(const vpMe& moving_edge,
-            const vpMbGenericTracker &tracker,
-			      visp_tracker::Init& srv)
+                              const vpMbGenericTracker &tracker,
+                              visp_tracker::Init& srv)
 {
   srv.request.moving_edge.first_threshold = tracker.getGoodMovingEdgesRatioThreshold();
   srv.request.moving_edge.mask_size = moving_edge.getMaskSize();
@@ -205,8 +205,8 @@ void convertVpMeToInitRequest(const vpMe& moving_edge,
 }
 
 void convertInitRequestToVpMe(const visp_tracker::Init::Request& req,
-            vpMbGenericTracker &tracker,
-			      vpMe& moving_edge)
+                              vpMbGenericTracker &tracker,
+                              vpMe& moving_edge)
 {
   tracker.setGoodMovingEdgesRatioThreshold(req.moving_edge.first_threshold);
   moving_edge.setMaskSize( req.moving_edge.mask_size );
@@ -224,8 +224,8 @@ void convertInitRequestToVpMe(const visp_tracker::Init::Request& req,
 }
 
 void convertVpKltOpencvToInitRequest(const vpKltOpencv& klt,
-            const vpMbGenericTracker &tracker,
-            visp_tracker::Init& srv)
+                                     const vpMbGenericTracker &tracker,
+                                     visp_tracker::Init& srv)
 {  
   srv.request.klt_param.max_features = klt.getMaxFeatures();
   srv.request.klt_param.window_size = klt.getWindowSize();
@@ -238,8 +238,8 @@ void convertVpKltOpencvToInitRequest(const vpKltOpencv& klt,
 }
 
 void convertInitRequestToVpKltOpencv(const visp_tracker::Init::Request& req,
-            vpMbGenericTracker &tracker,
-            vpKltOpencv& klt)
+                                     vpMbGenericTracker &tracker,
+                                     vpKltOpencv& klt)
 {  
   klt.setMaxFeatures(req.klt_param.max_features);
   klt.setWindowSize(req.klt_param.window_size);
@@ -254,7 +254,7 @@ void convertInitRequestToVpKltOpencv(const visp_tracker::Init::Request& req,
 }
 
 void initializeVpCameraFromCameraInfo(vpCameraParameters& cam,
-				      sensor_msgs::CameraInfoConstPtr info)
+                                      sensor_msgs::CameraInfoConstPtr info)
 {
   if (!info)
     throw std::runtime_error ("missing camera calibration data");
@@ -270,24 +270,24 @@ void initializeVpCameraFromCameraInfo(vpCameraParameters& cam,
       ("camera calibration P matrix has an incorrect size");
 
   if (info->distortion_model.empty ())
-    {
-      const double& px = info->K[0 * 3 + 0];
-      const double& py = info->K[1 * 3 + 1];
-      const double& u0 = info->K[0 * 3 + 2];
-      const double& v0 = info->K[1 * 3 + 2];
-      cam.initPersProjWithoutDistortion(px, py, u0, v0);
-      return;
-    }
+  {
+    const double& px = info->K[0 * 3 + 0];
+    const double& py = info->K[1 * 3 + 1];
+    const double& u0 = info->K[0 * 3 + 2];
+    const double& v0 = info->K[1 * 3 + 2];
+    cam.initPersProjWithoutDistortion(px, py, u0, v0);
+    return;
+  }
 
   if (info->distortion_model == sensor_msgs::distortion_models::PLUMB_BOB)
-    {
-      const double& px = info->P[0 * 4 + 0];
-      const double& py = info->P[1 * 4 + 1];
-      const double& u0 = info->P[0 * 4 + 2];
-      const double& v0 = info->P[1 * 4 + 2];
-      cam.initPersProjWithoutDistortion(px, py, u0, v0);
-      return;
-    }
+  {
+    const double& px = info->P[0 * 4 + 0];
+    const double& py = info->P[1 * 4 + 1];
+    const double& u0 = info->P[0 * 4 + 2];
+    const double& v0 = info->P[1 * 4 + 2];
+    cam.initPersProjWithoutDistortion(px, py, u0, v0);
+    return;
+  }
 
   throw std::runtime_error ("unsupported distortion model");
 }

@@ -15,17 +15,17 @@ namespace visp_tracker
   public:
     TrackerViewerNodelet ()
       : nodelet::Nodelet (),
-	exiting_ (false),
-	trackerViewer_ (),
-	thread_ ()
+        exiting_ (false),
+        trackerViewer_ (),
+        thread_ ()
     {}
 
     ~TrackerViewerNodelet ()
     {
       exiting_ = true;
       if (thread_)
-	if (!thread_->timed_join (boost::posix_time::seconds (2)))
-	  NODELET_WARN ("failed to join thread but continuing anyway");
+        if (!thread_->timed_join (boost::posix_time::seconds (2)))
+          NODELET_WARN ("failed to join thread but continuing anyway");
       thread_.reset ();
       trackerViewer_.reset ();
     }
@@ -33,12 +33,12 @@ namespace visp_tracker
     void spin ()
     {
       trackerViewer_ = boost::shared_ptr<visp_tracker::TrackerViewer>
-	(new visp_tracker::TrackerViewer
-	 (getMTNodeHandle (),
-	  getMTPrivateNodeHandle (),
-	  exiting_, 5u));
+          (new visp_tracker::TrackerViewer
+           (getMTNodeHandle (),
+            getMTPrivateNodeHandle (),
+            exiting_, 5u));
       while (ros::ok () && !exiting_)
-	trackerViewer_->spin ();
+        trackerViewer_->spin ();
     }
 
     virtual void onInit ()
@@ -46,7 +46,7 @@ namespace visp_tracker
       NODELET_DEBUG ("Initializing nodelet...");
       exiting_ = false;
       thread_ = boost::make_shared<boost::thread>
-	(boost::bind (&TrackerViewerNodelet::spin, this));
+          (boost::bind (&TrackerViewerNodelet::spin, this));
     }
   private:
     volatile bool exiting_;
