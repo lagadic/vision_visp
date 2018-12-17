@@ -19,15 +19,15 @@
 #include <visp_tracker/Init.h>
 #include <visp_tracker/ModelBasedSettingsConfig.h>
 
-#include <visp/vpMe.h>
-#include <visp/vpPixelMeterConversion.h>
-#include <visp/vpPose.h>
+#include <visp3/me/vpMe.h>
+#include <visp3/core/vpPixelMeterConversion.h>
+#include <visp3/vision/vpPose.h>
 
 #include <visp3/mbt/vpMbGenericTracker.h>
 
-#include <visp/vpDisplayX.h>
-#include <visp/vpImageIo.h>
-#include <visp/vpIoTools.h>
+#include <visp3/gui/vpDisplayX.h>
+#include <visp3/io/vpImageIo.h>
+#include <visp3/core/vpIoTools.h>
 
 #include "conversion.hh"
 #include "callbacks.hh"

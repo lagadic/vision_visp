@@ -11,13 +11,13 @@
 
 # include <visp_tracker/Init.h>
 
-# include <visp/vpConfig.h>
+# include <visp3/core/vpConfig.h>
 # include <visp3/mbt/vpMbGenericTracker.h>
 
-# include <visp/vpHomogeneousMatrix.h>
-# include <visp/vpCameraParameters.h>
-# include <visp/vpMe.h>
-# include <visp/vpKltOpencv.h>
+# include <visp3/core/vpHomogeneousMatrix.h>
+# include <visp3/core/vpCameraParameters.h>
+# include <visp3/me/vpMe.h>
+# include <visp3/klt/vpKltOpencv.h>
 
 /// \brief Convert a ROS image into a ViSP one.
 ///

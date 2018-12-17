@@ -13,7 +13,7 @@
 #include <ros/param.h>
 #include <image_transport/image_transport.h>
 
-#include <visp/vpDisplayX.h>
+#include <visp3/gui/vpDisplayX.h>
 
 #include "conversion.hh"
 #include "callbacks.hh"
