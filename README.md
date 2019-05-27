@@ -24,8 +24,8 @@ Branches come in two flavors:
  * release branch
 
 Package for each ROS release is maintained on separate
-branches. I.e. `kinetic-devel` is the Kinetic Kade development branch whereas
-`kinetic` is the Kinetic Kame release branch.
+branches. I.e. `melodic-devel` is the Melodic Morenia development branch whereas
+`melodic` is the Melodic Morenia release branch.
 
 `master` means the next ROS release.
 
@@ -64,6 +64,8 @@ This stack supports the following ROS releases:
  * Indigo
  * Jade
  * Kinetic
+ * Lunar
+ * Melodic
 
 The master branch holds the development that will be available in the
 next ROS release.
@@ -72,16 +74,14 @@ next ROS release.
 | ROS Release   | Development Branch           | Release Branch |
 | ------------- | ---------------------------- | -------------- |
 | Master        | [![Build Status](https://travis-ci.org/lagadic/vision_visp.png?branch=master)](https://travis-ci.org/lagadic/vision_visp) | N/A |
+| Melodic       | [![Build Status](https://travis-ci.org/lagadic/vision_visp.png?branch=melodic-devel)](https://travis-ci.org/lagadic/vision_visp) | [![Build Status](https://travis-ci.org/lagadic/vision_visp.png?branch=melodic)](https://travis-ci.org/lagadic/vision_visp) |
+| Lunar         | [![Build Status](https://travis-ci.org/lagadic/vision_visp.png?branch=lunar-devel)](https://travis-ci.org/lagadic/vision_visp) | [![Build Status](https://travis-ci.org/lagadic/vision_visp.png?branch=lunar)](https://travis-ci.org/lagadic/vision_visp) |
 | Kinetic       | [![Build Status](https://travis-ci.org/lagadic/vision_visp.png?branch=kinetic-devel)](https://travis-ci.org/lagadic/vision_visp) | [![Build Status](https://travis-ci.org/lagadic/vision_visp.png?branch=kinetic)](https://travis-ci.org/lagadic/vision_visp) |
-| Jade          | [![Build Status](https://travis-ci.org/lagadic/vision_visp.png?branch=jade-devel)](https://travis-ci.org/lagadic/vision_visp) | [![Build Status](https://travis-ci.org/lagadic/vision_visp.png?branch=jade)](https://travis-ci.org/lagadic/vision_visp) |
-| Indigo         | [![Build Status](https://travis-ci.org/lagadic/vision_visp.png?branch=indigo-devel)](https://travis-ci.org/lagadic/vision_visp) | [![Build Status](https://travis-ci.org/lagadic/vision_visp.png?branch=indigo)](https://travis-ci.org/lagadic/vision_visp) |
-| Hydro         | [![Build Status](https://travis-ci.org/lagadic/vision_visp.png?branch=hydro-devel)](https://travis-ci.org/lagadic/vision_visp) | [![Build Status](https://travis-ci.org/lagadic/vision_visp.png?branch=hydro)](https://travis-ci.org/lagadic/vision_visp) |
-| Groovy         | [![Build Status](https://travis-ci.org/lagadic/vision_visp.png?branch=groovy-devel)](https://travis-ci.org/lagadic/vision_visp) | [![Build Status](https://travis-ci.org/lagadic/vision_visp.png?branch=groovy)](https://travis-ci.org/lagadic/vision_visp) |
-| Fuerte         | [![Build Status](https://travis-ci.org/lagadic/vision_visp.png?branch=fuerte-devel)](https://travis-ci.org/lagadic/vision_visp) | [![Build Status](https://travis-ci.org/lagadic/vision_visp.png?branch=fuerte)](https://travis-ci.org/lagadic/vision_visp) |
+| Indigo        | [![Build Status](https://travis-ci.org/lagadic/vision_visp.png?branch=indigo-devel)](https://travis-ci.org/lagadic/vision_visp) | [![Build Status](https://travis-ci.org/lagadic/vision_visp.png?branch=indigo)](https://travis-ci.org/lagadic/vision_visp) |
 
 
 
-[visp]: http://www.irisa.fr/lagadic/visp/visp.html
+[visp]: https://visp.inria.fr
 [ros]: http://www.ros.org
 [vision_visp-wiki]: http://wiki.ros.org/vision_visp
 [vision_visp-answers]: http://answers.ros.org/questions/scope:all/sort:activity-desc/tags:vision_visp/page:1/
