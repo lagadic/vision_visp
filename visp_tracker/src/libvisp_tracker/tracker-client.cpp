@@ -19,19 +19,15 @@
 #include <visp_tracker/Init.h>
 #include <visp_tracker/ModelBasedSettingsConfig.h>
 
-#include <visp/vpMe.h>
-#include <visp/vpPixelMeterConversion.h>
-#include <visp/vpPose.h>
+#include <visp3/me/vpMe.h>
+#include <visp3/core/vpPixelMeterConversion.h>
+#include <visp3/vision/vpPose.h>
 
-#define protected public
-#include <visp/vpMbEdgeTracker.h>
-#include <visp/vpMbKltTracker.h>
-#include <visp/vpMbEdgeKltTracker.h>
-#undef protected
+#include <visp3/mbt/vpMbGenericTracker.h>
 
-#include <visp/vpDisplayX.h>
-#include <visp/vpImageIo.h>
-#include <visp/vpIoTools.h>
+#include <visp3/gui/vpDisplayX.h>
+#include <visp3/io/vpImageIo.h>
+#include <visp3/core/vpIoTools.h>
 
 #include "conversion.hh"
 #include "callbacks.hh"
@@ -44,9 +40,9 @@
 namespace visp_tracker
 {
   TrackerClient::TrackerClient(ros::NodeHandle& nh,
-			       ros::NodeHandle& privateNh,
-			       volatile bool& exiting,
-			       unsigned queueSize)
+                               ros::NodeHandle& privateNh,
+                               volatile bool& exiting,
+                               unsigned queueSize)
     : exiting_ (exiting),
       queueSize_(queueSize),
       nodeHandle_(nh),
@@ -78,71 +74,69 @@ namespace visp_tracker
   {
     // Parameters.
     nodeHandlePrivate_.param<std::string>("model_path", modelPath_,
-					  visp_tracker::default_model_path);
+                                          visp_tracker::default_model_path);
     nodeHandlePrivate_.param<std::string>("model_name", modelName_, "");
 
     nodeHandlePrivate_.param<bool>
-      ("start_from_saved_pose", startFromSavedPose_, false);
+        ("start_from_saved_pose", startFromSavedPose_, false);
 
     nodeHandlePrivate_.param<bool>
-      ("confirm_init", confirmInit_, true);
+        ("confirm_init", confirmInit_, true);
 
     nodeHandlePrivate_.param<std::string>("tracker_type", trackerType_, "mbt");
     if(trackerType_=="mbt")
-      tracker_ = new vpMbEdgeTracker();
+      tracker_.setTrackerType(vpMbGenericTracker::EDGE_TRACKER);
     else if(trackerType_=="klt")
-      tracker_ = new vpMbKltTracker();
+      tracker_.setTrackerType(vpMbGenericTracker::KLT_TRACKER);
     else
-      tracker_ = new vpMbEdgeKltTracker();
+      tracker_.setTrackerType(vpMbGenericTracker::EDGE_TRACKER | vpMbGenericTracker::KLT_TRACKER);
 
     nodeHandlePrivate_.param<double>("frame_size", frameSize_, 0.1);
 
-    //tracker_->resetTracker(); // TO CHECK
-
     if (modelName_.empty ())
       throw std::runtime_error
-	("empty model\n"
-	 "Relaunch the client while setting the model_name parameter, i.e.\n"
-	 "$ rosrun visp_tracker client _model_name:=my-model"
-	 );
+        ("empty model\n"
+         "Relaunch the client while setting the model_name parameter, i.e.\n"
+         "$ rosrun visp_tracker client _model_name:=my-model"
+         );
 
     // Compute topic and services names.
 
     ros::Rate rate (1);
     while (cameraPrefix_.empty ())
-      {
-      if (!nodeHandle_.getParam ("camera_prefix", cameraPrefix_) && !ros::param::get ("~camera_prefix", cameraPrefix_))
     {
-	    ROS_WARN
-	      ("the camera_prefix parameter does not exist.\n"
-	       "This may mean that:\n"
-	       "- the tracker is not launched,\n"
-	       "- the tracker and viewer are not running in the same namespace."
-	       );
-	  }
-	else if (cameraPrefix_.empty ())
-	  {
-	    ROS_INFO
-	      ("tracker is not yet initialized, waiting...\n"
-	       "You may want to launch the client to initialize the tracker.");
-	  }
-	if (this->exiting())
-	  return;
-	rate.sleep ();
+      if (!nodeHandle_.getParam ("camera_prefix", cameraPrefix_) && !ros::param::get ("~camera_prefix", cameraPrefix_))
+      {
+        ROS_WARN
+            ("the camera_prefix parameter does not exist.\n"
+             "This may mean that:\n"
+             "- the tracker is not launched,\n"
+             "- the tracker and viewer are not running in the same namespace."
+             );
       }
+      else if (cameraPrefix_.empty ())
+      {
+        ROS_INFO
+            ("tracker is not yet initialized, waiting...\n"
+             "You may want to launch the client to initialize the tracker.");
+      }
+      if (this->exiting())
+        return;
+      rate.sleep ();
+    }
 
     rectifiedImageTopic_ =
-      ros::names::resolve(cameraPrefix_ + "/image_rect");
+        ros::names::resolve(cameraPrefix_ + "/image_rect");
     cameraInfoTopic_ =
-      ros::names::resolve(cameraPrefix_ + "/camera_info");
+        ros::names::resolve(cameraPrefix_ + "/camera_info");
 
     // Check for subscribed topics.
     checkInputs();
 
     // Camera subscriber.
     cameraSubscriber_ = imageTransport_.subscribeCamera
-      (rectifiedImageTopic_, queueSize_,
-       bindImageCallback(image_, header_, info_));
+        (rectifiedImageTopic_, queueSize_,
+         bindImageCallback(image_, header_, info_));
 
     // Model loading.
     bModelPath_ = getModelFileFromModelName(modelName_, modelPath_);
@@ -154,41 +148,29 @@ namespace visp_tracker
     // Load the 3d model.
     loadModel();
 
-    // Set callback for dynamic reconfigure.
-    // No more necessary as it is done via the reconfigure server
-//    if(trackerType_!="klt"){
-//      vpMbEdgeTracker* t = dynamic_cast<vpMbEdgeTracker*>(tracker_);
-//      t->setMovingEdge(movingEdge_);
-//    }
-
-//    if(trackerType_!="mbt"){
-//      vpMbKltTracker* t = dynamic_cast<vpMbKltTracker*>(tracker_);
-//      t->setKltOpencv(kltTracker_);
-//    }
-
     // Dynamic reconfigure.
     if(trackerType_=="mbt+klt"){ // Hybrid Tracker reconfigure
       reconfigureSrv_ = new reconfigureSrvStruct<visp_tracker::ModelBasedSettingsConfig>::reconfigureSrv_t(mutex_, nodeHandlePrivate_);
       reconfigureSrvStruct<visp_tracker::ModelBasedSettingsConfig>::reconfigureSrv_t::CallbackType f =
-        boost::bind(&reconfigureCallback, boost::ref(tracker_),
-                    boost::ref(image_), boost::ref(movingEdge_), boost::ref(kltTracker_),
-                    boost::ref(mutex_), _1, _2);
+          boost::bind(&reconfigureCallback, boost::ref(tracker_),
+                      boost::ref(image_), boost::ref(movingEdge_), boost::ref(kltTracker_),
+                      boost::ref(mutex_), _1, _2);
       reconfigureSrv_->setCallback(f);
     }
     else if(trackerType_=="mbt"){ // Edge Tracker reconfigure
       reconfigureEdgeSrv_ = new reconfigureSrvStruct<visp_tracker::ModelBasedSettingsEdgeConfig>::reconfigureSrv_t(mutex_, nodeHandlePrivate_);
       reconfigureSrvStruct<visp_tracker::ModelBasedSettingsEdgeConfig>::reconfigureSrv_t::CallbackType f =
-        boost::bind(&reconfigureEdgeCallback, boost::ref(tracker_),
-                    boost::ref(image_), boost::ref(movingEdge_),
-                    boost::ref(mutex_), _1, _2);
+          boost::bind(&reconfigureEdgeCallback, boost::ref(tracker_),
+                      boost::ref(image_), boost::ref(movingEdge_),
+                      boost::ref(mutex_), _1, _2);
       reconfigureEdgeSrv_->setCallback(f);
     }
     else{ // KLT Tracker reconfigure
       reconfigureKltSrv_ = new reconfigureSrvStruct<visp_tracker::ModelBasedSettingsKltConfig>::reconfigureSrv_t(mutex_, nodeHandlePrivate_);
       reconfigureSrvStruct<visp_tracker::ModelBasedSettingsKltConfig>::reconfigureSrv_t::CallbackType f =
-        boost::bind(&reconfigureKltCallback, boost::ref(tracker_),
-                    boost::ref(image_), boost::ref(kltTracker_),
-                    boost::ref(mutex_), _1, _2);
+          boost::bind(&reconfigureKltCallback, boost::ref(tracker_),
+                      boost::ref(image_), boost::ref(kltTracker_),
+                      boost::ref(mutex_), _1, _2);
       reconfigureKltSrv_->setCallback(f);
     }
 
@@ -202,24 +184,16 @@ namespace visp_tracker
     // Tracker initialization.
     // - Camera
     initializeVpCameraFromCameraInfo(cameraParameters_, info_);
-    tracker_->setCameraParameters(cameraParameters_);
-    tracker_->setDisplayFeatures(true);
+    tracker_.setCameraParameters(cameraParameters_);
+    tracker_.setDisplayFeatures(true);
 
     ROS_INFO_STREAM(convertVpMbTrackerToRosMessage(tracker_));
     // - Moving edges.
     if(trackerType_!="klt"){
-      // No more necessary as it has been done via the reconfigure server
-//      movingEdge_.initMask();
-//      vpMbEdgeTracker* t = dynamic_cast<vpMbEdgeTracker*>(tracker_);
-//      t->setMovingEdge(movingEdge_);
       ROS_INFO_STREAM(convertVpMeToRosMessage(tracker_, movingEdge_));
-      //movingEdge_.print();
     }
     
     if(trackerType_!="mbt"){
-      // No more necessary as it has been done via the reconfigure server
-//      vpMbKltTracker* t = dynamic_cast<vpMbKltTracker*>(tracker_);
-//      t->setKltOpencv(kltTracker_);
       ROS_INFO_STREAM(convertVpKltOpencvToRosMessage(tracker_,kltTracker_));
     }
 
@@ -262,9 +236,9 @@ namespace visp_tracker
         {
           cMo = loadInitialPose();
           startFromSavedPose_ = false;
-          tracker_->initFromPose(image_, cMo);
+          tracker_.initFromPose(image_, cMo);
         }
-        tracker_->getPose(cMo);
+        tracker_.getPose(cMo);
 
         ROS_INFO_STREAM("initial pose [tx,ty,tz,tux,tuy,tuz]:\n" << vpPoseVector(cMo).t());
 
@@ -278,10 +252,10 @@ namespace visp_tracker
           {
             vpDisplay::display(image_);
             mutex_.lock ();
-            tracker_->track(image_);
-            tracker_->getPose(cMo);
-            tracker_->display(image_, cMo, cameraParameters_,
-                              vpColor::red, 2);
+            tracker_.track(image_);
+            tracker_.getPose(cMo);
+            tracker_.display(image_, cMo, cameraParameters_,
+                             vpColor::red, 2);
             vpDisplay::displayFrame(image_, cMo, cameraParameters_,frameSize_,vpColor::none,2);
             mutex_.unlock();
             vpDisplay::displayCharString
@@ -336,8 +310,6 @@ namespace visp_tracker
   
   TrackerClient::~TrackerClient()
   {
-    delete tracker_;
-
     if(reconfigureSrv_ != NULL)
       delete reconfigureSrv_;
 
@@ -401,67 +373,64 @@ namespace visp_tracker
         throw std::runtime_error("failed to initialize tracker viewer.");
     }
     else
-       ROS_INFO("No Tracker Viewer node to initialize from service");
+      ROS_INFO("No Tracker Viewer node to initialize from service");
   }
 
   void
   TrackerClient::loadModel()
   {
     try
-      {
-	ROS_DEBUG_STREAM("Trying to load the model "
-       << bModelPath_.native());
+    {
+      ROS_DEBUG_STREAM("Trying to load the model "
+                       << bModelPath_.native());
 
-	std::string modelPath;
-	boost::filesystem::ofstream modelStream;
-	if (!makeModelFile(modelStream,
-         bModelPath_.native(),
-			   modelPath))
-	  throw std::runtime_error ("failed to retrieve model");
+      std::string modelPath;
+      boost::filesystem::ofstream modelStream;
+      if (!makeModelFile(modelStream,
+                         bModelPath_.native(),
+                         modelPath))
+        throw std::runtime_error ("failed to retrieve model");
 
-    tracker_->loadModel(modelPath);
-  ROS_INFO("Model has been successfully loaded.");
+      tracker_.loadModel(modelPath);
+      ROS_INFO("Model has been successfully loaded.");
 
-  if(trackerType_=="mbt"){
-    vpMbEdgeTracker* t = dynamic_cast<vpMbEdgeTracker*>(tracker_);
-    ROS_DEBUG_STREAM("Nb faces: "
-                     << t->getFaces().getPolygon().size());
-    ROS_DEBUG_STREAM("Nb visible faces: " << t->getFaces().getNbVisiblePolygon());
+      if(trackerType_=="mbt"){
+        ROS_DEBUG_STREAM("Nb faces: "
+                         << tracker_.getFaces().getPolygon().size());
+        ROS_DEBUG_STREAM("Nb visible faces: " << tracker_.getFaces().getNbVisiblePolygon());
 
-    std::list<vpMbtDistanceLine *> linesList;
-    t->getLline(linesList);
-    ROS_DEBUG_STREAM("Nb line: " << linesList.size());
-    ROS_DEBUG_STREAM("nline: " << t->nline);
-  }
-  else if(trackerType_=="klt"){
-    vpMbKltTracker* t = dynamic_cast<vpMbKltTracker*>(tracker_);
-    ROS_DEBUG_STREAM("Nb faces: "
-                     << t->getFaces().getPolygon().size());
-    ROS_DEBUG_STREAM("Nb visible faces: " << t->getFaces().getNbVisiblePolygon());
-    ROS_DEBUG_STREAM("Nb KLT points: " << t->getNbKltPoints());
-  }
-  else {
-    vpMbEdgeKltTracker* t = dynamic_cast<vpMbEdgeKltTracker*>(tracker_);
-    ROS_DEBUG_STREAM("Nb hidden faces: "
-                     << t->getFaces().getPolygon().size());
-    ROS_DEBUG_STREAM("Nb visible faces: " << t->getFaces().getNbVisiblePolygon());
-    ROS_DEBUG_STREAM("Nb KLT points: " << t->getNbKltPoints());
-
-    std::list<vpMbtDistanceLine *> linesList;
-    t->getLline(linesList);
-    ROS_DEBUG_STREAM("Nb line: " << linesList.size());
-    ROS_DEBUG_STREAM("nline: " << t->nline);
-  }
+        std::list<vpMbtDistanceLine *> linesList;
+        tracker_.getLline(linesList);
+        ROS_DEBUG_STREAM("Nb line: " << linesList.size());
+        //ROS_DEBUG_STREAM("nline: " << tracker_.nline);
       }
+      else if(trackerType_=="klt"){
+        ROS_DEBUG_STREAM("Nb faces: "
+                         << tracker_.getFaces().getPolygon().size());
+        ROS_DEBUG_STREAM("Nb visible faces: " << tracker_.getFaces().getNbVisiblePolygon());
+        ROS_DEBUG_STREAM("Nb KLT points: " << tracker_.getKltNbPoints());
+      }
+      else {
+        ROS_DEBUG_STREAM("Nb hidden faces: "
+                         << tracker_.getFaces().getPolygon().size());
+        ROS_DEBUG_STREAM("Nb visible faces: " << tracker_.getFaces().getNbVisiblePolygon());
+        ROS_DEBUG_STREAM("Nb KLT points: " << tracker_.getKltNbPoints());
+
+        std::list<vpMbtDistanceLine *> linesList;
+        tracker_.getLline(linesList);
+        ROS_DEBUG_STREAM("Nb line: " << linesList.size());
+        //ROS_DEBUG_STREAM("nline: " << tracker_.nline);
+      }
+    }
     catch(...)
-      {
-	boost::format fmt
-	  ("Failed to load the model %1%\n"
-	   "Do you use resource_retriever syntax?\n"
-	   "I.e. replace /my/model/path by file:///my/model/path");
-  fmt % bModelPath_;
-	throw std::runtime_error(fmt.str());
-      }
+    {
+      boost::format fmt
+          ("Failed to load the model %1%\n"
+           "Do you use resource_retriever syntax?\n"
+           "I.e. replace /my/model/path by file:///my/model/path");
+      fmt % bModelPath_;
+      throw std::runtime_error(fmt.str());
+    }
   }
 
   vpHomogeneousMatrix
@@ -506,11 +475,11 @@ namespace visp_tracker
       vpIoTools::getUserName(username);
 
       std::string filename;
-  #if defined(_WIN32)
+#if defined(_WIN32)
       filename ="C:/temp/" + username;
-  #else
+#else
       filename ="/tmp/" + username;
-  #endif
+#endif
       filename += "/" + modelName_ + ".0.pos";
       ROS_INFO_STREAM("Try to read init pose from: " << filename);
       if (vpIoTools::checkFilename(filename)) {
@@ -540,11 +509,11 @@ namespace visp_tracker
 
       // Create a log filename to save velocities...
       std::string logdirname;
-  #if defined(_WIN32)
+#if defined(_WIN32)
       logdirname ="C:/temp/" + username;
-  #else
+#else
       logdirname ="/tmp/" + username;
-  #endif
+#endif
       // Test if the output path exist. If no try to create it
       if (vpIoTools::checkDirectory(logdirname) == false) {
         try {
@@ -637,14 +606,14 @@ namespace visp_tracker
     vpImagePoint ip;
     vpMouseButton::vpMouseButtonType button = vpMouseButton::button1;
     vpDisplay::display(image_);
-    tracker_->setDisplayFeatures(false);
-    tracker_->display(image_, cMo, cameraParameters_, vpColor::green);
+    tracker_.setDisplayFeatures(false);
+    tracker_.display(image_, cMo, cameraParameters_, vpColor::green);
     vpDisplay::displayFrame(image_, cMo, cameraParameters_,frameSize_,vpColor::none,2);
     vpDisplay::displayCharString(image_, 15, 10,
-        "Left click to validate, right click to modify initial pose",
-        vpColor::red);
+                                 "Left click to validate, right click to modify initial pose",
+                                 vpColor::red);
     vpDisplay::flush(image_);
-    tracker_->setDisplayFeatures(true);
+    tracker_.setDisplayFeatures(true);
 
     do
     {
@@ -669,7 +638,7 @@ namespace visp_tracker
     vpImagePoint point (10, 10);
 
     cMo = loadInitialPose();
-    tracker_->initFromPose(image_, cMo);
+    tracker_.initFromPose(image_, cMo);
 
     // Show last cMo.
     vpImagePoint ip;
@@ -766,12 +735,12 @@ namespace visp_tracker
         vpDisplay::flush(image_);
       }
 
-      tracker_->initFromPoints(image_,imagePoints,points);
-      tracker_->getPose(cMo);
+      tracker_.initFromPoints(image_,imagePoints,points);
+      tracker_.getPose(cMo);
       if(validatePose(cMo))
         done = true;
     }
-    tracker_->initFromPose(image_, cMo);
+    tracker_.initFromPose(image_, cMo);
     saveInitialPose(cMo);
     if (initHelpDisplay != NULL)
       delete initHelpDisplay;
@@ -779,10 +748,10 @@ namespace visp_tracker
 
   void
   TrackerClient::initPoint(unsigned& i,
-			   points_t& points,
-			   imagePoints_t& imagePoints,
-			   ros::Rate& rate,
-			   vpPose& pose)
+                           points_t& points,
+                           imagePoints_t& imagePoints,
+                           ros::Rate& rate,
+                           vpPose& pose)
   {
     vpImagePoint ip;
     double x = 0., y = 0.;
@@ -792,22 +761,22 @@ namespace visp_tracker
     // Click on the point.
     vpMouseButton::vpMouseButtonType button = vpMouseButton::button1;
     do
-      {
-	vpDisplay::display(image_);
-	vpDisplay::displayCharString
-	  (image_, 15, 10,
-	   fmt.str().c_str(),
-	   vpColor::red);
+    {
+      vpDisplay::display(image_);
+      vpDisplay::displayCharString
+          (image_, 15, 10,
+           fmt.str().c_str(),
+           vpColor::red);
 
-	for (unsigned j = 0; j < imagePoints.size(); ++j)
-	  vpDisplay::displayCross(image_, imagePoints[j], 5, vpColor::green);
+      for (unsigned j = 0; j < imagePoints.size(); ++j)
+        vpDisplay::displayCross(image_, imagePoints[j], 5, vpColor::green);
 
-	vpDisplay::flush(image_);
-	ros::spinOnce();
-	rate.sleep();
-	if (exiting())
-	  return;
-      }
+      vpDisplay::flush(image_);
+      ros::spinOnce();
+      rate.sleep();
+      if (exiting())
+        return;
+    }
     while(!vpDisplay::getClick(image_, ip, button, false));
 
     imagePoints.push_back(ip);
@@ -822,19 +791,19 @@ namespace visp_tracker
   {
     ros::Rate loop_rate(10);
     while (!exiting()
-	   && (!image_.getWidth() || !image_.getHeight()))
-      {
-	ROS_INFO_THROTTLE(1, "waiting for a rectified image...");
-	ros::spinOnce();
-	loop_rate.sleep();
-      }
+           && (!image_.getWidth() || !image_.getHeight()))
+    {
+      ROS_INFO_THROTTLE(1, "waiting for a rectified image...");
+      ros::spinOnce();
+      loop_rate.sleep();
+    }
   }
 
   std::string
   TrackerClient::fetchResource(const std::string& s)
   {
     resource_retriever::MemoryResource resource =
-      resourceRetriever_.get(s);
+        resourceRetriever_.get(s);
     std::string result;
     result.resize(resource.size);
     unsigned i = 0;

@@ -15,7 +15,7 @@
 
 std::string
 getInitFileFromModelName (const std::string& modelName,
-			  const std::string& defaultPath)
+                          const std::string& defaultPath)
 {
   boost::format fmt("%1%/%2%/%2%.init");
   fmt % defaultPath % modelName;
@@ -24,7 +24,7 @@ getInitFileFromModelName (const std::string& modelName,
 
 std::string
 getHelpImageFileFromModelName (const std::string& modelName,
-        const std::string& defaultPath)
+                               const std::string& defaultPath)
 {
   boost::format fmt("%1%/%2%/%2%.ppm");
   fmt % defaultPath % modelName;
@@ -33,7 +33,7 @@ getHelpImageFileFromModelName (const std::string& modelName,
 
 std::string
 getModelFileFromModelName (const std::string& modelName,
-			   const std::string& defaultPath)
+                           const std::string& defaultPath)
 {
   boost::format fmt("%1%/%2%/%2%");
   fmt % defaultPath % modelName;
@@ -42,7 +42,7 @@ getModelFileFromModelName (const std::string& modelName,
 
 std::string
 getConfigurationFileFromModelName (const std::string& modelName,
-				   const std::string& defaultPath)
+                                   const std::string& defaultPath)
 {
   boost::format fmt("%1%/%2%/%2%.xml");
   fmt % defaultPath % modelName;
@@ -51,7 +51,7 @@ getConfigurationFileFromModelName (const std::string& modelName,
 
 std::string
 getInitialPoseFileFromModelName (const std::string& modelName,
-				 const std::string& defaultPath)
+                                 const std::string& defaultPath)
 {
   boost::format fmt("%1%/%2%/%2%.0.pos");
   fmt % defaultPath % modelName;
@@ -60,25 +60,25 @@ getInitialPoseFileFromModelName (const std::string& modelName,
 
 bool
 makeModelFile(boost::filesystem::ofstream& modelStream,
-	      std::string& fullModelPath)
+              std::string& fullModelPath)
 {
   std::string modelDescription;
   if (!ros::param::has(visp_tracker::model_description_param))
-    {
-      ROS_ERROR_STREAM("Failed to initialize: no model is provided.");
-      return false;
-    }
+  {
+    ROS_ERROR_STREAM("Failed to initialize: no model is provided.");
+    return false;
+  }
   ROS_DEBUG_STREAM("Trying to load the model from the parameter server.");
 
   ros::param::get(visp_tracker::model_description_param, modelDescription);
 
   char* tmpname = strdup("/tmp/tmpXXXXXX");
   if (mkdtemp(tmpname) == NULL)
-    {
-      ROS_ERROR_STREAM
-	("Failed to create the temporary directory: " << strerror(errno));
-      return false;
-    }
+  {
+    ROS_ERROR_STREAM
+        ("Failed to create the temporary directory: " << strerror(errno));
+    return false;
+  }
   // From the content of the model description check if the model is in vrml or in cao format
   std::string vrml_header("#VRML #vrml");
   std::string cao_header("V1");

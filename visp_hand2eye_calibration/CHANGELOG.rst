@@ -2,6 +2,26 @@
 Changelog for package visp_hand2eye_calibration
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.11.0 (2019-05-27)
+-------------------
+* Update with Melodic
+* Fix memory leak
+* Introduce vpMbGenericTracker and visp3 headers in visp_auto_tracker
+* Introduce visp3 headers
+* Code indentation
+* Introduce vpMbGenericTracker
+* Introduce vpHandEyeCalibration class
+* Fix build for melodic (Closes #88)
+* Fix compilation on 17.04 by adding missing boost/format.hpp inclusion
+* Contributors: Fabien Spindler
+
+0.10.0 (2017-02-10)
+-------------------
+* Fix catkin_lint warnings level 2
+* kinetic-0.9.3
+* Prepare changelogs
+* Contributors: Fabien Spindler
+
 0.7.0 (2014-03-12)
 ------------------
 * Merge visp_hand2eye_calibration as our subdirectory

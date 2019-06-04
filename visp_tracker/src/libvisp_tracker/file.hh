@@ -6,28 +6,28 @@
 
 std::string
 getInitFileFromModelName(const std::string& modelName,
-			 const std::string& defaultPath);
+                         const std::string& defaultPath);
 
 std::string
 getHelpImageFileFromModelName (const std::string& modelName,
-        const std::string& defaultPath);
+                               const std::string& defaultPath);
 
 std::string
 getConfigurationFileFromModelName(const std::string& modelName,
-				  const std::string& configurationName,
-				  const std::string& defaultPath);
+                                  const std::string& configurationName,
+                                  const std::string& defaultPath);
 
 std::string
 getModelFileFromModelName(const std::string& modelName,
-			  const std::string& defaultPath);
+                          const std::string& defaultPath);
 
 std::string
 getConfigurationFileFromModelName(const std::string& modelName,
-				  const std::string& defaultPath);
+                                  const std::string& defaultPath);
 
 std::string
 getInitialPoseFileFromModelName (const std::string& modelName,
-				 const std::string& defaultPath);
+                                 const std::string& defaultPath);
 
 bool
 makeModelFile(boost::filesystem::ofstream& stream, std::string& fullModelPath);

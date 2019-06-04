@@ -11,21 +11,13 @@
 
 # include <visp_tracker/Init.h>
 
-#include <visp/vpConfig.h>
-#if VISP_VERSION_INT < VP_VERSION_INT(2,10,0)
-# define protected public
-#endif
-# include <visp/vpMbEdgeTracker.h>
-# include <visp/vpMbKltTracker.h>
-# include <visp/vpMbTracker.h>
-#if VISP_VERSION_INT < VP_VERSION_INT(2,10,0)
-# undef protected
-#endif
+# include <visp3/core/vpConfig.h>
+# include <visp3/mbt/vpMbGenericTracker.h>
 
-# include <visp/vpHomogeneousMatrix.h>
-# include <visp/vpCameraParameters.h>
-# include <visp/vpMe.h>
-# include <visp/vpKltOpencv.h>
+# include <visp3/core/vpHomogeneousMatrix.h>
+# include <visp3/core/vpCameraParameters.h>
+# include <visp3/me/vpMe.h>
+# include <visp3/klt/vpKltOpencv.h>
 
 /// \brief Convert a ROS image into a ViSP one.
 ///
@@ -38,7 +30,7 @@
 /// \param dst ViSP destination image
 /// \param src ROS source image
 void rosImageToVisp(vpImage<unsigned char>& dst,
-		    const sensor_msgs::Image::ConstPtr& src);
+                    const sensor_msgs::Image::ConstPtr& src);
 
 /// \brief Convert a ViSP image into a ROS one.
 ///
@@ -51,112 +43,74 @@ void rosImageToVisp(vpImage<unsigned char>& dst,
 /// \param dst ROS destination image
 /// \param src ViSP source image
 void vispImageToRos(sensor_msgs::Image& dst,
-		    const vpImage<unsigned char>& src);
+                    const vpImage<unsigned char>& src);
 
-std::string convertVpMbTrackerToRosMessage(const vpMbTracker* tracker);
+std::string convertVpMbTrackerToRosMessage(const vpMbGenericTracker &tracker);
 
-std::string convertVpMeToRosMessage(const vpMbTracker* tracker, const vpMe& moving_edge);
+std::string convertVpMeToRosMessage(const vpMbGenericTracker &tracker, const vpMe& moving_edge);
 
-std::string convertVpKltOpencvToRosMessage(const vpMbTracker* tracker, const vpKltOpencv& klt);
+std::string convertVpKltOpencvToRosMessage(const vpMbGenericTracker &tracker, const vpKltOpencv& klt);
 
 void vpHomogeneousMatrixToTransform(geometry_msgs::Transform& dst,
-				    const vpHomogeneousMatrix& src);
+                                    const vpHomogeneousMatrix& src);
 
 void transformToVpHomogeneousMatrix(vpHomogeneousMatrix& dst,
-				    const geometry_msgs::Transform& src);
+                                    const geometry_msgs::Transform& src);
 
 void transformToVpHomogeneousMatrix(vpHomogeneousMatrix& dst,
-				    const tf::Transform& src);
+                                    const tf::Transform& src);
 
 void transformToVpHomogeneousMatrix(vpHomogeneousMatrix& dst,
-				    const geometry_msgs::Pose& src);
+                                    const geometry_msgs::Pose& src);
 
-void convertVpMbTrackerToInitRequest(const vpMbTracker* tracker,
-            visp_tracker::Init& srv);
+void convertVpMbTrackerToInitRequest(const vpMbGenericTracker &tracker,
+                                     visp_tracker::Init& srv);
 
 void convertInitRequestToVpMbTracker(const visp_tracker::Init::Request& req,
-            vpMbTracker* tracker);
+                                     vpMbGenericTracker &tracker);
 
 void convertVpMeToInitRequest(const vpMe& moving_edge,
-			      const vpMbTracker* tracker,
-			      visp_tracker::Init& srv);
+                              const vpMbGenericTracker &tracker,
+                              visp_tracker::Init& srv);
 
 void convertInitRequestToVpMe(const visp_tracker::Init::Request& req,
-			      vpMbTracker* tracker,
-			      vpMe& moving_edge);
+                              vpMbGenericTracker &tracker,
+                              vpMe& moving_edge);
 
 void convertVpKltOpencvToInitRequest(const vpKltOpencv& klt,
-            const vpMbTracker* tracker,
-            visp_tracker::Init& srv);
+                                     const vpMbGenericTracker &tracker,
+                                     visp_tracker::Init& srv);
 
 void convertInitRequestToVpKltOpencv(const visp_tracker::Init::Request& req,
-            vpMbTracker* tracker,
-            vpKltOpencv& klt);
+                                     vpMbGenericTracker &tracker,
+                                     vpKltOpencv& klt);
 
 void initializeVpCameraFromCameraInfo(vpCameraParameters& cam,
-              sensor_msgs::CameraInfoConstPtr info);
+                                      sensor_msgs::CameraInfoConstPtr info);
 
 // Dynamic reconfigure template functions
 template<class ConfigType>
 void convertModelBasedSettingsConfigToVpMbTracker(const ConfigType& config,
-                                                  vpMbTracker* tracker)
+                                                  vpMbGenericTracker &tracker)
 {
-#if VISP_VERSION_INT >= VP_VERSION_INT(2,10,0)
-  tracker->setAngleAppear(vpMath::rad(config.angle_appear));
-  tracker->setAngleDisappear(vpMath::rad(config.angle_disappear));
-#else
-  vpMbEdgeTracker* tracker_edge = dynamic_cast<vpMbEdgeTracker*>(tracker);
-  if (tracker_edge != NULL) { // Also valid when hybrid
-    ROS_INFO("Set param angle from edge");
-    tracker_edge->setAngleAppear(vpMath::rad(config.angle_appear));
-    tracker_edge->setAngleDisappear(vpMath::rad(config.angle_disappear));
-  }
-  else {
-    vpMbKltTracker* tracker_klt = dynamic_cast<vpMbKltTracker*>(tracker);
-    if (tracker_klt != NULL) {
-      ROS_INFO("Set param angle from klt");
-      tracker_klt->setAngleAppear(vpMath::rad(config.angle_appear));
-      tracker_klt->setAngleDisappear(vpMath::rad(config.angle_disappear));
-    }
-  }
-#endif
+  tracker.setAngleAppear(vpMath::rad(config.angle_appear));
+  tracker.setAngleDisappear(vpMath::rad(config.angle_disappear));
 }
 
 template<class ConfigType>
-void convertVpMbTrackerToModelBasedSettingsConfig(const vpMbTracker* tracker,
+void convertVpMbTrackerToModelBasedSettingsConfig(const vpMbGenericTracker &tracker,
                                                   ConfigType& config)
 {
-#if VISP_VERSION_INT >= VP_VERSION_INT(2,10,0)
-  config.angle_appear = vpMath::deg(tracker->getAngleAppear());
-  config.angle_disappear = vpMath::deg(tracker->getAngleDisappear());
-#else
-  const vpMbEdgeTracker* tracker_edge = dynamic_cast<const vpMbEdgeTracker*>(tracker);
-  if (tracker_edge != NULL) {
-    ROS_INFO("Modif config param angle from edge");
-    config.angle_appear = vpMath::deg(tracker_edge->getAngleAppear());
-    config.angle_disappear = vpMath::deg(tracker_edge->getAngleDisappear());
-  }
-  else {
-    const vpMbKltTracker* tracker_klt = dynamic_cast<const vpMbKltTracker*>(tracker);
-    if (tracker_klt != NULL) {
-      ROS_INFO("Modif config param angle from klt");
-      config.angle_appear = vpMath::deg(tracker_klt->getAngleAppear());
-      config.angle_disappear = vpMath::deg(tracker_klt->getAngleDisappear());
-    }
-  }
-#endif
+  config.angle_appear = vpMath::deg(tracker.getAngleAppear());
+  config.angle_disappear = vpMath::deg(tracker.getAngleDisappear());
 }
 
 template<class ConfigType>
 void convertModelBasedSettingsConfigToVpMe(const ConfigType& config,
-           vpMe& moving_edge,
-           vpMbTracker* tracker)
+                                           vpMe& moving_edge,
+                                           vpMbGenericTracker &tracker)
 {
-  vpMbEdgeTracker* t = dynamic_cast<vpMbEdgeTracker*>(tracker);
-
-
-#if VISP_VERSION_INT >= VP_VERSION_INT(2,10,0)
-  t->setGoodMovingEdgesRatioThreshold(config.first_threshold);
+  tracker.setGoodMovingEdgesRatioThreshold(config.first_threshold);
   moving_edge.setThreshold( config.threshold );
   moving_edge.setMaskSize( config.mask_size );
   moving_edge.setRange( config.range );
@@ -164,33 +118,19 @@ void convertModelBasedSettingsConfigToVpMe(const ConfigType& config,
   moving_edge.setMu2( config.mu2 );
   moving_edge.setSampleStep( config.sample_step );
   moving_edge.setStrip( config.strip );
-#else
-  t->setFirstThreshold(config.first_threshold);
-  moving_edge.threshold = config.threshold;
-  moving_edge.mask_size = config.mask_size;
-  moving_edge.range = config.range;
-  moving_edge.mu1 = config.mu1;
-  moving_edge.mu2 = config.mu2;
-  moving_edge.sample_step = config.sample_step;
-  moving_edge.strip = config.strip;
-#endif
 
   //FIXME: not sure if this is needed.
   moving_edge.initMask();
   //Reset the tracker and the node state.
-  t->setMovingEdge(moving_edge);
+  tracker.setMovingEdge(moving_edge);
 }
 
 template<class ConfigType>
 void convertVpMeToModelBasedSettingsConfig(const vpMe& moving_edge,
-           const vpMbTracker* tracker,
-           ConfigType& config)
+                                           const vpMbGenericTracker &tracker,
+                                           ConfigType& config)
 {
-  const vpMbEdgeTracker* t = dynamic_cast<const vpMbEdgeTracker*>(tracker);
-
-
-#if VISP_VERSION_INT >= VP_VERSION_INT(2,10,0)
-  config.first_threshold = t->getGoodMovingEdgesRatioThreshold();
+  config.first_threshold = tracker.getGoodMovingEdgesRatioThreshold();
   config.threshold = moving_edge.getThreshold();
   config.mask_size = moving_edge.getMaskSize();
   config.range = moving_edge.getRange();
@@ -198,25 +138,13 @@ void convertVpMeToModelBasedSettingsConfig(const vpMe& moving_edge,
   config.mu2 = moving_edge.getMu2();
   config.sample_step = moving_edge.getSampleStep();
   config.strip = moving_edge.getStrip();
-#else
-  config.first_threshold = t->getFirstThreshold();
-  config.threshold = moving_edge.threshold;
-  config.mask_size = moving_edge.mask_size;
-  config.range = moving_edge.range;
-  config.mu1 = moving_edge.mu1;
-  config.mu2 = moving_edge.mu2;
-  config.sample_step = moving_edge.sample_step;
-  config.strip = moving_edge.strip;
-#endif
 }
 
 template<class ConfigType>
 void convertModelBasedSettingsConfigToVpKltOpencv(const ConfigType& config,
-           vpKltOpencv& klt,
-           vpMbTracker* tracker)
+                                                  vpKltOpencv& klt,
+                                                  vpMbGenericTracker &tracker)
 {
-  vpMbKltTracker* t = dynamic_cast<vpMbKltTracker*>(tracker);
-
   klt.setMaxFeatures(config.max_features);
   klt.setWindowSize(config.window_size);
   klt.setQuality(config.quality);
@@ -224,18 +152,16 @@ void convertModelBasedSettingsConfigToVpKltOpencv(const ConfigType& config,
   klt.setHarrisFreeParameter(config.harris);
   klt.setBlockSize(config.size_block);
   klt.setPyramidLevels(config.pyramid_lvl);
-  t->setMaskBorder((unsigned)config.mask_border);
+  tracker.setKltMaskBorder((unsigned)config.mask_border);
 
-  t->setKltOpencv(klt);
+  tracker.setKltOpencv(klt);
 }
 
 template<class ConfigType>
 void convertVpKltOpencvToModelBasedSettingsConfig(const vpKltOpencv& klt,
-           const vpMbTracker* tracker,
-           ConfigType& config)
+                                                  const vpMbGenericTracker &tracker,
+                                                  ConfigType& config)
 {
-  const vpMbKltTracker* t = dynamic_cast<const vpMbKltTracker*>(tracker);
-
   config.max_features = klt.getMaxFeatures();
   config.window_size = klt.getWindowSize();
   config.quality = klt.getQuality();
@@ -243,7 +169,7 @@ void convertVpKltOpencvToModelBasedSettingsConfig(const vpKltOpencv& klt,
   config.harris = klt.getHarrisFreeParameter();
   config.size_block = klt.getBlockSize();
   config.pyramid_lvl = klt.getPyramidLevels();
-  config.mask_border = t->getMaskBorder();
+  config.mask_border = tracker.getKltMaskBorder();
 }
 
 #endif //! VISP_TRACKER_CONVERSION_HH

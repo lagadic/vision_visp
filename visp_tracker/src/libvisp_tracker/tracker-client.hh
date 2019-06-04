@@ -25,13 +25,13 @@
 # include <visp_tracker/ModelBasedSettingsEdgeConfig.h>
 # include <visp_tracker/MovingEdgeSites.h>
 
-# include <visp/vpCameraParameters.h>
-# include <visp/vpHomogeneousMatrix.h>
-# include <visp/vpImage.h>
-# include <visp/vpMbTracker.h>
-# include <visp/vpMe.h>
-# include <visp/vpKltOpencv.h>
-# include <visp/vpPose.h>
+# include <visp3/core/vpCameraParameters.h>
+# include <visp3/core/vpHomogeneousMatrix.h>
+# include <visp3/core/vpImage.h>
+# include <visp3/mbt/vpMbGenericTracker.h>
+# include <visp3/me/vpMe.h>
+# include <visp3/klt/vpKltOpencv.h>
+# include <visp3/vision/vpPose.h>
 
 
 namespace visp_tracker
@@ -49,9 +49,9 @@ namespace visp_tracker
     };
 
     TrackerClient(ros::NodeHandle& nh,
-		  ros::NodeHandle& privateNh,
-		  volatile bool& exiting,
-		  unsigned queueSize = 5u);
+                  ros::NodeHandle& privateNh,
+                  volatile bool& exiting,
+                  unsigned queueSize = 5u);
     
     ~TrackerClient();
 
@@ -69,10 +69,10 @@ namespace visp_tracker
 
     void init();
     void initPoint(unsigned& i,
-		   points_t& points,
-		   imagePoints_t& imagePoints,
-		   ros::Rate& rate,
-		   vpPose& pose);
+                   points_t& points,
+                   imagePoints_t& imagePoints,
+                   ros::Rate& rate,
+                   vpPose& pose);
 
 
     void waitForImage();
@@ -81,8 +81,8 @@ namespace visp_tracker
 
     std::string fetchResource(const std::string&);
     bool makeModelFile(boost::filesystem::ofstream& modelStream,
-		       const std::string& resourcePath,
-		       std::string& fullModelPath);
+                       const std::string& resourcePath,
+                       std::string& fullModelPath);
 
   private:
     bool exiting ()
@@ -127,7 +127,7 @@ namespace visp_tracker
     vpMe movingEdge_;
     vpKltOpencv kltTracker_;
     vpCameraParameters cameraParameters_;
-    vpMbTracker *tracker_;
+    vpMbGenericTracker tracker_;
 
     bool startFromSavedPose_;
     bool confirmInit_;

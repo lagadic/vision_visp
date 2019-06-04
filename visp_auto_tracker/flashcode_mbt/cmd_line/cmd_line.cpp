@@ -1,68 +1,68 @@
 #include "cmd_line.h"
 #include <iostream>
 #include <fstream>
-#include <visp/vpConfig.h>
-#include <visp/vpIoTools.h>
-#include <visp/vpMbEdgeTracker.h>
+#include <visp3/core/vpConfig.h>
+#include <visp3/core/vpIoTools.h>
+#include <visp3/mbt/vpMbGenericTracker.h>
 
 void CmdLine::common(){
   po::options_description general("General options");
 
-      general.add_options()
-          ("dmtxonly,d", "only detect the datamatrix")
-          ("video-camera,C", "video from camera")
-          ("video-source,s", po::value<std::string>(&video_channel_)->default_value("/dev/video1"),"video source. For example /dev/video1")
-          ("data-directory,D", po::value<std::string>(&data_dir_)->default_value("./data/"),"directory from which to load images")
-          ("video-input-path,J", po::value<std::string>(&input_file_pattern_)->default_value("/images/%08d.jpg"),"input video file path relative to the data directory")
-          ("video-output-path,L", po::value<std::string>(&log_file_pattern_),"output video file path relative to the data directory")
-          ("single-image,I", po::value<std::string>(&single_image_name_),"load this single image (relative to data dir)")
-          ("pattern-name,P", po::value<std::string>(&pattern_name_)->default_value("pattern"),"name of xml,init and wrl files")
-          ("detector-type,r", po::value<std::string>()->default_value("zbar"),"Type of your detector that will be used for initialisation/recovery. zbar for QRcodes and more, dmtx for flashcodes.")
-          ("tracker-type,t", po::value<std::string>()->default_value("klt_mbt"),"Type of tracker. mbt_klt for hybrid: mbt+klt, mbt for model based, klt for klt-based")
-          ("verbose,v", po::value< bool >(&verbose_)->default_value(false)->composing(), "Enable or disable additional printings")
-          ("dmx-detector-timeout,T", po::value<int>(&dmx_timeout_)->default_value(1000), "timeout for datamatrix detection in ms")
-          ("config-file,c", po::value<std::string>(&config_file)->default_value("./data/config.cfg"), "config file for the program")
-          ("show-fps,f", po::value< bool >(&show_fps_)->default_value(false)->composing(), "show framerate")
-          ("show-plot,p", po::value< bool >(&show_plot_)->default_value(false)->composing(), "show variances graph")
-          ("code-message,m", po::value<std::string>(&code_message_)->default_value(""), "Target code message")
+  general.add_options()
+      ("dmtxonly,d", "only detect the datamatrix")
+      ("video-camera,C", "video from camera")
+      ("video-source,s", po::value<std::string>(&video_channel_)->default_value("/dev/video1"),"video source. For example /dev/video1")
+      ("data-directory,D", po::value<std::string>(&data_dir_)->default_value("./data/"),"directory from which to load images")
+      ("video-input-path,J", po::value<std::string>(&input_file_pattern_)->default_value("/images/%08d.jpg"),"input video file path relative to the data directory")
+      ("video-output-path,L", po::value<std::string>(&log_file_pattern_),"output video file path relative to the data directory")
+      ("single-image,I", po::value<std::string>(&single_image_name_),"load this single image (relative to data dir)")
+      ("pattern-name,P", po::value<std::string>(&pattern_name_)->default_value("pattern"),"name of xml,init and wrl files")
+      ("detector-type,r", po::value<std::string>()->default_value("zbar"),"Type of your detector that will be used for initialisation/recovery. zbar for QRcodes and more, dmtx for flashcodes.")
+      ("tracker-type,t", po::value<std::string>()->default_value("klt_mbt"),"Type of tracker. mbt_klt for hybrid: mbt+klt, mbt for model based, klt for klt-based")
+      ("verbose,v", po::value< bool >(&verbose_)->default_value(false)->composing(), "Enable or disable additional printings")
+      ("dmx-detector-timeout,T", po::value<int>(&dmx_timeout_)->default_value(1000), "timeout for datamatrix detection in ms")
+      ("config-file,c", po::value<std::string>(&config_file)->default_value("./data/config.cfg"), "config file for the program")
+      ("show-fps,f", po::value< bool >(&show_fps_)->default_value(false)->composing(), "show framerate")
+      ("show-plot,p", po::value< bool >(&show_plot_)->default_value(false)->composing(), "show variances graph")
+      ("code-message,m", po::value<std::string>(&code_message_)->default_value(""), "Target code message")
 
-          ("help", "produce help message")
-          ;
+      ("help", "produce help message")
+      ;
 
-      po::options_description configuration("Configuration");
-      configuration.add_options()
-          ("flashcode-coordinates,F",
-          po::value< std::vector<double> >(&flashcode_coordinates)->multitoken()->composing(),
-          "3D coordinates of the flashcode in clockwise order")
-          ("inner-coordinates,i",
-                          po::value< std::vector<double> >(&inner_coordinates)->multitoken()->composing(),
-                          "3D coordinates of the inner region in clockwise order")
-          ("outer-coordinates,o",
-                      po::value< std::vector<double> >(&outer_coordinates)->multitoken()->composing(),
-                      "3D coordinates of the outer region in clockwise order")
-          ("variance-file,V", po::value< std::string >(&var_file_)->composing(), "file to store variance values")
-          ("variance-limit,l", po::value< double >(&var_limit_)->composing(),
-              "above this limit the tracker will be considered lost and the pattern will be detected with the flascode")
-          ("mbt-convergence-steps,S", po::value< int >(&mbt_convergence_steps_)->default_value(1)->composing(),
-              "when a new model is detected, how many tracking iterations should the tracker perform so the model matches the projection.")
-          ("hinkley-range,H",
-                            po::value< std::vector<double> >(&hinkley_range_)->multitoken()->composing(),
-                            "pair of alpha, delta values describing the two hinkley tresholds")
-          ("mbt-dynamic-range,R", po::value< double >(&mbt_dynamic_range_)->composing(),
-                    "Adapt mbt range to symbol size. The width of the outer black corner is multiplied by this value to get the mbt range. Try 0.2")
-          ("ad-hoc-recovery,W", po::value< bool >(&adhoc_recovery_)->default_value(true)->composing(), "Enable or disable ad-hoc recovery")
-          ("ad-hoc-recovery-display,D", po::value< bool >(&adhoc_recovery_display_)->default_value(false)->composing(), "Enable or disable ad-hoc recovery display")
-          ("ad-hoc-recovery-ratio,y", po::value< double >(&adhoc_recovery_ratio_)->default_value(0.5)->composing(),
-              "use ad-hoc recovery based on the model. The tracker will look for black pixels at ratio*[pattern size] from the center")
-          ("ad-hoc-recovery-size,w", po::value< double >(&adhoc_recovery_size_)->default_value(0.5)->composing(),
-                    "fraction of the black outer band size. The control points (those that should be black and in that way check tracking is still there).")
-          ("ad-hoc-recovery-threshold,Y", po::value< unsigned int >(&adhoc_recovery_treshold_)->default_value(100)->composing(),
-              "Threshold over which the point is considered out of the black area of the object")
-          ("log-checkpoints,g","log checkpoints in the log file")
-          ("log-pose,q", po::value< bool >(&log_pose_)->default_value(false)->composing(),"log pose in the log file")
-          ;
-      prog_args.add(general);
-      prog_args.add(configuration);
+  po::options_description configuration("Configuration");
+  configuration.add_options()
+      ("flashcode-coordinates,F",
+       po::value< std::vector<double> >(&flashcode_coordinates)->multitoken()->composing(),
+       "3D coordinates of the flashcode in clockwise order")
+      ("inner-coordinates,i",
+       po::value< std::vector<double> >(&inner_coordinates)->multitoken()->composing(),
+       "3D coordinates of the inner region in clockwise order")
+      ("outer-coordinates,o",
+       po::value< std::vector<double> >(&outer_coordinates)->multitoken()->composing(),
+       "3D coordinates of the outer region in clockwise order")
+      ("variance-file,V", po::value< std::string >(&var_file_)->composing(), "file to store variance values")
+      ("variance-limit,l", po::value< double >(&var_limit_)->composing(),
+       "above this limit the tracker will be considered lost and the pattern will be detected with the flascode")
+      ("mbt-convergence-steps,S", po::value< int >(&mbt_convergence_steps_)->default_value(1)->composing(),
+       "when a new model is detected, how many tracking iterations should the tracker perform so the model matches the projection.")
+      ("hinkley-range,H",
+       po::value< std::vector<double> >(&hinkley_range_)->multitoken()->composing(),
+       "pair of alpha, delta values describing the two hinkley tresholds")
+      ("mbt-dynamic-range,R", po::value< double >(&mbt_dynamic_range_)->composing(),
+       "Adapt mbt range to symbol size. The width of the outer black corner is multiplied by this value to get the mbt range. Try 0.2")
+      ("ad-hoc-recovery,W", po::value< bool >(&adhoc_recovery_)->default_value(true)->composing(), "Enable or disable ad-hoc recovery")
+      ("ad-hoc-recovery-display,D", po::value< bool >(&adhoc_recovery_display_)->default_value(false)->composing(), "Enable or disable ad-hoc recovery display")
+      ("ad-hoc-recovery-ratio,y", po::value< double >(&adhoc_recovery_ratio_)->default_value(0.5)->composing(),
+       "use ad-hoc recovery based on the model. The tracker will look for black pixels at ratio*[pattern size] from the center")
+      ("ad-hoc-recovery-size,w", po::value< double >(&adhoc_recovery_size_)->default_value(0.5)->composing(),
+       "fraction of the black outer band size. The control points (those that should be black and in that way check tracking is still there).")
+      ("ad-hoc-recovery-threshold,Y", po::value< unsigned int >(&adhoc_recovery_treshold_)->default_value(100)->composing(),
+       "Threshold over which the point is considered out of the black area of the object")
+      ("log-checkpoints,g","log checkpoints in the log file")
+      ("log-pose,q", po::value< bool >(&log_pose_)->default_value(false)->composing(),"log pose in the log file")
+      ;
+  prog_args.add(general);
+  prog_args.add(configuration);
 }
 void CmdLine::loadConfig(std::string& config_file){
   std::ifstream in( config_file.c_str() );
@@ -89,39 +89,39 @@ void CmdLine::loadConfig(std::string& config_file){
   }
 
   if(get_verbose()){
-      std::cout << "Loaded " << flashcode_points_3D_.size() << " flashcode extremity points, " << inner_points_3D_.size() << " inner contour points and " << outer_points_3D_.size() << " outer contour points." << std::endl;
-      std::cout << "Tracker set to:";
-      switch(get_tracker_type()){
-        case MBT:
-          std::cout << "model based tracker";
-          break;
-        case KLT_MBT:
-          std::cout << "hybrid (mbt+klt)";
-          break;
-        case KLT:
-          std::cout << "tracker with klt points";
-          break;
-      }
-      std::cout << std::endl;
+    std::cout << "Loaded " << flashcode_points_3D_.size() << " flashcode extremity points, " << inner_points_3D_.size() << " inner contour points and " << outer_points_3D_.size() << " outer contour points." << std::endl;
+    std::cout << "Tracker set to:";
+    switch(get_tracker_type()){
+    case MBT:
+      std::cout << "model based tracker";
+      break;
+    case KLT_MBT:
+      std::cout << "hybrid (mbt+klt)";
+      break;
+    case KLT:
+      std::cout << "tracker with klt points";
+      break;
+    }
+    std::cout << std::endl;
 
-      std::cout << "Detector set to:";
-      switch(get_detector_type()){
-        case ZBAR:
-          std::cout << "QR code";
-          break;
-        case DMTX:
-          std::cout << "Datamatrix (flashcode)";
-          break;
-      }
-      std::cout << std::endl;
+    std::cout << "Detector set to:";
+    switch(get_detector_type()){
+    case ZBAR:
+      std::cout << "QR code";
+      break;
+    case DMTX:
+      std::cout << "Datamatrix (flashcode)";
+      break;
+    }
+    std::cout << std::endl;
 
   }
 
   if(using_var_file())
     std::cout << "Using variance file:" << get_var_file() << std::endl;
   if (vm_.count("help")) {
-      std::cout << prog_args << std::endl;
-      should_exit_ = true;
+    std::cout << prog_args << std::endl;
+    should_exit_ = true;
 
   }
 }
@@ -183,7 +183,7 @@ double CmdLine:: get_hinkley_alpha() const{
 
 double CmdLine:: get_hinkley_delta() const{
   if(!using_hinkley())
-      throw std::exception();
+    throw std::exception();
   return hinkley_range_[1];
 }
 

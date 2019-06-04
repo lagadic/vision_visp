@@ -13,7 +13,7 @@ int main(int argc, char **argv)
   nodelet::V_string nargv;
 
   nodelet.load
-    (ros::this_node::getName (), "visp_tracker/Tracker", remap, nargv);
+      (ros::this_node::getName (), "visp_tracker/Tracker", remap, nargv);
 
   ros::spin();
 

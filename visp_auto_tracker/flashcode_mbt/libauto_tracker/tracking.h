@@ -11,17 +11,15 @@
 //front-end
 #include <boost/msm/front/state_machine_def.hpp>
 #include <boost/array.hpp>
-#include <visp/vpImage.h>
 
+#include <visp3/core/vpImage.h>
+#include <visp3/core/vpRGBa.h>
+#include <visp3/core/vpHomogeneousMatrix.h>
+#include <visp3/core/vpCameraParameters.h>
 
-#include <visp/vpImage.h>
-#include <visp/vpRGBa.h>
-#include <visp/vpHomogeneousMatrix.h>
-#include <visp/vpCameraParameters.h>
-
-#include <visp/vpDisplay.h>
-#include <visp/vpHinkley.h>
-#include <visp/vpMe.h>
+#include <visp3/core/vpDisplay.h>
+#include <visp3/core/vpHinkley.h>
+#include <visp3/me/vpMe.h>
 #include <vector>
 #include <fstream>
 
@@ -48,12 +46,12 @@ namespace tracking{
   public:
     typedef struct {
       boost::accumulators::accumulator_set<
-        double,
-        boost::accumulators::stats<
-          boost::accumulators::tag::median(boost::accumulators::with_p_square_quantile),
-          boost::accumulators::tag::max,
-          boost::accumulators::tag::mean
-        >
+      double,
+      boost::accumulators::stats<
+      boost::accumulators::tag::median(boost::accumulators::with_p_square_quantile),
+      boost::accumulators::tag::max,
+      boost::accumulators::tag::mean
+      >
       > var,var_x,var_y,var_z,var_wx,var_wy,var_wz,checkpoints;
 
     } statistics_t;
@@ -118,11 +116,9 @@ namespace tracking{
 
     //constructor
     //inits tracker from a detector, a visp tracker
-#if VISP_VERSION_INT < VP_VERSION_INT(2,10,0)
-    Tracker_(CmdLine& cmd, detectors::DetectorBase* detector,vpMbTracker* tracker_,bool flush_display = true);
-#else
-    Tracker_(CmdLine& cmd, vpDetectorBase* detector,vpMbTracker* tracker_,bool flush_display = true);
-#endif
+
+    Tracker_(CmdLine& cmd, vpDetectorBase* detector, vpMbTracker *tracker_, bool flush_display = true);
+
     typedef WaitingForInput initial_state;      //initial state of our state machine tracker
 
     //Guards
@@ -145,41 +141,41 @@ namespace tracking{
 
     //here is how the tracker works
     struct transition_table : mpl::vector<
-      //    Start               Event              Target                       Action                         Guard
-      //   +------------------+--------------------+-----------------------+------------------------------+------------------------------+
-      g_row< WaitingForInput  , input_ready        , WaitingForInput       ,                               &Tracker_::no_input_selected    >,
-      //   +------------------+--------------------+-----------------------+------------------------------+------------------------------+
-      g_row< WaitingForInput  , input_ready        , DetectFlashcode       ,                               &Tracker_::input_selected       >,
-      //   +------------------+--------------------+-----------------------+------------------------------+------------------------------+
-       _row< WaitingForInput  , select_input       , DetectFlashcode                                                                       >,
-      //   +------------------+--------------------+-----------------------+------------------------------+------------------------------+
-       _row< DetectFlashcode  , input_ready        , DetectFlashcode                                        /* default behaviour */        >,
-      //   +------------------+--------------------+-----------------------+------------------------------+------------------------------+
+        //    Start               Event              Target                       Action                         Guard
+        //   +------------------+--------------------+-----------------------+------------------------------+------------------------------+
+        g_row< WaitingForInput  , input_ready        , WaitingForInput       ,                               &Tracker_::no_input_selected    >,
+        //   +------------------+--------------------+-----------------------+------------------------------+------------------------------+
+        g_row< WaitingForInput  , input_ready        , DetectFlashcode       ,                               &Tracker_::input_selected       >,
+        //   +------------------+--------------------+-----------------------+------------------------------+------------------------------+
+        _row< WaitingForInput  , select_input       , DetectFlashcode                                                                       >,
+        //   +------------------+--------------------+-----------------------+------------------------------+------------------------------+
+        _row< DetectFlashcode  , input_ready        , DetectFlashcode                                        /* default behaviour */        >,
+        //   +------------------+--------------------+-----------------------+------------------------------+------------------------------+
         row< DetectFlashcode  , input_ready        , DetectModel           , &Tracker_::find_flashcode_pos,&Tracker_::flashcode_detected   >,
-      //   +------------------+--------------------+-----------------------+------------------------------+------------------------------+
-       _row< DetectModel      , msm::front::none   , DetectFlashcode                                          /* default behaviour */      >,
-      //   +------------------+--------------------+-----------------------+------------------------------+------------------------------+
-      g_row< DetectModel      , msm::front::none   , TrackModel            ,                               &Tracker_::model_detected       >,
-      //   +------------------+--------------------+-----------------------+------------------------------+------------------------------+
-       _row< TrackModel       , input_ready        , ReDetectFlashcode                                        /* default behaviour */      >,
-      //   +------------------+--------------------+-----------------------+------------------------------+------------------------------+
+        //   +------------------+--------------------+-----------------------+------------------------------+------------------------------+
+        _row< DetectModel      , msm::front::none   , DetectFlashcode                                          /* default behaviour */      >,
+        //   +------------------+--------------------+-----------------------+------------------------------+------------------------------+
+        g_row< DetectModel      , msm::front::none   , TrackModel            ,                               &Tracker_::model_detected       >,
+        //   +------------------+--------------------+-----------------------+------------------------------+------------------------------+
+        _row< TrackModel       , input_ready        , ReDetectFlashcode                                        /* default behaviour */      >,
+        //   +------------------+--------------------+-----------------------+------------------------------+------------------------------+
         row< TrackModel       , input_ready        , TrackModel            , &Tracker_::track_model       ,&Tracker_::mbt_success          >,
-      //   +------------------+--------------------+-----------------------+------------------------------+------------------------------+
-       _row< ReDetectFlashcode, input_ready        , DetectFlashcode                                        /* default behaviour */        >,
-      //   +------------------+--------------------+-----------------------+------------------------------+------------------------------+
+        //   +------------------+--------------------+-----------------------+------------------------------+------------------------------+
+        _row< ReDetectFlashcode, input_ready        , DetectFlashcode                                        /* default behaviour */        >,
+        //   +------------------+--------------------+-----------------------+------------------------------+------------------------------+
         row< ReDetectFlashcode, input_ready        , DetectModel           , &Tracker_::find_flashcode_pos,&Tracker_::flashcode_redetected >,
-      //   +------------------+--------------------+-----------------------+------------------------------+------------------------------+
-      //row< ReDetectFlashcode, input_ready        , TrackModel            , &Tracker_::track_model       ,&Tracker_::mbt_success          >,
-      //   +------------------+--------------------+-----------------------+------------------------------+------------------------------+
-       _row< TrackModel       , finished           , Finished                                                                              >,
-      //   +------------------+--------------------+-----------------------+------------------------------+------------------------------+
-       _row< DetectModel      , finished           , Finished                                                                              >,
-      //   +------------------+--------------------+-----------------------+------------------------------+------------------------------+
-       _row< DetectFlashcode  , finished           , Finished                                                                              >,
-      //   +------------------+--------------------+-----------------------+------------------------------+------------------------------+
-       _row< ReDetectFlashcode, finished           , Finished                                                                              >
-      //   +------------------+--------------------+-----------------------+------------------------------+------------------------------+
-      > {};
+        //   +------------------+--------------------+-----------------------+------------------------------+------------------------------+
+        //row< ReDetectFlashcode, input_ready        , TrackModel            , &Tracker_::track_model       ,&Tracker_::mbt_success          >,
+        //   +------------------+--------------------+-----------------------+------------------------------+------------------------------+
+        _row< TrackModel       , finished           , Finished                                                                              >,
+        //   +------------------+--------------------+-----------------------+------------------------------+------------------------------+
+        _row< DetectModel      , finished           , Finished                                                                              >,
+        //   +------------------+--------------------+-----------------------+------------------------------+------------------------------+
+        _row< DetectFlashcode  , finished           , Finished                                                                              >,
+        //   +------------------+--------------------+-----------------------+------------------------------+------------------------------+
+        _row< ReDetectFlashcode, finished           , Finished                                                                              >
+        //   +------------------+--------------------+-----------------------+------------------------------+------------------------------+
+        > {};
 
   };
 

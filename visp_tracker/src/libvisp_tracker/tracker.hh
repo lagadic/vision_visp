@@ -24,14 +24,12 @@
 # include <visp_tracker/MovingEdgeSites.h>
 # include <visp_tracker/KltPoints.h>
 
-# include <visp/vpCameraParameters.h>
-# include <visp/vpHomogeneousMatrix.h>
-# include <visp/vpImage.h>
+# include <visp3/core/vpCameraParameters.h>
+# include <visp3/core/vpHomogeneousMatrix.h>
+# include <visp3/core/vpImage.h>
+# include <visp3/mbt/vpMbGenericTracker.h>
+# include <visp3/me/vpMe.h>
 
-# include <visp/vpMbTracker.h>
-# include <visp/vpMbEdgeKltTracker.h>
-
-# include <visp/vpMe.h>
 # include <string>
 
 namespace visp_tracker
@@ -42,7 +40,7 @@ namespace visp_tracker
     typedef vpImage<unsigned char> image_t;
 
     typedef boost::function<bool (visp_tracker::Init::Request&,
-          visp_tracker::Init::Response& res)>
+                                  visp_tracker::Init::Response& res)>
     initCallback_t;
 
     template<class ConfigType>
@@ -51,24 +49,24 @@ namespace visp_tracker
     };
 
     enum State
-      {
-	WAITING_FOR_INITIALIZATION,
-	TRACKING,
-	LOST
-      };
+    {
+      WAITING_FOR_INITIALIZATION,
+      TRACKING,
+      LOST
+    };
 
 
     Tracker (ros::NodeHandle& nh,
-	     ros::NodeHandle& privateNh,
-	     volatile bool& exiting,
-	     unsigned queueSize = 5u);
+             ros::NodeHandle& privateNh,
+             volatile bool& exiting,
+             unsigned queueSize = 5u);
     
     ~Tracker();
     
     void spin();
   protected:
     bool initCallback(visp_tracker::Init::Request& req,
-		      visp_tracker::Init::Response& res);
+                      visp_tracker::Init::Response& res);
 
     void updateMovingEdgeSites(visp_tracker::MovingEdgeSitesPtr sites);
     void updateKltPoints(visp_tracker::KltPointsPtr klt);
@@ -124,14 +122,13 @@ namespace visp_tracker
     ros::Publisher kltPointsPublisher_;
 
     ros::ServiceServer initService_;
-
     std_msgs::Header header_;
     sensor_msgs::CameraInfoConstPtr info_;
 
     vpKltOpencv kltTracker_;
     vpMe movingEdge_;
     vpCameraParameters cameraParameters_;
-    vpMbTracker* tracker_;
+    vpMbGenericTracker tracker_;
 
     unsigned lastTrackedImage_;
 

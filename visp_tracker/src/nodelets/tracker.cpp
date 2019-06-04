@@ -15,17 +15,17 @@ namespace visp_tracker
   public:
     TrackerNodelet ()
       : nodelet::Nodelet (),
-	exiting_ (false),
-	tracker_ (),
-	thread_ ()
+        exiting_ (false),
+        tracker_ (),
+        thread_ ()
     {}
 
     ~TrackerNodelet ()
     {
       exiting_ = true;
       if (thread_)
-	if (!thread_->timed_join (boost::posix_time::seconds (2)))
-	  NODELET_WARN ("failed to join thread but continuing anyway");
+        if (!thread_->timed_join (boost::posix_time::seconds (2)))
+          NODELET_WARN ("failed to join thread but continuing anyway");
       thread_.reset ();
       tracker_.reset ();
     }
@@ -33,13 +33,13 @@ namespace visp_tracker
     void spin ()
     {
       if (exiting_)
-	return;
+        return;
       tracker_ = boost::shared_ptr<visp_tracker::Tracker>
-	(new visp_tracker::Tracker (getMTNodeHandle (),
-				    getMTPrivateNodeHandle (),
-				    exiting_, 5u));
+          (new visp_tracker::Tracker (getMTNodeHandle (),
+                                      getMTPrivateNodeHandle (),
+                                      exiting_, 5u));
       while (ros::ok () && !exiting_)
-	tracker_->spin ();
+        tracker_->spin ();
     }
 
     virtual void onInit ()
@@ -47,7 +47,7 @@ namespace visp_tracker
       NODELET_DEBUG ("Initializing nodelet...");
       exiting_ = false;
       thread_ = boost::make_shared<boost::thread>
-	(boost::bind (&TrackerNodelet::spin, this));
+          (boost::bind (&TrackerNodelet::spin, this));
     }
 
   private:
