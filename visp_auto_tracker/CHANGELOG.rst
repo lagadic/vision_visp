@@ -87,4 +87,12 @@ Changelog for package visp_auto_tracker
 * kinetic-0.9.2
 * Contributors: Fabien Spindler
 
+0.10.0 (2017-06-23)
+-------------------
+* Fix catkin_lint warnings level 2
+* kinetic-0.9.3
+* Prepare changelogs
+* Contributors: Fabien Spindler
+
+
 

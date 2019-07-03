@@ -1,6 +1,6 @@
 <package>
   <name>visp_tracker</name>
-  <version>0.9.3</version>
+  <version>0.10.0</version>
   <description>
     Wraps the ViSP moving edge tracker provided by the ViSP visual
     servoing library into a ROS package.
@@ -11,7 +11,7 @@
   </description>
   <maintainer email="fabien.spindler@inria.fr">Fabien Spindler</maintainer>
   <author email="thomas.moulard@gmail.com">Thomas Moulard</author>
-  <license>BSD</license>
+  <license>GPLv2</license>
   <url>http://wiki.ros.org/wiki/visp_tracker</url>
   <url type="repository">git://github.com/lagadic/vision_visp.git</url>
 
