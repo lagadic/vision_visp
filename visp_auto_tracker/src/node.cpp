@@ -47,6 +47,7 @@ namespace visp_auto_tracker{
     model_path_(),
     model_name_(),
     code_message_(),
+    tracker_ref_frame_(),
     debug_display_(false),
     I_(),
     image_header_(),
@@ -61,6 +62,7 @@ namespace visp_auto_tracker{
     n_.param<std::string>("model_path", model_path_, "");
     n_.param<std::string>("model_name", model_name_, "");
     n_.param<std::string>("code_message", code_message_, "");
+    n_.param<std::string>("tracker_ref_frame", tracker_ref_frame_, "/map");
     model_path_= model_path_[model_path_.length()-1]=='/'?model_path_:model_path_+std::string("/");
     model_full_path = model_path_+model_name_;
     tracker_config_path_ = model_full_path+".cfg";
@@ -192,7 +194,7 @@ namespace visp_auto_tracker{
       if (object_pose_publisher.getNumSubscribers	() > 0)
       {
         ps.header = image_header_;
-        ps.header.frame_id = tracker_ref_frame;
+        ps.header.frame_id = tracker_ref_frame_;
         object_pose_publisher.publish(ps);
       }
 
@@ -201,7 +203,7 @@ namespace visp_auto_tracker{
       {
         ps_cov.pose.pose = ps.pose;
         ps_cov.header = image_header_;
-        ps_cov.header.frame_id = tracker_ref_frame;
+        ps_cov.header.frame_id = tracker_ref_frame_;
 
         for (unsigned i = 0; i < track_model.covariance.getRows(); ++i)
         {

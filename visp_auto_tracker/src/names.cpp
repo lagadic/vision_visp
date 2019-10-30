@@ -14,6 +14,5 @@ namespace visp_auto_tracker
   std::string code_message_topic("code_message");
   std::string init_service("init");
 
-  std::string tracker_ref_frame("/map");
   std::string tracker_config_file("config.cfg");
 }
