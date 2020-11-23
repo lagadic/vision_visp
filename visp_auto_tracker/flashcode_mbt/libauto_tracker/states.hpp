@@ -1,6 +1,5 @@
 #ifndef __EVENTS_H__
 #define __EVENTS_H__
-#include "cv.h"
 // back-end
 #include <boost/msm/back/state_machine.hpp>
 //front-end

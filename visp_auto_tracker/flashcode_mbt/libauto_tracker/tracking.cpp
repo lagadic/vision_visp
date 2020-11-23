@@ -1,6 +1,5 @@
 #include "ros/ros.h"
-#include "cv.h"
-#include "highgui.h"
+#include <opencv2/highgui/highgui.hpp>
 #include "tracking.h"
 #include <visp3/core/vpImageConvert.h>
 #include <visp3/core/vpPixelMeterConversion.h>

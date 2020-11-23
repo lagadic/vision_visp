@@ -127,16 +127,28 @@ namespace visp_auto_tracker{
     //init detector based on user preference
 #if VISP_VERSION_INT < VP_VERSION_INT(2,10,0)
     detectors::DetectorBase* detector = NULL;
+#if defined(VISP_HAVE_ZBAR) && defined(VISP_HAVE_DMTX)
     if (cmd_.get_detector_type() == CmdLine::ZBAR)
       detector = new detectors::qrcode::Detector;
     else if(cmd_.get_detector_type() == CmdLine::DMTX)
       detector = new detectors::datamatrix::Detector;
+#elif defined(VISP_HAVE_ZBAR)
+    detector = new detectors::qrcode::Detector;
+#elif defined(VISP_HAVE_DMTX)
+    detector = new detectors::datamatrix::Detector;
+#endif
 #else // ViSP >= 2.10.0. In that case we use the detectors from ViSP
     vpDetectorBase *detector = NULL;
+#if defined(VISP_HAVE_ZBAR) && defined(VISP_HAVE_DMTX)
     if (cmd_.get_detector_type() == CmdLine::ZBAR)
       detector = new vpDetectorQRCode;
     else if(cmd_.get_detector_type() == CmdLine::DMTX)
       detector = new vpDetectorDataMatrixCode;
+#elif defined(VISP_HAVE_ZBAR)
+    detector = new vpDetectorQRCode;
+#elif defined(VISP_HAVE_DMTX)
+    detector = new vpDetectorDataMatrixCode;
+#endif
 #endif
 
     // Use the best tracker
