@@ -53,22 +53,23 @@ generate_dynamic_reconfigure_options(
 
 
 catkin_package(
-   LIBRARIES
-     trackerNodelet
-     ${PROJECT_NAME} 
+  LIBRARIES
+    trackerNodelet
+    ${PROJECT_NAME} 
 
-   CATKIN_DEPENDS
-     dynamic_reconfigure
-     geometry_msgs
-     message_runtime
-     nodelet
-     roscpp
-     sensor_msgs
-     std_msgs
+  CATKIN_DEPENDS
+    dynamic_reconfigure
+    geometry_msgs
+    message_runtime
+    nodelet
+    roscpp
+    sensor_msgs
+    std_msgs
+    tf
 
-   DEPENDS
-     VISP
-   )
+  DEPENDS
+    VISP
+  )
 
 include_directories(SYSTEM
   ${Boost_INCLUDE_DIRS}
