@@ -45,18 +45,19 @@ include_directories(
 )
 
 catkin_package(
-   LIBRARIES auto_tracker
+  LIBRARIES auto_tracker
 
-   CATKIN_DEPENDS
-   geometry_msgs
-   message_filters
-   roscpp
-   sensor_msgs
-   std_msgs
+  CATKIN_DEPENDS
+    geometry_msgs
+    message_filters
+    roscpp
+    sensor_msgs
+    std_msgs
+    visp_tracker
 
-   DEPENDS
-   VISP
-   )
+  DEPENDS
+    VISP
+)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/flashcode_mbt)
 

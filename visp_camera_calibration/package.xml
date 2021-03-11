@@ -35,4 +35,5 @@
   <run_depend>std_msgs</run_depend>
   <run_depend>visp</run_depend>
   <run_depend>visp_bridge</run_depend>
+  <run_depend>rqt_console</run_depend>
 </package>
