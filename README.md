@@ -66,6 +66,7 @@ This stack supports the following ROS releases:
  * Kinetic
  * Lunar
  * Melodic
+ * Noetic
 
 The master branch holds the development that will be available in the
 next ROS release.
@@ -77,7 +78,6 @@ next ROS release.
 | Melodic       | [![Build Status](https://travis-ci.org/lagadic/vision_visp.png?branch=melodic-devel)](https://travis-ci.org/lagadic/vision_visp) | [![Build Status](https://travis-ci.org/lagadic/vision_visp.png?branch=melodic)](https://travis-ci.org/lagadic/vision_visp) |
 | Lunar         | [![Build Status](https://travis-ci.org/lagadic/vision_visp.png?branch=lunar-devel)](https://travis-ci.org/lagadic/vision_visp) | [![Build Status](https://travis-ci.org/lagadic/vision_visp.png?branch=lunar)](https://travis-ci.org/lagadic/vision_visp) |
 | Kinetic       | [![Build Status](https://travis-ci.org/lagadic/vision_visp.png?branch=kinetic-devel)](https://travis-ci.org/lagadic/vision_visp) | [![Build Status](https://travis-ci.org/lagadic/vision_visp.png?branch=kinetic)](https://travis-ci.org/lagadic/vision_visp) |
-| Indigo        | [![Build Status](https://travis-ci.org/lagadic/vision_visp.png?branch=indigo-devel)](https://travis-ci.org/lagadic/vision_visp) | [![Build Status](https://travis-ci.org/lagadic/vision_visp.png?branch=indigo)](https://travis-ci.org/lagadic/vision_visp) |
 
 
 
