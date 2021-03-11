@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>visp_camera_calibration</name>
-  <version>0.11.0</version>
+  <version>0.12.0</version>
 
   <description>
      visp_camera_calibration allows easy calibration of
