@@ -50,4 +50,5 @@
   <run_depend>visp_bridge</run_depend>
   <run_depend>visp_tracker</run_depend>
   <run_depend>zbar</run_depend>
+  <run_depend>usb_cam</run_depend>
 </package>
