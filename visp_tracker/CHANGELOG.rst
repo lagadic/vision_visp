@@ -2,6 +2,16 @@
 Changelog for package visp_tracker
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.12.0 (2021-04-21)
+-------------------
+* Fix warnings detected by catkin_lint
+* Fix warning detected during packaging
+* Update README with Noetic support
+* Use python3 on neotic
+* Fix compat with Ubuntu 20.04
+* Moves tracker_ref_frame from extern to param (#97)
+* Contributors: Fabien Spindler
+
 0.11.0 (2019-05-27)
 -------------------
 * Update with Melodic
