@@ -2,6 +2,11 @@
 Changelog for package vision_visp
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.12.1 (2021-04-22)
+-------------------
+* CMake fixes
+* Contributors: Fabien Spindler
+
 0.12.0 (2021-04-21)
 -------------------
 * Fix warnings detected by catkin_lint
