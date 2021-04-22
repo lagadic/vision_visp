@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 3.0.0)
 project(visp_auto_tracker)
 
 # Since kinetic to avoid warning:
@@ -142,7 +142,9 @@ if(EXTRA_CXX_FLAGS)
   set_target_properties(${PROJECT_NAME} PROPERTIES COMPILE_FLAGS ${EXTRA_CXX_FLAGS})
 endif()
 
-add_dependencies(${PROJECT_NAME} ${PROJECT_NAME}_bag)
+if(CATKIN_ENABLE_TESTING)
+  add_dependencies(${PROJECT_NAME} ${PROJECT_NAME}_bag)
+endif()
 
 #catkin_lint: ignore unquoted_string_op
 if(VISP_VERSION VERSION_LESS "2.10.0")
@@ -212,6 +214,6 @@ if(CATKIN_ENABLE_TESTING)
   )
 endif()
 else() # VISP_HAVE_ZBAR OR VISP_HAVE_DMTX
-message("visp_auto_tracker build is disabled since ViSP is not built with libzbar-dev 3rd party")
+message("${PROJECT_NAME} build is disabled since ViSP is not built with libzbar-dev 3rd party")
 endif() # VISP_HAVE_ZBAR OR VISP_HAVE_DMTX
 
