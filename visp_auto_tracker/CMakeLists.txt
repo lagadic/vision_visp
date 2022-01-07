@@ -35,6 +35,10 @@ find_package(catkin REQUIRED COMPONENTS
 # see https://github.com/ros/catkin/issues/606
 find_package(VISP)
 
+if(VISP_HAVE_ZBAR OR VISP_HAVE_DMTX OR VISP_HAVE_APRILTAG)
+
+# Boost signals component is no longer being actively maintained since boost 1.63.0
+# Keept here as optional for compat with older ROS versions, but for Neotic this component is useless.
 find_package(Boost REQUIRED
   COMPONENTS filesystem system signals regex date_time program_options thread)
 
@@ -210,7 +214,7 @@ if(CATKIN_ENABLE_TESTING)
   )
 endif()
 
-else() # VISP_HAVE_ZBAR OR VISP_HAVE_DMTX
+else() # VISP_HAVE_ZBAR OR VISP_HAVE_DMTX OR VISP_HAVE_APRILTAG
 message("${PROJECT_NAME} build is disabled since ViSP is not built with libzbar-dev 3rd party")
-endif() # VISP_HAVE_ZBAR OR VISP_HAVE_DMTX
+endif() # VISP_HAVE_ZBAR OR VISP_HAVE_DMTX OR VISP_HAVE_APRILTAG
 

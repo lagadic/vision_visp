@@ -112,6 +112,9 @@ void CmdLine::loadConfig(std::string& config_file){
     case DMTX:
       std::cout << "Datamatrix (flashcode)";
       break;
+    case APRIL:
+      std::cout << "April tags";
+      break;
     }
     std::cout << std::endl;
 
@@ -307,6 +310,8 @@ std::vector<vpPoint>& CmdLine:: get_outer_points_3D() {
 CmdLine::DETECTOR_TYPE CmdLine:: get_detector_type() const{
   if(vm_["detector-type"].as<std::string>()=="zbar")
     return CmdLine::ZBAR;
+  else if(vm_["detector-type"].as<std::string>()=="april")
+    return CmdLine::APRIL;
   else
     return CmdLine::DMTX;
 }

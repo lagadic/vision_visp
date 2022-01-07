@@ -51,7 +51,7 @@ private:
   void common();
 public:
   enum DETECTOR_TYPE{
-    DMTX, ZBAR
+    DMTX, ZBAR, APRIL
   };
   enum TRACKER_TYPE{
     KLT, MBT, KLT_MBT

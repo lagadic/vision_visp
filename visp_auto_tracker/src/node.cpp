@@ -25,6 +25,7 @@
 #else
 #  include <visp3/detection/vpDetectorDataMatrixCode.h>
 #  include <visp3/detection/vpDetectorQRCode.h>
+#  include <visp3/detection/vpDetectorAprilTag.h>
 #endif
 
 #include <visp_bridge/camera.h>
@@ -133,10 +134,21 @@ namespace visp_auto_tracker{
       detector = new detectors::datamatrix::Detector;
 #else // ViSP >= 2.10.0. In that case we use the detectors from ViSP
     vpDetectorBase *detector = NULL;
+
+#if defined(VISP_HAVE_ZBAR) && !defined(VISP_HAVE_DMTX) && !defined(VISP_HAVE_APRILTAG)
+    detector = new vpDetectorQRCode;
+#elif defined(VISP_HAVE_DMTX) && !defined(VISP_HAVE_ZBAR) && !defined(VISP_HAVE_APRILTAG)
+    detector = new vpDetectorDataMatrixCode;
+#elif defined(VISP_HAVE_APRILTAG) && !defined(VISP_HAVE_ZBAR) && !defined(VISP_HAVE_DMTX)
+    detector = new vpDetectorAprilTag;
+#elif defined(VISP_HAVE_ZBAR) && defined(VISP_HAVE_DMTX)
     if (cmd_.get_detector_type() == CmdLine::ZBAR)
       detector = new vpDetectorQRCode;
     else if(cmd_.get_detector_type() == CmdLine::DMTX)
       detector = new vpDetectorDataMatrixCode;
+    else if(cmd_.get_detector_type() == CmdLine::APRIL)
+      detector = new vpDetectorAprilTag;
+#endif
 #endif
 
     // Use the best tracker
