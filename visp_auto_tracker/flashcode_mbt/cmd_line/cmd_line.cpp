@@ -18,6 +18,7 @@ void CmdLine::common(){
       ("single-image,I", po::value<std::string>(&single_image_name_),"load this single image (relative to data dir)")
       ("pattern-name,P", po::value<std::string>(&pattern_name_)->default_value("pattern"),"name of xml,init and wrl files")
       ("detector-type,r", po::value<std::string>()->default_value("zbar"),"Type of your detector that will be used for initialisation/recovery. zbar for QRcodes and more, dmtx for flashcodes, april for April tags.")
+      ("detector-subtype,u", po::value<std::string>(&detector_subtype_)->default_value(""),"Subtype of your detector that will be used for initialisation/recovery. For april detector : 36h11, 16h5, ...")
       ("tracker-type,t", po::value<std::string>()->default_value("klt_mbt"),"Type of tracker. mbt_klt for hybrid: mbt+klt, mbt for model based, klt for klt-based")
       ("verbose,v", po::value< bool >(&verbose_)->default_value(false)->composing(), "Enable or disable additional printings")
       ("dmx-detector-timeout,T", po::value<int>(&dmx_timeout_)->default_value(1000), "timeout for datamatrix detection in ms")
@@ -314,6 +315,10 @@ CmdLine::DETECTOR_TYPE CmdLine:: get_detector_type() const{
     return CmdLine::APRIL;
   else
     return CmdLine::DMTX;
+}
+
+std::string CmdLine:: get_detector_subtype() const{
+  return detector_subtype_;
 }
 
 CmdLine::TRACKER_TYPE CmdLine:: get_tracker_type() const{
