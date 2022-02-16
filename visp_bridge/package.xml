@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package>
   <name>visp_bridge</name>
-  <version>0.12.1</version>
+  <version>0.13.0</version>
   <description>
     Converts between ROS structures and ViSP structures.
   </description>
