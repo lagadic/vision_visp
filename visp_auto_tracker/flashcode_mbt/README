@@ -36,7 +36,11 @@ General options:
   -P [ --pattern-name ] arg (=pattern)  name of xml,init and wrl files
   -r [ --detector-type ] arg (=zbar)    Type of your detector that will be used
                                         for initialisation/recovery. zbar for 
-                                        QRcodes and more, dtmx for flashcodes.
+                                        QRcodes and more, dtmx for flashcodes,
+                                        april for April tags.
+  -u [ --detector-subtype ] arg         Subtype of your detector that will be 
+                                        used for initialisation/recovery. For 
+                                        april detector: 36h11, 16h5, ...
   -t [ --tracker-type ] arg (=klt_mbt)  Type of tracker. mbt_klt for hybrid: 
                                         mbt+klt, mbt for model based, klt for 
                                         klt-based

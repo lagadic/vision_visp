@@ -3,7 +3,7 @@
 
 visp_auto_tracker wraps model-based trackers provided by ViSP visual 
 servoing library into a ROS package. The tracked object should have a 
-QRcode of Flash code pattern. Based on the pattern, the object is 
+QRcode, Flash code or April tag pattern. Based on the pattern, the object is 
 automaticaly detected. The detection allows then to initialise the 
 model-based trackers. When lost of tracking achieves a new detection 
 is performed that will be used to re-initialize the tracker.
@@ -13,7 +13,7 @@ orientation) of an object in an image. It is fast enough to allow
 object online tracking using a camera.
 
 This package is composed of one node called 'visp_auto_tracker'. The 
-node tries first to detect the QRcode or the Flash code associated to 
+node tries first to detect the QRcode, the Flash or the April tag code associated to 
 the object. Once the detection is performed, the node tracks the object. 
 When a lost of tracking occurs the node tries to detect once again the 
 object and then restart a tracking.

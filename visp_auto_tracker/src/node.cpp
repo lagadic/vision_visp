@@ -25,6 +25,7 @@
 #else
 #  include <visp3/detection/vpDetectorDataMatrixCode.h>
 #  include <visp3/detection/vpDetectorQRCode.h>
+#  include <visp3/detection/vpDetectorAprilTag.h>
 #endif
 
 #include <visp_bridge/camera.h>
@@ -139,15 +140,34 @@ namespace visp_auto_tracker{
 #endif
 #else // ViSP >= 2.10.0. In that case we use the detectors from ViSP
     vpDetectorBase *detector = NULL;
-#if defined(VISP_HAVE_ZBAR) && defined(VISP_HAVE_DMTX)
+#if defined(VISP_HAVE_ZBAR) && !defined(VISP_HAVE_DMTX) && !defined(VISP_HAVE_APRILTAG)
+    detector = new vpDetectorQRCode;
+#elif defined(VISP_HAVE_DMTX) && !defined(VISP_HAVE_ZBAR) && !defined(VISP_HAVE_APRILTAG)
+    detector = new vpDetectorDataMatrixCode;
+#elif defined(VISP_HAVE_APRILTAG) && !defined(VISP_HAVE_ZBAR) && !defined(VISP_HAVE_DMTX)
+    detector = new vpDetectorAprilTag;
+#elif defined(VISP_HAVE_ZBAR) && defined(VISP_HAVE_DMTX)
     if (cmd_.get_detector_type() == CmdLine::ZBAR)
       detector = new vpDetectorQRCode;
     else if(cmd_.get_detector_type() == CmdLine::DMTX)
       detector = new vpDetectorDataMatrixCode;
-#elif defined(VISP_HAVE_ZBAR)
-    detector = new vpDetectorQRCode;
-#elif defined(VISP_HAVE_DMTX)
-    detector = new vpDetectorDataMatrixCode;
+    else if(cmd_.get_detector_type() == CmdLine::APRIL) {
+      vpDetectorAprilTag::vpAprilTagFamily tag_family = vpDetectorAprilTag::vpAprilTagFamily::TAG_36h11;
+      std::string tag_family_str = cmd_.get_detector_subtype();
+      if(tag_family_str.find("16h5") != std::string::npos)
+        tag_family = vpDetectorAprilTag::vpAprilTagFamily::TAG_16h5;
+      else if(tag_family_str.find("25h7") != std::string::npos)
+        tag_family = vpDetectorAprilTag::vpAprilTagFamily::TAG_25h7;
+      else if(tag_family_str.find("25h9") != std::string::npos)
+        tag_family = vpDetectorAprilTag::vpAprilTagFamily::TAG_25h9;
+      else if(tag_family_str.find("36ARTOOLKIT") != std::string::npos)
+        tag_family = vpDetectorAprilTag::vpAprilTagFamily::TAG_36ARTOOLKIT;
+      else if(tag_family_str.find("36h10") != std::string::npos)
+        tag_family = vpDetectorAprilTag::vpAprilTagFamily::TAG_36h10;
+      else if(tag_family_str.find("36h11") != std::string::npos)
+        tag_family = vpDetectorAprilTag::vpAprilTagFamily::TAG_36h11;
+      detector = new vpDetectorAprilTag(tag_family);
+    }
 #endif
 #endif
 

@@ -36,6 +36,7 @@ private:
   double mbt_dynamic_range_;
   std::string data_dir_;
   std::string pattern_name_;
+  std::string detector_subtype_;
   std::string var_file_;
   std::string single_image_name_;
   std::vector<vpPoint> flashcode_points_3D_;
@@ -51,7 +52,7 @@ private:
   void common();
 public:
   enum DETECTOR_TYPE{
-    DMTX, ZBAR
+    DMTX, ZBAR, APRIL
   };
   enum TRACKER_TYPE{
     KLT, MBT, KLT_MBT
@@ -146,6 +147,8 @@ public:
   std::vector<vpPoint>& get_outer_points_3D();
 
   DETECTOR_TYPE get_detector_type() const;
+
+  std::string get_detector_subtype() const;
 
   TRACKER_TYPE get_tracker_type() const;
 
