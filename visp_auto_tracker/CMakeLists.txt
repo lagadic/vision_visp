@@ -1,24 +1,18 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 3.0.0)
 project(visp_auto_tracker)
 
-# Since kinetic to avoid warning:
+# Since visp 3.5.0 to avoid the following warning that makes build unstable
 #
-# In file included from /home/fspindle/ros_catkin_ws/src/vision_visp/visp_auto_tracker/src/node.cpp:36:0:
-# /opt/ros/kinetic/include/resource_retriever/retriever.h:81:38: warning: defaulted and deleted functions
-# only available with -std=c++11 or -std=gnu++11
-#   Retriever(const Retriever & ret) = delete;
+# /usr/include/OGRE/OgreMemorySTLAllocator.h:130:23: warning: ISO C++17 does not allow
+#   ‘register’ storage class specifier [-Wregister]
 #
-# we add -std=c++11
-# check c++11 / c++0x
+# we try to add -Wno-register option
 include(CheckCXXCompilerFlag)
-check_cxx_compiler_flag("-std=c++11" COMPILER_SUPPORTS_CXX11)
-check_cxx_compiler_flag("-std=gnu++11" COMPILER_SUPPORTS_GNUXX11)
+check_cxx_compiler_flag("-Wno-register" COMPILER_SUPPORTS_W_NO_REGISTER)
 
 #catkin_lint: ignore endblock_args indentation
-if(COMPILER_SUPPORTS_CXX11)
-  set(EXTRA_CXX_FLAGS "-std=c++11")
-elseif(COMPILER_SUPPORTS_GNUXX11)
-  set(EXTRA_CXX_FLAGS "-std=gnu++11")
+if(COMPILER_SUPPORTS_W_NO_REGISTER)
+  set(EXTRA_CXX_FLAGS "-Wno-register")
 endif()
 
 find_package(catkin REQUIRED COMPONENTS
@@ -35,7 +29,7 @@ find_package(catkin REQUIRED COMPONENTS
 # see https://github.com/ros/catkin/issues/606
 find_package(VISP)
 
-if(VISP_HAVE_ZBAR OR VISP_HAVE_DMTX)
+if(VISP_HAVE_ZBAR OR VISP_HAVE_DMTX OR VISP_HAVE_APRILTAG)
 
 # Boost signals component is no longer being actively maintained since boost 1.63.0
 # Keept here as optional for compat with older ROS versions, but for Neotic this component is useless.
@@ -139,10 +133,14 @@ add_executable(${PROJECT_NAME}
   )
 
 if(EXTRA_CXX_FLAGS)
-  set_target_properties(${PROJECT_NAME} PROPERTIES COMPILE_FLAGS ${EXTRA_CXX_FLAGS})
+    set_target_properties(${PROJECT_NAME} PROPERTIES COMPILE_FLAGS ${EXTRA_CXX_FLAGS})
+    set_target_properties(${PROJECT_NAME}_cmd_line PROPERTIES COMPILE_FLAGS ${EXTRA_CXX_FLAGS})
+    set_target_properties(auto_tracker PROPERTIES COMPILE_FLAGS ${EXTRA_CXX_FLAGS})
 endif()
 
-add_dependencies(${PROJECT_NAME} ${PROJECT_NAME}_bag)
+if(CATKIN_ENABLE_TESTING)
+  add_dependencies(${PROJECT_NAME} ${PROJECT_NAME}_bag)
+endif()
 
 #catkin_lint: ignore unquoted_string_op
 if(VISP_VERSION VERSION_LESS "2.10.0")
@@ -211,7 +209,7 @@ if(CATKIN_ENABLE_TESTING)
     DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
   )
 endif()
-else() # VISP_HAVE_ZBAR OR VISP_HAVE_DMTX
-message("visp_auto_tracker build is disabled since ViSP is not built with libzbar-dev 3rd party")
-endif() # VISP_HAVE_ZBAR OR VISP_HAVE_DMTX
+else() # VISP_HAVE_ZBAR OR VISP_HAVE_DMTX OR VISP_HAVE_APRILTAG
+message("${PROJECT_NAME} build is disabled since ViSP is not built with libzbar-dev 3rd party")
+endif() # VISP_HAVE_ZBAR OR VISP_HAVE_DMTX OR VISP_HAVE_APRILTAG
 
