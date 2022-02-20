@@ -1,24 +1,18 @@
 cmake_minimum_required(VERSION 3.0.0)
 project(visp_auto_tracker)
 
-# Since kinetic to avoid warning:
+# Since visp 3.5.0 to avoid the following warning that makes build unstable
 #
-# In file included from /home/fspindle/ros_catkin_ws/src/vision_visp/visp_auto_tracker/src/node.cpp:36:0:
-# /opt/ros/kinetic/include/resource_retriever/retriever.h:81:38: warning: defaulted and deleted functions
-# only available with -std=c++11 or -std=gnu++11
-#   Retriever(const Retriever & ret) = delete;
+# /usr/include/OGRE/OgreMemorySTLAllocator.h:130:23: warning: ISO C++17 does not allow
+#   ‘register’ storage class specifier [-Wregister]
 #
-# we add -std=c++11
-# check c++11 / c++0x
+# we try to add -Wno-register option
 include(CheckCXXCompilerFlag)
-check_cxx_compiler_flag("-std=c++11" COMPILER_SUPPORTS_CXX11)
-check_cxx_compiler_flag("-std=gnu++11" COMPILER_SUPPORTS_GNUXX11)
+check_cxx_compiler_flag("-Wno-register" COMPILER_SUPPORTS_W_NO_REGISTER)
 
 #catkin_lint: ignore endblock_args indentation
-if(COMPILER_SUPPORTS_CXX11)
-  set(EXTRA_CXX_FLAGS "-std=c++11")
-elseif(COMPILER_SUPPORTS_GNUXX11)
-  set(EXTRA_CXX_FLAGS "-std=gnu++11")
+if(COMPILER_SUPPORTS_W_NO_REGISTER)
+  set(EXTRA_CXX_FLAGS "-Wno-register")
 endif()
 
 find_package(catkin REQUIRED COMPONENTS
@@ -139,7 +133,9 @@ add_executable(${PROJECT_NAME}
   )
 
 if(EXTRA_CXX_FLAGS)
-  set_target_properties(${PROJECT_NAME} PROPERTIES COMPILE_FLAGS ${EXTRA_CXX_FLAGS})
+    set_target_properties(${PROJECT_NAME} PROPERTIES COMPILE_FLAGS ${EXTRA_CXX_FLAGS})
+    set_target_properties(${PROJECT_NAME}_cmd_line PROPERTIES COMPILE_FLAGS ${EXTRA_CXX_FLAGS})
+    set_target_properties(auto_tracker PROPERTIES COMPILE_FLAGS ${EXTRA_CXX_FLAGS})
 endif()
 
 if(CATKIN_ENABLE_TESTING)
