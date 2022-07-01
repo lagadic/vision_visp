@@ -1,77 +1,40 @@
-cmake_minimum_required(VERSION 3.0.0)
+cmake_minimum_required(VERSION 3.5)
 project(visp_bridge)
 
+find_package(ament_cmake_ros REQUIRED)
+find_package(geometry_msgs REQUIRED)
+find_package(sensor_msgs REQUIRED)
+find_package(camera_calibration_parsers REQUIRED)
+find_package(VISP REQUIRED COMPONENTS visp_core)
 find_package(Boost REQUIRED COMPONENTS filesystem program_options)
 
-find_package(catkin REQUIRED COMPONENTS
-  camera_calibration_parsers
-  geometry_msgs
-  roscpp
-  sensor_msgs
-  std_msgs
-)
+# Default to C++14
+if(NOT CMAKE_CXX_STANDARD)
+  set(CMAKE_CXX_STANDARD 14)
+endif()
 
-# ViSP cannot be found by Catkin.
-# see https://github.com/ros/catkin/issues/606
-find_package(VISP REQUIRED)
+if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  add_compile_options(-Wall -Wextra)
+endif()
 
-catkin_package(
-  INCLUDE_DIRS
-    include
+add_subdirectory(src)
+add_subdirectory(tool)
 
-  LIBRARIES
-    ${PROJECT_NAME}
+# visp_bridge_lib_dir is passed as APPEND_LIBRARY_DIRS for each ament_add_gtest call so
+# the project library that they link against is on the library path.
+# This is especially important on Windows.
+# This is overwritten each loop, but which one it points to doesn't really matter.
+set(visp_bridge_lib_dir "$<TARGET_FILE_DIR:${PROJECT_NAME}>")
 
-  CATKIN_DEPENDS
-    camera_calibration_parsers
-    geometry_msgs
-    roscpp
-    sensor_msgs
-    std_msgs
-
-  DEPENDS
-    Boost
-    VISP
-)
-
-include_directories(include)
-
-include_directories(SYSTEM
-  ${VISP_INCLUDE_DIRS}
-  ${catkin_INCLUDE_DIRS}
-  ${Boost_INCLUDE_DIRS}
-)
-
-# Make sure Boost.Filesystem v3 is used.
-add_definitions(-DBOOST_FILESYSTEM_VERSION=3)
-
-## Declare a cpp library
-add_library(${PROJECT_NAME}
-  include/${PROJECT_NAME}/3dpose.h
-  include/${PROJECT_NAME}/camera.h
-  include/${PROJECT_NAME}/image.h
-  include/${PROJECT_NAME}/vpQuaternionVector.h
-  src/compat/vpQuaternionVector.cpp
-  src/conversions/3dpose.cpp
-  src/conversions/camera.cpp
-  src/conversions/image.cpp
-)
-target_link_libraries(${PROJECT_NAME} ${VISP_LIBRARIES})
-
-add_executable(${PROJECT_NAME}_convert_camera_parameters src/conversions/convert_cam_param_file.cpp)
-target_link_libraries(${PROJECT_NAME}_convert_camera_parameters ${VISP_LIBRARIES} ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${PROJECT_NAME})
-
-## Mark executables and/or libraries for installation
-install(TARGETS ${PROJECT_NAME} ${PROJECT_NAME}_convert_camera_parameters 
-  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-)
+#include_directories(include ${VISP_INCLUDE_DIRS})
 
 # Mark cpp header files for installation
-install(DIRECTORY include/${PROJECT_NAME}/
-  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
-  FILES_MATCHING PATTERN "*.h"
-  PATTERN ".svn" EXCLUDE
+install(DIRECTORY include DESTINATION include/${PROJECT_NAME})
+
+install(TARGETS ${PROJECT_NAME}
+        RUNTIME DESTINATION bin
+        ARCHIVE DESTINATION lib
+        LIBRARY DESTINATION lib
 )
 
+ament_package()
