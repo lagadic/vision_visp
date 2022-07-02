@@ -40,7 +40,7 @@
 
 /*!
   \file camera.cpp
-  \brief conversions between ROS and ViSP structures representing camera parameters
+  \brief Conversions between ROS and ViSP structures representing camera parameters
 */
 
 #include <sensor_msgs/distortion_models.hpp>
@@ -49,7 +49,6 @@
 
 namespace visp_bridge
 {
-
 vpCameraParameters toVispCameraParameters(const sensor_msgs::msg::CameraInfo &cam_info)
 {
   vpCameraParameters cam;
