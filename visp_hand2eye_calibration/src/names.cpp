@@ -36,10 +36,6 @@
  * Description:
  * File containing names of topics or services used all accross the package
  *
- * Authors:
- * Filip Novotny
- *
- *
  *****************************************************************************/
 
 /*!
@@ -48,28 +44,26 @@
 */
 
 #include "names.h"
-#include "ros/ros.h"
+#include <rclcpp/rclcpp.hpp>
 
 namespace visp_hand2eye_calibration
 {
-  std::string node_prefix("/");
-  std::string camera_object_topic("camera_object");
-  std::string world_effector_topic("world_effector");
-  std::string compute_effector_camera_service("compute_effector_camera");
-  std::string compute_effector_camera_quick_service("compute_effector_camera_quick");  
-  std::string reset_service("reset");
+std::string node_prefix("/");
+std::string camera_object_topic("camera_object");
+std::string world_effector_topic("world_effector");
+std::string compute_effector_camera_service("compute_effector_camera");
+std::string compute_effector_camera_quick_service("compute_effector_camera_quick");
+std::string reset_service("reset");
 
-  void remap(){
-    if (ros::names::remap("node_prefix") != "node_prefix") {
-      node_prefix = ros::names::remap("node_prefix");
-      camera_object_topic = node_prefix + "camera_object";
-      world_effector_topic = node_prefix + "world_effector";
-      compute_effector_camera_service = node_prefix + "compute_effector_camera";
-      compute_effector_camera_quick_service = node_prefix + "compute_effector_camera_quick";
-      reset_service = node_prefix + "reset";
-    }
-  }
-
-} 
-
-
+// void remap()
+// {
+//   if (ros::names::remap("node_prefix") != "node_prefix") {
+//     node_prefix = ros::names::remap("node_prefix");
+//     camera_object_topic = node_prefix + "camera_object";
+//     world_effector_topic = node_prefix + "world_effector";
+//     compute_effector_camera_service = node_prefix + "compute_effector_camera";
+//     compute_effector_camera_quick_service = node_prefix + "compute_effector_camera_quick";
+//     reset_service = node_prefix + "reset";
+//   }
+// }
+} // namespace visp_hand2eye_calibration

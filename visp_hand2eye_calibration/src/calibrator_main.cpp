@@ -36,10 +36,6 @@
  * Description:
  * Entry point for calibrator node
  *
- * Authors:
- * Filip Novotny
- *
- *
  *****************************************************************************/
 
 /*!
@@ -48,13 +44,13 @@
 */
 
 #include "calibrator.h"
-#include "ros/ros.h"
+#include "rclcpp/rclcpp.hpp"
 
 int main(int argc, char **argv)
 {
-  ros::init(argc, argv, "calibrator");
-  visp_hand2eye_calibration::Calibrator().spin();  
+  rclcpp::init(argc, argv);
+  rclcpp::spin(std::make_shared<visp_hand2eye_calibration::Calibrator>());
+  rclcpp::shutdown();
 
   return 0;
 }
-

@@ -48,8 +48,8 @@
 
 #include <visp3/core/vpHomogeneousMatrix.h>
 
-#ifndef _VISP_BRIDGE_3DPOSE_H_
-#define _VISP_BRIDGE_3DPOSE_H_
+#ifndef VISP_BRIDGE__3DPOSE_H_
+#define VISP_BRIDGE__3DPOSE_H_
 
 namespace visp_bridge
 {
@@ -80,4 +80,5 @@ geometry_msgs::msg::Transform toGeometryMsgsTransform(const vpHomogeneousMatrix 
       */
 geometry_msgs::msg::Pose toGeometryMsgsPose(const vpHomogeneousMatrix &mat);
 } // namespace visp_bridge
-#endif /* 3DPOSE_H_ */
+
+#endif // VISP_BRIDGE__3DPOSE_H_

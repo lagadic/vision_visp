@@ -36,10 +36,6 @@
  * Description:
  * File containing names of topics or services used all accross the package
  *
- * Authors:
- * Filip Novotny
- *
- *
  *****************************************************************************/
 
 /*!
@@ -47,21 +43,21 @@
   \brief File containing names of topics or services used all accross the package
 */
 
-#ifndef __visp_hand2eye_calibration_NAMES_H__
-# define __visp_hand2eye_calibration_NAMES_H__
-# include <string>
+#ifndef VISP_HAND2EYE_CALIBRATION__NAMES_H_
+#define VISP_HAND2EYE_CALIBRATION__NAMES_H_
+
+#include <string>
 
 // define topic and service names for the visp_hand2eye_calibration package.
 namespace visp_hand2eye_calibration
 {
-  extern std::string node_prefix;
-  extern std::string camera_object_topic;
-  extern std::string world_effector_topic;
-  extern std::string compute_effector_camera_service;
-  extern std::string compute_effector_camera_quick_service;
+extern std::string node_prefix;
+extern std::string camera_object_topic;
+extern std::string world_effector_topic;
+extern std::string compute_effector_camera_service;
+extern std::string compute_effector_camera_quick_service;
 
-  extern std::string reset_service;
-}
+extern std::string reset_service;
+} // namespace visp_hand2eye_calibration
 
-#endif
-
+#endif // VISP_HAND2EYE_CALIBRATION__NAMES_H_

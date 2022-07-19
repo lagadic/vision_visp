@@ -43,8 +43,8 @@
   \brief Conversions between ROS and ViSP structures representing camera parameters
 */
 
-#ifndef _VISP_BRIDGE_CAMERA_H_
-#define _VISP_BRIDGE_CAMERA_H_
+#ifndef VISP_BRIDGE__CAMERA_H_
+#define VISP_BRIDGE__CAMERA_H_
 
 #include <sensor_msgs/msg/camera_info.hpp>
 
@@ -69,4 +69,4 @@ sensor_msgs::msg::CameraInfo toSensorMsgsCameraInfo(vpCameraParameters &cam_info
                                                     unsigned int cam_image_height);
 } // namespace visp_bridge
 
-#endif /* CAMERA_H_ */
+#endif // VISP_BRIDGE__CAMERA_H_
