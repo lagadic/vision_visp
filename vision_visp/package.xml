@@ -1,4 +1,6 @@
-<package>
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format2.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="2">
   <name>vision_visp</name>
   <version>0.13.1</version>
   <description>
@@ -7,18 +9,21 @@
   <maintainer email="fabien.spindler@inria.fr">Fabien Spindler</maintainer>
   <author email="thomas.moulard@gmail.com">Thomas Moulard</author>
   <license>GPLv2</license>
-  <url>http://wiki.ros.org/vision_visp</url>
-  <url type="repository">git://github.com/lagadic/vision_visp.git</url>
+  <url type="website">http://wiki.ros.org/vision_visp</url>
+  <url type="repository">https://github.com/lagadic/vision_visp/tree/ros2</url>
+  <url type="bugtracker">https://github.com/lagadic/vision_visp/issues</url>
 
   <buildtool_depend>catkin</buildtool_depend>
 
-  <run_depend>visp_auto_tracker</run_depend>
-  <run_depend>visp_bridge</run_depend>
-  <run_depend>visp_camera_calibration</run_depend>
-  <run_depend>visp_hand2eye_calibration</run_depend>
-  <run_depend>visp_tracker</run_depend>
+ <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <exec_depend>visp_bridge</exec_depend>
+  <exec_depend>visp_tracker</exec_depend>
+  <exec_depend>visp_auto_tracker</exec_depend>
+  <exec_depend>visp_camera_calibration</exec_depend>
+  <exec_depend>visp_hand2eye_calibration</exec_depend>
 
   <export>
-    <metapackage/>
+    <build_type>ament_cmake</build_type>
   </export>
 </package>

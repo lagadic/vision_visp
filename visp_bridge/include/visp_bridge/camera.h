@@ -1,9 +1,7 @@
 /****************************************************************************
  *
- * $Id: file.cpp 3496 2011-11-22 15:14:32Z fnovotny $
- *
  * This file is part of the ViSP software.
- * Copyright (C) 2005 - 2012 by INRIA. All rights reserved.
+ * Copyright (C) 2005 - 2022 by INRIA. All rights reserved.
  *
  * This software is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -15,14 +13,14 @@
  * GPL, please contact INRIA about acquiring a ViSP Professional
  * Edition License.
  *
- * See http://www.irisa.fr/lagadic/visp/visp.html for more information.
+ * See https://visp.inria.fr for more information.
  *
  * This software was developed at:
  * INRIA Rennes - Bretagne Atlantique
  * Campus Universitaire de Beaulieu
  * 35042 Rennes Cedex
  * France
- * http://www.irisa.fr/lagadic
+ * https://team.inria.fr/rainbow/
  *
  * If you have questions regarding the use of this file, please contact
  * INRIA at visp@inria.fr
@@ -43,8 +41,8 @@
   \brief Conversions between ROS and ViSP structures representing camera parameters
 */
 
-#ifndef _VISP_BRIDGE_CAMERA_H_
-#define _VISP_BRIDGE_CAMERA_H_
+#ifndef VISP_BRIDGE__CAMERA_H_
+#define VISP_BRIDGE__CAMERA_H_
 
 #include <sensor_msgs/msg/camera_info.hpp>
 
@@ -69,4 +67,4 @@ sensor_msgs::msg::CameraInfo toSensorMsgsCameraInfo(vpCameraParameters &cam_info
                                                     unsigned int cam_image_height);
 } // namespace visp_bridge
 
-#endif /* CAMERA_H_ */
+#endif // VISP_BRIDGE__CAMERA_H_

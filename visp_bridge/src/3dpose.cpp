@@ -1,9 +1,7 @@
 /****************************************************************************
  *
- * $Id: file.cpp 3496 2011-11-22 15:14:32Z fnovotny $
- *
  * This file is part of the ViSP software.
- * Copyright (C) 2005 - 2011 by INRIA. All rights reserved.
+ * Copyright (C) 2005 - 2022 by INRIA. All rights reserved.
  *
  * This software is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -15,14 +13,14 @@
  * GPL, please contact INRIA about acquiring a ViSP Professional
  * Edition License.
  *
- * See http://www.irisa.fr/lagadic/visp/visp.html for more information.
+ * See https://visp.inria.fr for more information.
  *
  * This software was developed at:
  * INRIA Rennes - Bretagne Atlantique
  * Campus Universitaire de Beaulieu
  * 35042 Rennes Cedex
  * France
- * http://www.irisa.fr/lagadic
+ * https://team.inria.fr/rainbow/
  *
  * If you have questions regarding the use of this file, please contact
  * INRIA at visp@inria.fr

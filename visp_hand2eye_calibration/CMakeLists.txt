@@ -1,96 +1,75 @@
-cmake_minimum_required(VERSION 3.0.0)
+cmake_minimum_required(VERSION 3.5)
 project(visp_hand2eye_calibration)
 
-find_package(catkin REQUIRED COMPONENTS
-  geometry_msgs
-  image_proc
-  message_generation
-  roscpp
-  sensor_msgs
-  std_msgs
-  visp_bridge
-)
+if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  add_compile_options(-Wall -Wextra)
+endif()
 
-# ViSP cannot be found by Catkin.
-# see https://github.com/ros/catkin/issues/606
-find_package(VISP REQUIRED)
+find_package(ament_cmake_auto REQUIRED)
+ament_auto_find_build_dependencies()
 
-include_directories(
-  ${Boost_INCLUDE_DIRS}
-  ${VISP_INCLUDE_DIRS}
-  ${catkin_INCLUDE_DIRS}
-)
+find_package(rclcpp REQUIRED)
+find_package(geometry_msgs REQUIRED)
+find_package(std_msgs REQUIRED)
+find_package(sensor_msgs REQUIRED)
+find_package(rosidl_default_generators REQUIRED)
+find_package(visp_bridge REQUIRED)
+find_package(VISP REQUIRED COMPONENTS visp_core visp_vision)
 
-# Generate messages and services.
-add_message_files(
-  DIRECTORY
-    msg
-  FILES
-    TransformArray.msg
-  )
-add_service_files(
-  DIRECTORY
-    srv
-  FILES
-    compute_effector_camera.srv
-    compute_effector_camera_quick.srv
-    reset.srv
-  )
-generate_messages(DEPENDENCIES geometry_msgs sensor_msgs std_msgs)
-
-catkin_package(
-  CATKIN_DEPENDS
-    geometry_msgs
-    message_runtime
-    roscpp
-    sensor_msgs
-    std_msgs
+# include_directories(include)
+rosidl_generate_interfaces(${PROJECT_NAME}
+  "msg/TransformArray.msg"
+  "srv/ComputeEffectorCamera.srv"
+  "srv/ComputeEffectorCameraQuick.srv"
+  "srv/Reset.srv"
+  DEPENDENCIES std_msgs sensor_msgs geometry_msgs
 )
 
 add_library(${PROJECT_NAME}_common
   src/names.cpp
-  src/names.h
 )
-target_link_libraries(${PROJECT_NAME}_common
-  ${catkin_LIBRARIES}
-  ${roscpp_LIBRARIES}
-  )
+ament_target_dependencies(${PROJECT_NAME}_common
+  sensor_msgs geometry_msgs rclcpp
+)
+target_include_directories(${PROJECT_NAME}_common PUBLIC
+  "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+  "$<INSTALL_INTERFACE:include/${PROJECT_NAME}>"
+)
+
+rosidl_get_typesupport_target(cpp_typesupport_target "${PROJECT_NAME}" "rosidl_typesupport_cpp")
 
 add_executable(${PROJECT_NAME}_calibrator
   src/calibrator.cpp
-  src/calibrator.h
   src/calibrator_main.cpp
 )
+
 target_link_libraries(${PROJECT_NAME}_calibrator
   ${PROJECT_NAME}_common
-  ${catkin_LIBRARIES}
-  ${roscpp_LIBRARIES}
-  )
-add_dependencies(${PROJECT_NAME}_calibrator
-  ${catkin_EXPORTED_TARGETS}
-  ${PROJECT_NAME}_gencpp)
+  ${VISP_LIBRARIES}
+  "${cpp_typesupport_target}"
+)
+ament_target_dependencies(${PROJECT_NAME}_calibrator rclcpp std_msgs sensor_msgs geometry_msgs visp_bridge)
 
 add_executable(${PROJECT_NAME}_client
   src/client.cpp
-  src/client.h
   src/client_main.cpp
 )
+
 target_link_libraries(${PROJECT_NAME}_client
   ${PROJECT_NAME}_common
-  ${catkin_LIBRARIES}
-  ${roscpp_LIBRARIES}
-  )
-add_dependencies(${PROJECT_NAME}_client
-  ${catkin_EXPORTED_TARGETS}
-  ${PROJECT_NAME}_gencpp)
+  ${VISP_LIBRARIES}
+  "${cpp_typesupport_target}"
+)
+
+ament_target_dependencies(${PROJECT_NAME}_client rclcpp std_msgs sensor_msgs geometry_msgs visp_bridge)
 
 install(
   TARGETS
-    ${PROJECT_NAME}_calibrator
-    ${PROJECT_NAME}_client
-    ${PROJECT_NAME}_common
-  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+  ${PROJECT_NAME}_calibrator
+  ${PROJECT_NAME}_client
+  DESTINATION lib/${PROJECT_NAME}
 )
 
+ament_export_dependencies(rosidl_default_runtime)
+
+ament_package()

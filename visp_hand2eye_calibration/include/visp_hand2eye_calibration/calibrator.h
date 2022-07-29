@@ -1,9 +1,7 @@
 /****************************************************************************
  *
- * $Id: file.h 3496 2011-11-22 15:14:32Z fnovotny $
- *
  * This file is part of the ViSP software.
- * Copyright (C) 2005 - 2012 by INRIA. All rights reserved.
+ * Copyright (C) 2005 - 2022 by INRIA. All rights reserved.
  *
  * This software is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -51,7 +49,7 @@
 
 #include "geometry_msgs/msg/transform.hpp"
 
-#include "visibility.h"
+#include "visp_hand2eye_calibration/visibility.h"
 
 #include "visp_hand2eye_calibration/msg/transform_array.hpp"
 #include "visp_hand2eye_calibration/srv/compute_effector_camera.hpp"
@@ -64,12 +62,11 @@
 
 namespace visp_hand2eye_calibration
 {
-
 class Calibrator : public rclcpp::Node
 {
 public:
   //! advertises services and subscribes to topics
-  VISP_HAND2EYE_CALIBRATION_PUBLIC Calibrator();
+  VISP_HAND2EYE_CALIBRATION_PUBLIC Calibrator(const rclcpp::NodeOptions &options = rclcpp::NodeOptions());
 
 private:
   // subscribers. Must be class-persistant
