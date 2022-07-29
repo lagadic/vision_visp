@@ -27,14 +27,15 @@ add_subdirectory(tool)
 set(visp_bridge_lib_dir "$<TARGET_FILE_DIR:${PROJECT_NAME}>")
 
 ament_export_targets(export_${PROJECT_NAME})
+ament_export_dependencies(VISP)
 
 # Mark cpp header files for installation
 install(DIRECTORY include/ DESTINATION include/${PROJECT_NAME})
 
 install(TARGETS ${PROJECT_NAME}
-        RUNTIME DESTINATION bin
-        ARCHIVE DESTINATION lib
-        LIBRARY DESTINATION lib
+  RUNTIME DESTINATION bin
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib
 )
 
 ament_package()
