@@ -1,4 +1,4 @@
-# This service computes the effector to camera transformation from 
+# This service computes the effector to camera transformation from
 # data provided on camera_object and world_effector topics
 #
 
