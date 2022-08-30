@@ -1,110 +1,116 @@
-cmake_minimum_required(VERSION 3.0.0)
+cmake_minimum_required(VERSION 3.5)
 project(visp_camera_calibration)
 
-find_package(catkin REQUIRED COMPONENTS
-  camera_calibration_parsers
-  geometry_msgs
-  message_generation
-  roscpp
-  sensor_msgs
-  std_msgs
-  visp_bridge
+if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  add_compile_options(-Wall -Wextra)
+endif()
+
+find_package(ament_cmake_auto REQUIRED)
+ament_auto_find_build_dependencies()
+
+find_package(rclcpp REQUIRED)
+find_package(geometry_msgs REQUIRED)
+find_package(std_msgs REQUIRED)
+find_package(sensor_msgs REQUIRED)
+find_package(rosidl_default_generators REQUIRED)
+find_package(camera_calibration_parsers REQUIRED)
+find_package(visp_bridge REQUIRED)
+find_package(VISP REQUIRED COMPONENTS visp_core visp_blob visp_vision)
+
+# messages and services interface generation
+rosidl_generate_interfaces(${PROJECT_NAME}
+  "msg/CalibPointArray.msg"
+  "msg/CalibPoint.msg"
+  "msg/ImageAndPoints.msg"
+  "msg/ImagePoint.msg"
+  "srv/Calibrate.srv"
+  DEPENDENCIES std_msgs sensor_msgs geometry_msgs
 )
 
-find_package(VISP REQUIRED)
-
-include_directories(SYSTEM
-  ${BULLET_INCLUDE_DIRS}
-  ${Boost_INCLUDE_DIRS}
-  ${VISP_INCLUDE_DIRS}
-  ${catkin_INCLUDE_DIRS}
-  )
-
-# Generate messages and services.
-add_message_files(
-  DIRECTORY
-    msg
-  FILES
-    CalibPoint.msg
-    CalibPointArray.msg
-    ImageAndPoints.msg
-    ImagePoint.msg
-  )
-add_service_files(
-  DIRECTORY
-    srv
-  FILES
-    calibrate.srv
-  )
-generate_messages(DEPENDENCIES geometry_msgs sensor_msgs std_msgs)
-
-catkin_package(
-  CATKIN_DEPENDS
-    geometry_msgs
-    message_runtime
-    roscpp
-    sensor_msgs
-    std_msgs
-  DEPENDS
-    VISP
+add_library(${PROJECT_NAME}_common
+  src/names.cpp
 )
 
-add_library(${PROJECT_NAME}_common src/names.cpp src/names.h)
-target_link_libraries(${PROJECT_NAME}_common
-  ${catkin_LIBRARIES}
-  ${roscpp_LIBRARIES}
-  )
+ament_target_dependencies(${PROJECT_NAME}_common
+  rclcpp
+)
+
+rosidl_get_typesupport_target(cpp_typesupport_target "${PROJECT_NAME}" "rosidl_typesupport_cpp")
+
+target_include_directories(${PROJECT_NAME}_common PUBLIC
+  "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+  "$<INSTALL_INTERFACE:include/${PROJECT_NAME}>"
+)
 
 add_executable(${PROJECT_NAME}_calibrator
   src/calibrator.cpp
-  src/calibrator.h
   src/calibrator_main.cpp)
+
 target_link_libraries(${PROJECT_NAME}_calibrator
   ${PROJECT_NAME}_common
-  ${catkin_LIBRARIES}
-  ${roscpp_LIBRARIES}
-  ${VISP_LIBRARIES})
-add_dependencies(${PROJECT_NAME}_calibrator
-  ${catkin_EXPORTED_TARGETS} ${PROJECT_NAME}_gencpp)
+  "${cpp_typesupport_target}"
+  ${VISP_LIBRARIES}
+)
 
+ament_target_dependencies(${PROJECT_NAME}_calibrator
+  rclcpp
+  std_msgs
+  sensor_msgs
+  geometry_msgs
+  visp_bridge
+)
+
+# target image_processing
 add_executable(${PROJECT_NAME}_image_processing
   src/image_processing.cpp
-  src/image_processing.h
   src/image_processing_main.cpp)
+
 target_link_libraries(${PROJECT_NAME}_image_processing
   ${PROJECT_NAME}_common
-  ${catkin_LIBRARIES}
-  ${roscpp_LIBRARIES}
+  "${cpp_typesupport_target}"
   ${VISP_LIBRARIES}
-  )
-add_dependencies(${PROJECT_NAME}_image_processing
-  ${catkin_EXPORTED_TARGETS}
-  ${PROJECT_NAME}_gencpp
-  ${VISP_LIBRARIES})
+)
 
+ament_target_dependencies(${PROJECT_NAME}_image_processing
+  rclcpp
+  std_msgs
+  sensor_msgs
+  geometry_msgs
+  visp_bridge
+  camera_calibration_parsers
+)
+
+# target camera
 add_executable(${PROJECT_NAME}_camera
   src/camera.cpp
-  src/camera.h
   src/camera_main.cpp)
+
 target_link_libraries(${PROJECT_NAME}_camera
   ${PROJECT_NAME}_common
-  ${catkin_LIBRARIES}
-  ${roscpp_LIBRARIES}
+  "${cpp_typesupport_target}"
   ${VISP_LIBRARIES})
-add_dependencies(${PROJECT_NAME}_camera
-  ${catkin_EXPORTED_TARGETS} ${PROJECT_NAME}_gencpp)
+
+ament_target_dependencies(${PROJECT_NAME}_camera
+  rclcpp
+  std_msgs
+  sensor_msgs
+  geometry_msgs
+  visp_bridge
+  camera_calibration_parsers
+)
 
 install(
   TARGETS
-    ${PROJECT_NAME}_calibrator
-    ${PROJECT_NAME}_camera
-    ${PROJECT_NAME}_common
-    ${PROJECT_NAME}_image_processing
-  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+  ${PROJECT_NAME}_calibrator
+  ${PROJECT_NAME}_image_processing
+  ${PROJECT_NAME}_camera
+  DESTINATION lib/${PROJECT_NAME}
 )
 
-install(DIRECTORY launch
-  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+install(DIRECTORY
+  launch
+  DESTINATION share/${PROJECT_NAME}
 )
+ament_export_dependencies(rosidl_default_runtime)
+
+ament_package()

@@ -1,7 +1,5 @@
 /****************************************************************************
  *
- * $Id: file.h 3496 2011-11-22 15:14:32Z fnovotny $
- *
  * This file is part of the ViSP software.
  * Copyright (C) 2005 - 2012 by INRIA. All rights reserved.
  *
@@ -15,14 +13,14 @@
  * GPL, please contact INRIA about acquiring a ViSP Professional
  * Edition License.
  *
- * See http://www.irisa.fr/lagadic/visp/visp.html for more information.
+ * See https://visp.inria.fr for more information.
  *
  * This software was developed at:
  * INRIA Rennes - Bretagne Atlantique
  * Campus Universitaire de Beaulieu
  * 35042 Rennes Cedex
  * France
- * http://www.irisa.fr/lagadic
+ * https://team.inria.fr/rainbow/
  *
  * If you have questions regarding the use of this file, please contact
  * INRIA at visp@inria.fr
@@ -34,49 +32,44 @@
  * not clear to you.
  *
  * Description:
- * File containing names of topics or services used all accross the package
- *
- * Authors:
- * Filip Novotny
- *
+ * File containing names of topics or services used all across the package
  *
  *****************************************************************************/
 
 /*!
   \file names.h
-  \brief File containing names of topics or services used all accross the package
+  \brief File containing names of topics or services used all across the package
 */
 
-#ifndef __visp_hand2eye_calibration_NAMES_H__
-# define __visp_hand2eye_calibration_NAMES_H__
-# include <string>
+#ifndef VISP_CAMERA_CALIBRATION__NAMES_H_
+#define VISP_CAMERA_CALIBRATION__NAMES_H_
 
-// define topic and service names for the visp_hand2eye_calibration package.
+#include <string>
+
+// define topic and service names for the visp_camera_calibration package.
 namespace visp_camera_calibration
 {
-  extern std::string camera_prefix;
-  extern std::string raw_image_topic;
-  extern std::string point_correspondence_topic;
-  extern std::string calibrate_service;
-  extern std::string set_camera_info_service;
-  extern std::string set_camera_info_bis_service;
-  extern std::string gray_level_precision_param;
-  extern std::string size_precision_param;
-  extern std::string pause_at_each_frame_param;
-  extern std::string images_path_param;
-  extern std::string calibration_path_param;
+extern std::string camera_prefix;
+extern std::string raw_image_topic;
+extern std::string point_correspondence_topic;
+extern std::string calibrate_service;
+extern std::string set_camera_info_service;
+extern std::string set_camera_info_bis_service;
+extern std::string gray_level_precision_param;
+extern std::string size_precision_param;
+extern std::string pause_at_each_frame_param;
+extern std::string images_path_param;
+extern std::string calibration_path_param;
 
-  extern std::string model_points_x_param;
-  extern std::string model_points_y_param;
-  extern std::string model_points_z_param;
+extern std::string model_points_x_param;
+extern std::string model_points_y_param;
+extern std::string model_points_z_param;
 
-  extern std::string selected_points_x_param;
-  extern std::string selected_points_y_param;
-  extern std::string selected_points_z_param;
+extern std::string selected_points_x_param;
+extern std::string selected_points_y_param;
+extern std::string selected_points_z_param;
 
-  void remap();
-
-}
+void remap();
+} // namespace visp_camera_calibration
 
 #endif
-
