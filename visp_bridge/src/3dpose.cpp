@@ -61,11 +61,31 @@ vpHomogeneousMatrix toVispHomogeneousMatrix(const geometry_msgs::msg::Pose &pose
   return mat;
 }
 
+vpHomogeneousMatrix toVispHomogeneousMatrix(const geometry_msgs::msg::Pose::ConstSharedPtr &pose)
+{
+  vpHomogeneousMatrix mat;
+  vpTranslationVector vec(pose->position.x, pose->position.y, pose->position.z);
+  vpQuaternionVector q(pose->orientation.x, pose->orientation.y, pose->orientation.z, pose->orientation.w);
+  mat.buildFrom(vec, q);
+
+  return mat;
+}
+
 vpHomogeneousMatrix toVispHomogeneousMatrix(const geometry_msgs::msg::Transform &trans)
 {
   vpHomogeneousMatrix mat;
   vpTranslationVector vec(trans.translation.x, trans.translation.y, trans.translation.z);
   vpQuaternionVector q(trans.rotation.x, trans.rotation.y, trans.rotation.z, trans.rotation.w);
+  mat.buildFrom(vec, q);
+
+  return mat;
+}
+
+vpHomogeneousMatrix toVispHomogeneousMatrix(const geometry_msgs::msg::Transform::ConstSharedPtr &trans)
+{
+  vpHomogeneousMatrix mat;
+  vpTranslationVector vec(trans->translation.x, trans->translation.y, trans->translation.z);
+  vpQuaternionVector q(trans->rotation.x, trans->rotation.y, trans->rotation.z, trans->rotation.w);
   mat.buildFrom(vec, q);
 
   return mat;

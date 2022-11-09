@@ -57,6 +57,12 @@ namespace visp_bridge
 */
 vpCameraParameters toVispCameraParameters(const sensor_msgs::msg::CameraInfo &cam_info);
 /*!
+  \brief Converts a sensor_msgs::CameraInfo::ConstSharedPtr to ViSP camera parameters (vpCameraParameters).
+  \param[in] cam_info Camera parameters in ROS/sensor_msgs format.
+  \return camera parameters in ViSP format.
+*/
+vpCameraParameters toVispCameraParameters(const sensor_msgs::msg::CameraInfo::ConstSharedPtr &cam_info);
+/*!
   \brief Converts ViSP camera parameters (vpCameraParameters) to sensor_msgs::CameraInfo.
   \param[in] cam_info Camera parameters in ViSP format.
   \param[in] cam_image_width x-resolution of the camera image
