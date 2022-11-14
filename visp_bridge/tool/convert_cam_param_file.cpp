@@ -47,21 +47,122 @@
 #include <visp3/core/vpCameraParameters.h>
 #include <visp3/core/vpXmlParserCamera.h>
 
-#include <boost/filesystem.hpp>
-#include <boost/program_options/options_description.hpp>
-#include <boost/program_options/parsers.hpp>
-#include <boost/program_options/variables_map.hpp>
-
 #include <iostream>
+#include <filesystem>
+#include <getopt.h>
 
-namespace po = boost::program_options;
-namespace fs = boost::filesystem;
+namespace fs = std::filesystem;
 
 // Usage : [-int <integer value>] [-float <float value>] [-double <double value>] [-h]
-int main(int argc, const char **argv)
+int main(int argc, char **argv)
 {
+  unsigned int width = 0;
+  unsigned int height = 0;
+
+  std::string cameraName = 0;
+  std::string input;
+  std::string output;
+  
+  bool distortion;
+  bool force_deleting;
+  
+  bool input_bool = false;
+  bool output_bool = false;
+  bool camera_bool = false;
+  bool width_bool = false;
+  bool height_bool = false;
+
+  const char* const short_opts = "n:o:c:w:h:d:f";
+  const option long_opts[] = {
+    {"input", required_argument, nullptr, 'n'},
+    {"output", required_argument, nullptr, 'o'},
+    {"camera", required_argument, nullptr, 'c'},
+    {"width", required_argument, nullptr, 'w'},
+    {"height", required_argument, nullptr, 'h'},
+    {"distortion", no_argument, nullptr, 'd'},
+    {"force-deleting", no_argument, nullptr, 'f'},
+    {"help", no_argument, nullptr, 'x'},
+    {nullptr, no_argument, nullptr, 0}
+  };
+
+  std::string help_string = std::string("Allowed options \n") +
+    "help: produce help message \n" +
+    "input,i: input file path \n" +
+    "output,o: output file path \n" +
+    "camera,c: camera name \n" +
+    "width,w: camera width \n" +
+    "height,h: camera height \n" +
+    "distortion,d: Use distortion model \n" +
+    "force-deleting,f: force deleting output file if this exists \n" +
+    "\n" +
+    "Usage examples: \n" +
+    "convert_cam_param_file -i input_cam_parameters.ini -c Dragonfly2-8mm-ccmop -w 640 -h 480 \n" +
+    "convert_cam_param_file -i input_cam_parameters.yml -c Dragonfly2-8mm-ccmop -w 640 -h 480 \n" +
+    "convert_cam_param_file -i input_cam_parameters.xml -c Dragonfly2-8mm-ccmop -w 640 -h 480 \n" +
+    "convert_cam_param_file -i input_cam_parameters.xml -o input_cam_parameters.yml -c Dragonfly2-8mm-ccmop -w 640 -h 480 \n";
+
+  while (true)
+    {
+      const auto opt = getopt_long(argc, argv, short_opts, long_opts, nullptr);
+
+      if (-1 == opt)
+	break;
+
+      switch (opt)
+        {
+        case 'i': // input
+	  input = optarg;
+	  input_bool = true;
+	  break;
+
+        case 'o': // output
+	  output = optarg;
+	  output_bool = true;
+	  break;
+
+        case 'c': // camera
+	  cameraName = optarg;
+	  camera_bool = true;
+            break;
+
+        case 'w': // width
+	  width = std::stoul(optarg);
+	  width_bool = true;
+	  break;
+
+        case 'h': // height
+	  height = std::stoul(optarg);
+	  height_bool = true;
+	  break;
+
+        case 'd': // distortion
+	  distortion = true;
+	  break;
+
+        case 'f': // force-deleting
+	  force_deleting = true;
+	  break;
+
+        case 'x': // help
+	  std::cout << help_string << std::endl;
+    break;
+
+        default:
+	  std::cout << help_string << std::endl;
+	  break;
+        }
+    }
+
+  if (!( input_bool && camera_bool && width_bool && height_bool)) {
+    std::cout << "Missing options" << std::endl;
+    std::cout << help_string << std::endl;
+    return 1;
+  }
+
+    
+   
   // Declare the supported options.
-  po::options_description desc(
+  /*  po::options_description desc(
       "Usage examples:\n"
       "  convert_cam_param_file -i input_cam_parameters.ini -c Dragonfly2-8mm-ccmop -w 640 -h 480\n"
       "  convert_cam_param_file -i input_cam_parameters.yml -c Dragonfly2-8mm-ccmop -w 640 -h 480\n"
@@ -69,47 +170,46 @@ int main(int argc, const char **argv)
       "  convert_cam_param_file -i input_cam_parameters.xml -o input_cam_parameters.yml -c Dragonfly2-8mm-ccmop -w 640 "
       "-h 480\n"
       "Allowed options");
-  desc.add_options()("help", "produce help message")("input,i", po::value<std::string>(), "input file path")(
+
+      desc.add_options()("help", "produce help message")("input,i", po::value<std::string>(), "input file path")(
       "output,o", po::value<std::string>(), "output file path")("camera,c", po::value<std::string>(), "camera name")(
       "width,w", po::value<unsigned int>(), "camera width")("height,h", po::value<unsigned int>(), "camera height")(
       "distortion,d", "Use distortion model")("force-deleting,f", "Force deleting output file if this exists");
 
-  po::variables_map vm;
-  po::store(po::parse_command_line(argc, argv, desc), vm);
-  po::notify(vm);
+      po::variables_map vm;
+      po::store(po::parse_command_line(argc, argv, desc), vm);
+      po::notify(vm);
 
-  if (vm.count("help")) {
-    std::cout << desc << std::endl;
-    return 0;
-  }
+      if (vm.count("help")) {
+      std::cout << desc << std::endl;
+      return 0;
+      }
+      if (!(vm.count("input") && vm.count("camera") && vm.count("width") && vm.count("height"))) {
+      std::cout << "Missing options" << std::endl;
+      std::cout << desc << std::endl;
+      return 1;
+      }
+  */
 
-  if (!(vm.count("input") && vm.count("camera") && vm.count("width") && vm.count("height"))) {
-    std::cout << "Missing options" << std::endl;
-    std::cout << desc << std::endl;
-    return 1;
-  }
-
-  const fs::path inPath = vm["input"].as<std::string>();
+  const fs::path inPath = input;
   fs::path outPath;
 
   vpXmlParserCamera parser;
   vpCameraParameters vispParam;
   sensor_msgs::msg::CameraInfo rosParam;
-  const unsigned int width = vm["width"].as<uint>();
-  const unsigned int height = vm["height"].as<uint>();
 
   if (inPath.extension() == std::string(".xml")) {
 
-    if (vm.count("output")) {
-      outPath = vm["output"].as<std::string>();
+    if (output_bool) {
+      outPath = output;
     } else {
       outPath = inPath;
       outPath.replace_extension(fs::path(".ini"));
     }
 
-    if (boost::filesystem::exists(outPath)) {
-      if (vm.count("force-deleting")) {
-        boost::filesystem::remove(outPath);
+    if (fs::exists(outPath)) {
+      if (force_deleting) {
+        fs::remove(outPath);
       } else {
         std::cout << "Output file " << outPath.string() << " already exists. Use -f to force deleting" << std::endl;
         return 1;
@@ -118,13 +218,13 @@ int main(int argc, const char **argv)
 
     vpCameraParameters::vpCameraParametersProjType projModel;
 
-    if (vm.count("distortion")) {
+    if (distortion) {
       projModel = vpCameraParameters::perspectiveProjWithDistortion;
     } else {
       projModel = vpCameraParameters::perspectiveProjWithoutDistortion;
     }
 
-    if (parser.parse(vispParam, inPath.string().c_str(), vm["camera"].as<std::string>().c_str(), projModel, width,
+    if (parser.parse(vispParam, inPath.string().c_str(), cameraName.c_str(), projModel, width,
                      height) != vpXmlParserCamera::SEQUENCE_OK) {
       std::cout << "Error parsing visp input file " << inPath.string() << std::endl;
       return 1;
@@ -132,30 +232,28 @@ int main(int argc, const char **argv)
 
     rosParam = visp_bridge::toSensorMsgsCameraInfo(vispParam, width, height);
 
-    if (!camera_calibration_parsers::writeCalibration(outPath.string(), vm["camera"].as<std::string>(), rosParam)) {
+    if (!camera_calibration_parsers::writeCalibration(outPath.string(), cameraName, rosParam)) {
       std::cout << "Error writing ros output file " << outPath.string() << std::endl;
       return 1;
     }
 
   } else if (inPath.extension() == std::string(".ini") || inPath.extension() == std::string(".yml")) {
 
-    if (vm.count("output")) {
-      outPath = vm["output"].as<std::string>();
+    if (output_bool) {
+      outPath = output;
     } else {
       outPath = inPath;
       outPath.replace_extension(fs::path(".xml"));
     }
 
-    if (boost::filesystem::exists(outPath)) {
-      if (vm.count("force-deleting")) {
-        boost::filesystem::remove(outPath);
+    if (fs::exists(outPath)) {
+      if (force_deleting) {
+        fs::remove(outPath);
       } else {
         std::cout << "Output file " << outPath.string() << " already exists. Use -f to force deleting" << std::endl;
         return 1;
       }
     }
-
-    std::string cameraName = vm["camera"].as<std::string>();
 
     if (!camera_calibration_parsers::readCalibration(inPath.string(), cameraName, rosParam)) {
       std::cout << "Error parsing ros input file " << inPath.string() << std::endl;

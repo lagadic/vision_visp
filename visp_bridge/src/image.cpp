@@ -74,11 +74,11 @@ vpImage<unsigned char> toVispImage(const sensor_msgs::msg::Image &src)
 
   vpImage<unsigned char> dst(src.height, src.width);
 
-  if (src.encoding == MONO8)
+  if (src.encoding == sensor_msgs::image_encodings::MONO8)
     memcpy(dst.bitmap, &(src.data[0]), dst.getHeight() * src.step * sizeof(unsigned char));
-  else if (src.encoding == RGB8 || src.encoding == RGBA8 || src.encoding == BGR8 || src.encoding == BGRA8) {
+  else if (src.encoding == sensor_msgs::image_encodings::RGB8 || src.encoding == RGBA8 || src.encoding == sensor_msgs::image_encodings::BGR8 || src.encoding == sensor_msgs::image_encodings::BGRA8) {
     unsigned nc = sensor_msgs::image_encodings::numChannels(src.encoding);
-    unsigned cEnd = (src.encoding == RGBA8 || src.encoding == BGRA8) ? nc - 1 : nc;
+    unsigned cEnd = (src.encoding == RGBA8 || src.encoding == sensor_msgs::image_encodings::BGRA8) ? nc - 1 : nc;
 
     for (unsigned i = 0; i < dst.getWidth(); ++i) {
       for (unsigned j = 0; j < dst.getHeight(); ++j) {
@@ -102,7 +102,7 @@ vpImage<vpRGBa> toVispImageRGBa(const sensor_msgs::msg::Image &src)
 
   vpImage<vpRGBa> dst(src.height, src.width);
 
-  if (src.encoding == MONO8)
+  if (src.encoding == sensor_msgs::image_encodings::MONO8)
     for (unsigned i = 0; i < dst.getWidth(); ++i) {
       for (unsigned j = 0; j < dst.getHeight(); ++j) {
 
