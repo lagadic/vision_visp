@@ -15,7 +15,6 @@ find_package(geometry_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(camera_calibration_parsers REQUIRED)
 find_package(VISP REQUIRED COMPONENTS visp_core)
-find_package(Boost REQUIRED COMPONENTS filesystem program_options)
 
 add_subdirectory(src)
 add_subdirectory(tool)
