@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.0.0)
 project(visp_bridge)
 
-find_package(Boost REQUIRED COMPONENTS filesystem program_options)
+find_package(Boost REQUIRED COMPONENTS system thread filesystem program_options)
 
 find_package(catkin REQUIRED COMPONENTS
   camera_calibration_parsers
