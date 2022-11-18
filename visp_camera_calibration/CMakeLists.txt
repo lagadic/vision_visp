@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.0.0)
 project(visp_camera_calibration)
 
+find_package(Boost REQUIRED COMPONENTS system thread)
 find_package(catkin REQUIRED COMPONENTS
   camera_calibration_parsers
   geometry_msgs
