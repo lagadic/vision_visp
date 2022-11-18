@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.0.0)
 project(visp_tracker)
 
-find_package(Boost REQUIRED COMPONENTS filesystem thread)
+find_package(Boost REQUIRED COMPONENTS system filesystem thread)
 
 find_package(catkin REQUIRED COMPONENTS
   dynamic_reconfigure
