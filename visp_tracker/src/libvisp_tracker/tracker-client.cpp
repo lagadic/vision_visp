@@ -817,19 +817,19 @@ namespace visp_tracker
                                const std::string& resourcePath,
                                std::string& fullModelPath)
   {
-    std::string modelExt_ = ".wrl";
-    bool vrmlWorked = true;
+    std::string modelExt_ = ".cao";
+    bool caoWorked = true;
     resource_retriever::MemoryResource resource;
 
     try{
       resource = resourceRetriever_.get(resourcePath + modelExt_);
     }
     catch(...){
-      vrmlWorked = false;
+      caoWorked = false;
     }
 
-    if(!vrmlWorked){
-      modelExt_ = ".cao";
+    if(!caoWorked){
+      modelExt_ = ".wrl";
 
       try{
         resource = resourceRetriever_.get(resourcePath + modelExt_);
