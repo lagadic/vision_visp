@@ -4,5 +4,5 @@
 # Used by the viewer to display moving edge positions and allow
 # tracking debug.
 
-Header header                       # Header (required for synchronization).
-MovingEdgeSite[] moving_edge_sites  # List of moving dge sites (i.e. positions).
+std_msgs/Header header                       # Header (required for synchronization).
+visp_tracker/MovingEdgeSite[] moving_edge_sites  # List of moving dge sites (i.e. positions).

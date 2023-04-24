@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<root>
+  <!--This file stores intrinsic camera parameters used
+   in the vpCameraParameters Class of ViSP available
+   at https://visp.inria.fr/download/ .
+   It can be read with the parse method of
+   the vpXmlParserCamera class.-->
+  <camera>
+    <!--Name of the camera-->
+    <name>Camera</name>
+    <!--Size of the image on which camera calibration was performed-->
+    <image_width>640</image_width>
+    <image_height>480</image_height>
+    <!--Intrinsic camera parameters computed for each projection model-->
+    <model>
+      <!--Projection model type-->
+      <type>perspectiveProjWithoutDistortion</type>
+      <!--Pixel ratio-->
+      <px>557.25193286403874</px>
+      <py>561.17762050162173</py>
+      <!--Principal point-->
+      <u0>360.07544847291069</u0>
+      <v0>235.52403615842627</v0>
+    </model>
+  </camera>
+</root>

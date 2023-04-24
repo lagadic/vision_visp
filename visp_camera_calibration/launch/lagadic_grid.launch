@@ -1,28 +1,26 @@
 <launch>	
 	<arg name="calibration_path" default="calibration.ini" />
 
-	<node pkg="rqt_console" name="rqt_console" type="rqt_console"/>
-	<group ns="visp_camera_calibration">
+<!--	<node pkg="rqt_console" name="rqt_console" exec="rqt_console"/> -->
+	<group>
 
-		<node pkg="visp_camera_calibration" name="visp_camera_calibration_calibrator" type="visp_camera_calibration_calibrator"/>
+		<node pkg="visp_camera_calibration" name="visp_camera_calibration_calibrator" exec="visp_camera_calibration_calibrator"/>
 		
-		<node pkg="visp_camera_calibration" name="visp_camera_calibration_image_processing" type="visp_camera_calibration_image_processing" args="camera_prefix:=/visp_camera_calibration">
-		      <param name="gray_level_precision" value="0.7" />
-		      <param name="size_precision" value="0.5" />
-		      <param name="pause_at_each_frame" value="True" />
-		      <param name="calibration_path" type="string" value="$(arg calibration_path)" />
-
-		      <rosparam param="model_points_x">[0.0, 0.03, 0.06, 0.09, 0.12, 0.15, 0.0, 0.03, 0.06, 0.09, 0.12, 0.15, 0.0, 0.03, 0.06, 0.09, 0.12, 0.15, 0.0, 0.03, 0.06, 0.09, 0.12, 0.15, 0.0, 0.03, 0.06, 0.09, 0.12, 0.15, 0.0, 0.03, 0.06, 0.09, 0.12, 0.15]</rosparam>
-		      <rosparam param="model_points_y">[0.0, 0.00, 0.00, 0.00, 0.00, 0.00, .03, 0.03, 0.03, 0.03, 0.03, 0.03, .06, 0.06, 0.06, 0.06, 0.06, 0.06, .09, 0.09, 0.09, 0.09, 0.09, 0.09, 0.12,0.12, 0.12, 0.12, 0.12, 0.12, 0.15,0.15, 0.15, 0.15, 0.15, 0.15]</rosparam>
-		      <rosparam param="model_points_z">[0.0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.0, 0.00, 0.00, 0.00, 0.00,0.00]</rosparam>
-
-		      <rosparam param="selected_points_x">[0.03, 0.03, 0.09, 0.12]</rosparam>
-		      <rosparam param="selected_points_y">[0.03, 0.12, 0.12, 0.03]</rosparam>
-		      <rosparam param="selected_points_z">[0.00, 0.00, 0.00, 0.00]</rosparam>		      
+		<node pkg="visp_camera_calibration" name="visp_camera_calibration_image_processing" exec="visp_camera_calibration_image_processing" args="--ros-args --remap camera_prefix:=/visp_camera_calibration">
+		      <param name="/visp_camera_calibration/visp_camera_calibration_image_processing/gray_level_precision" value="0.7" />
+		      <param name="/visp_camera_calibration/visp_camera_calibration_image_processing/size_precision" value="0.5" />
+		      <param name="/visp_camera_calibration/visp_camera_calibration_image_processing/pause_at_each_frame" value="True" />
+		      <param name="/visp_camera_calibration/visp_camera_calibration_image_processing/calibration_path" value="$(var calibration_path)" />
+		      <param name="/visp_camera_calibration/visp_camera_calibration_image_processing/model_points_x" value="[0.0, 0.03, 0.06, 0.09, 0.12, 0.15, 0.0, 0.03, 0.06, 0.09, 0.12, 0.15, 0.0, 0.03, 0.06, 0.09, 0.12, 0.15, 0.0, 0.03, 0.06, 0.09, 0.12, 0.15, 0.0, 0.03, 0.06, 0.09, 0.12, 0.15, 0.0, 0.03, 0.06, 0.09, 0.12, 0.15]"/>
+		      <param name="/visp_camera_calibration/visp_camera_calibration_image_processing/model_points_y" value="[0.0, 0.00, 0.00, 0.00, 0.00, 0.00, .03, 0.03, 0.03, 0.03, 0.03, 0.03, .06, 0.06, 0.06, 0.06, 0.06, 0.06, .09, 0.09, 0.09, 0.09, 0.09, 0.09, 0.12,0.12, 0.12, 0.12, 0.12, 0.12, 0.15,0.15, 0.15, 0.15, 0.15, 0.15]"/>
+		      <param name="/visp_camera_calibration/visp_camera_calibration_image_processing/model_points_z" value="[0.0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.0, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.00, 0.0, 0.00, 0.00, 0.00, 0.00,0.00]"/>
+		      <param name="/visp_camera_calibration/visp_camera_calibration_image_processing/selected_points_x" value="[0.03, 0.03, 0.09, 0.12]"/>
+		      <param name="/visp_camera_calibration/visp_camera_calibration_image_processing/selected_points_y" value="[0.03, 0.12, 0.12, 0.03]"/>
+		      <param name="/visp_camera_calibration/visp_camera_calibration_image_processing/selected_points_z" value="[0.00, 0.00, 0.00, 0.00]"/>  
 		</node>
 		
-		<node pkg="visp_camera_calibration" name="visp_camera_calibration_camera" type="visp_camera_calibration_camera">
-		      <param name="images_path" value="$(find visp_camera_calibration)/launch/images/grid36-0%d.pgm" />
+		<node pkg="visp_camera_calibration" name="visp_camera_calibration_camera" exec="visp_camera_calibration_camera">
+		      <param name="/visp_camera_calibration/visp_camera_calibration_camera/images_path" value="$(find-pkg-share visp_camera_calibration)/launch/images/grid36-0%d.pgm" />
 		</node>
 	</group>
 	

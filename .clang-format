@@ -1,0 +1,6 @@
+Language: Cpp
+BasedOnStyle: LLVM
+BreakBeforeBraces: Linux
+ColumnLimit: 120
+ConstructorInitializerIndentWidth: 2
+Standard: Cpp03

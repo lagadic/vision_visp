@@ -1,6 +1,11 @@
-<package>
+<?xml version="1.0"?>
+<?xml-model
+  href="http://download.ros.org/schema/package_format3.xsd"
+  schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
   <name>visp_tracker</name>
   <version>0.13.1</version>
+
   <description>
     Wraps the ViSP moving edge tracker provided by the ViSP visual
     servoing library into a ROS package.
@@ -9,47 +14,51 @@
     and orientation) of an object in an image. It is fast enough to
     allow object online tracking using a camera.
   </description>
+
   <maintainer email="fabien.spindler@inria.fr">Fabien Spindler</maintainer>
-  <author email="thomas.moulard@gmail.com">Thomas Moulard</author>
+
   <license>GPLv2</license>
-  <url>http://wiki.ros.org/wiki/visp_tracker</url>
-  <url type="repository">git://github.com/lagadic/vision_visp.git</url>
 
-  <export>
-    <nodelet plugin="${prefix}/nodelet_plugins.xml" />
-  </export>
+  <url type="website">http://wiki.ros.org/visp_tracker</url>
+  <url type="repository">https://github.com/lagadic/vision_visp/tree/ros2</url>
+  <url type="bugtracker">https://github.com/lagadic/vision_visp/issues</url>
 
-  <buildtool_depend>catkin</buildtool_depend>
+  <author email="laurent.garnier@irisa.fr">Laurent Garnier</author>
+  <author email="fabien.spindler@inria.fr">Fabien Spindler</author>
+  <author>Thomas Moulard</author>
 
-  <build_depend>message_generation</build_depend>
-  <build_depend>dynamic_reconfigure</build_depend>
-  <build_depend>nodelet</build_depend>
-  <build_depend>roscpp</build_depend>
-  <build_depend>rospy</build_depend>
-  <build_depend>std_msgs</build_depend>
-  <build_depend>sensor_msgs</build_depend>
+
+  <buildtool_depend>ament_cmake_ros</buildtool_depend>
+  <buildtool_depend>rosidl_default_generators</buildtool_depend>
+
+  <build_depend>visp</build_depend>
+
   <build_depend>geometry_msgs</build_depend>
   <build_depend>image_proc</build_depend>
   <build_depend>image_transport</build_depend>
+  <build_depend>rclcpp</build_depend>
   <build_depend>resource_retriever</build_depend>
-  <build_depend>tf</build_depend>
-  <!-- catkin_lint produce an error arround build_depend visp. -->
-  <!-- This error shouldn't be considered. If build_depend visp is removed, -->
-  <!-- the package is not able to build on ros buildfarm. -->
-  <build_depend>visp</build_depend>
+  <build_depend>sensor_msgs</build_depend>
+  <build_depend>std_msgs</build_depend>
+  <build_depend>tf2_ros</build_depend>
 
-  <run_depend>message_runtime</run_depend>
-  <run_depend>message_generation</run_depend>
-  <run_depend>dynamic_reconfigure</run_depend>
-  <run_depend>nodelet</run_depend>
-  <run_depend>roscpp</run_depend>
-  <run_depend>rospy</run_depend>
-  <run_depend>std_msgs</run_depend>
-  <run_depend>sensor_msgs</run_depend>
-  <run_depend>geometry_msgs</run_depend>
-  <run_depend>image_proc</run_depend>
-  <run_depend>image_transport</run_depend>
-  <run_depend>resource_retriever</run_depend>
-  <run_depend>tf</run_depend>
-  <run_depend>visp</run_depend>
+  <exec_depend>geometry_msgs</exec_depend>
+  <exec_depend>image_proc</exec_depend>
+  <exec_depend>image_transport</exec_depend>
+  <exec_depend>rclcpp</exec_depend>
+  <exec_depend>resource_retriever</exec_depend>
+  <exec_depend>sensor_msgs</exec_depend>
+  <exec_depend>std_msgs</exec_depend>
+  <exec_depend>visp</exec_depend>
+  <exec_depend>rosidl_default_runtime</exec_depend>
+  <exec_depend>tf2_ros</exec_depend>
+
+  <!-- Recommanded: https://docs.ros.org/en/foxy/Tutorials/Intermediate/Launch/Creating-Launch-Files.html -->
+  <exec_depend>ros2launch</exec_depend>
+
+  <member_of_group>rosidl_interface_packages</member_of_group>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
 </package>

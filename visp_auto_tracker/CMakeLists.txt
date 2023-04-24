@@ -1,215 +1,138 @@
-cmake_minimum_required(VERSION 3.0.0)
+cmake_minimum_required(VERSION 3.5)
 project(visp_auto_tracker)
 
-# Since visp 3.5.0 to avoid the following warning that makes build unstable
-#
-# /usr/include/OGRE/OgreMemorySTLAllocator.h:130:23: warning: ISO C++17 does not allow
-#   ‘register’ storage class specifier [-Wregister]
-#
-# we try to add -Wno-register option
-include(CheckCXXCompilerFlag)
-check_cxx_compiler_flag("-Wno-register" COMPILER_SUPPORTS_W_NO_REGISTER)
-
-#catkin_lint: ignore endblock_args indentation
-if(COMPILER_SUPPORTS_W_NO_REGISTER)
-  set(EXTRA_CXX_FLAGS "-Wno-register")
+if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  add_compile_options(-Wall -Wextra)
 endif()
 
-find_package(catkin REQUIRED COMPONENTS
+find_package(ament_cmake_auto REQUIRED)
+ament_auto_find_build_dependencies()
+
+set(Boost_INCLUDE_DIR /usr/include/boost)
+set(BOOST_LIBRARYDIR /usr/lib/x86_64-linux-gnu/)
+
+# ignore BOOST deprecated headers
+add_definitions("-DBOOST_ALLOW_DEPRECATED_HEADERS")
+add_definitions("-DBOOST_BIND_GLOBAL_PLACEHOLDERS")
+
+find_package(geometry_msgs REQUIRED)
+find_package(message_filters REQUIRED)
+find_package(std_msgs REQUIRED)
+find_package(image_transport REQUIRED)
+find_package(resource_retriever REQUIRED)
+find_package(rclcpp REQUIRED)
+find_package(sensor_msgs REQUIRED)
+find_package(std_msgs REQUIRED)
+find_package(visp_bridge REQUIRED)
+find_package(visp_tracker REQUIRED)
+find_package(rosidl_default_generators REQUIRED)
+
+find_package(VISP REQUIRED COMPONENTS visp_core)
+
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
+
+# ############
+# Libraries #
+# ############
+# Library gathering libauto_tracker used by all nodes.
+add_library(${PROJECT_NAME}_common
+  src/cmd_line.cpp
+  src/tracking.cpp
+)
+
+ament_target_dependencies(${PROJECT_NAME}_common
   geometry_msgs
-  message_filters
-  resource_retriever
-  roscpp
+  rclcpp
   sensor_msgs
   std_msgs
-  visp_bridge
+  resource_retriever
   visp_tracker
-)
-# ViSP cannot be found by Catkin.
-# see https://github.com/ros/catkin/issues/606
-find_package(VISP)
-
-if(VISP_HAVE_ZBAR OR VISP_HAVE_DMTX OR VISP_HAVE_APRILTAG)
-
-# Boost signals component is no longer being actively maintained since boost 1.63.0
-# Keept here as optional for compat with older ROS versions, but for Neotic this component is useless.
-find_package(Boost REQUIRED
-  COMPONENTS filesystem system regex date_time program_options thread OPTIONAL_COMPONENTS signals)
-
-include_directories(
-  ${Boost_INCLUDE_DIRS}
-  ${VISP_INCLUDE_DIRS}
-  ${catkin_INCLUDE_DIRS}
+  visp_bridge
+  VISP
 )
 
-catkin_package(
-  LIBRARIES auto_tracker
-
-  CATKIN_DEPENDS
-    geometry_msgs
-    message_filters
-    roscpp
-    sensor_msgs
-    std_msgs
-    visp_tracker
-
-  DEPENDS
-    VISP
+target_include_directories(${PROJECT_NAME}_common PUBLIC
+  "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+  "$<INSTALL_INTERFACE:include/${PROJECT_NAME}>"
 )
 
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/flashcode_mbt)
+target_link_libraries(${PROJECT_NAME}_common
+  ${VISP_LIBRARIES}
 
-# Library gathering libauto_tracker used by all nodes.
-add_library(${PROJECT_NAME}_cmd_line
-  flashcode_mbt/cmd_line/cmd_line.cpp
-  flashcode_mbt/cmd_line/cmd_line.h
+  # "${cpp_typesupport_target}"
 )
-target_link_libraries(${PROJECT_NAME}_cmd_line
-  ${resource_retriever_LIBRARIES}
-  ${catkin_LIBRARIES}
-  ${Boost_LIBRARIES})
 
-#catkin_lint: ignore unquoted_string_op
-if(VISP_VERSION VERSION_LESS "2.10.0")
-  add_library(${PROJECT_NAME}_qrcode_detector
-    flashcode_mbt/detectors/detector_base.cpp
-    flashcode_mbt/detectors/detector_base.h
-    flashcode_mbt/detectors/qrcode/detector.cpp
-    flashcode_mbt/detectors/qrcode/detector.h
-  )
-  target_link_libraries(${PROJECT_NAME}_qrcode_detector
-    ${resource_retriever_LIBRARIES}
-    ${catkin_LIBRARIES}
-    ${Boost_LIBRARIES}
-    zbar)
-
-  add_library(${PROJECT_NAME}_datamatrix_detector
-    flashcode_mbt/detectors/datamatrix/detector.cpp
-    flashcode_mbt/detectors/datamatrix/detector.h
-    flashcode_mbt/detectors/detector_base.cpp
-    flashcode_mbt/detectors/detector_base.h
-  )
-  target_link_libraries(${PROJECT_NAME}_datamatrix_detector
-    ${resource_retriever_LIBRARIES}
-    ${catkin_LIBRARIES}
-    ${Boost_LIBRARIES}
-    dmtx)
-endif()
-
-add_library(auto_tracker
-  flashcode_mbt/libauto_tracker/events.h
-  flashcode_mbt/libauto_tracker/logfilewriter.hpp
-  flashcode_mbt/libauto_tracker/states.hpp
-  flashcode_mbt/libauto_tracker/threading.cpp
-  flashcode_mbt/libauto_tracker/threading.h
-  flashcode_mbt/libauto_tracker/tracking.cpp
-  flashcode_mbt/libauto_tracker/tracking.h)
-
-#catkin_lint: ignore unquoted_string_op
-if(VISP_VERSION VERSION_LESS "2.10.0")
-  target_link_libraries(auto_tracker
-      ${PROJECT_NAME}_cmd_line
-      ${PROJECT_NAME}_qrcode_detector
-      ${PROJECT_NAME}_datamatrix_detector
-      ${resource_retriever_LIBRARIES}
-      ${catkin_LIBRARIES}
-      ${Boost_LIBRARIES}
-  )
-else()
-  target_link_libraries(auto_tracker
-      ${PROJECT_NAME}_cmd_line
-      ${resource_retriever_LIBRARIES}
-      ${catkin_LIBRARIES}
-      ${Boost_LIBRARIES}
-  )
-endif()
-
-add_executable(${PROJECT_NAME}
+add_executable(${PROJECT_NAME}_main
   src/main.cpp
   src/names.cpp
-  src/names.h
-  src/node.cpp
-  src/node.h
-  )
+  src/autotracker.cpp
+)
+target_link_libraries(${PROJECT_NAME}_main
+  "${cpp_typesupport_target}"
+  ${VISP_LIBRARIES}
+  ${PROJECT_NAME}_common
+)
+
+ament_target_dependencies(${PROJECT_NAME}_main
+  rclcpp
+  message_filters
+  std_msgs
+  image_transport
+  geometry_msgs
+  resource_retriever
+  sensor_msgs
+  visp_tracker
+  visp_bridge
+)
+
+target_include_directories(${PROJECT_NAME}_main PUBLIC
+  "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+  "$<INSTALL_INTERFACE:include/${PROJECT_NAME}>"
+)
 
 if(EXTRA_CXX_FLAGS)
-    set_target_properties(${PROJECT_NAME} PROPERTIES COMPILE_FLAGS ${EXTRA_CXX_FLAGS})
-    set_target_properties(${PROJECT_NAME}_cmd_line PROPERTIES COMPILE_FLAGS ${EXTRA_CXX_FLAGS})
-    set_target_properties(auto_tracker PROPERTIES COMPILE_FLAGS ${EXTRA_CXX_FLAGS})
+  set_target_properties(${PROJECT_NAME} PROPERTIES COMPILE_FLAGS ${EXTRA_CXX_FLAGS})
+  set_target_properties(${PROJECT_NAME}_cmd_line PROPERTIES COMPILE_FLAGS ${EXTRA_CXX_FLAGS})
+  set_target_properties(${PROJECT_NAME} PROPERTIES COMPILE_FLAGS ${EXTRA_CXX_FLAGS})
 endif()
 
-if(CATKIN_ENABLE_TESTING)
-  add_dependencies(${PROJECT_NAME} ${PROJECT_NAME}_bag)
-endif()
-
-#catkin_lint: ignore unquoted_string_op
-if(VISP_VERSION VERSION_LESS "2.10.0")
-  target_link_libraries(${PROJECT_NAME}
-    auto_tracker
-    ${PROJECT_NAME}_qrcode_detector
-    ${PROJECT_NAME}_datamatrix_detector
-    ${PROJECT_NAME}_cmd_line
-    dmtx zbar)
-
-  target_link_libraries(${PROJECT_NAME}
-    ${resource_retriever_LIBRARIES}
-    ${catkin_LIBRARIES}
-    ${Boost_LIBRARIES})
-
-  install(
-    TARGETS
-      auto_tracker
-      ${PROJECT_NAME}
-      ${PROJECT_NAME}_cmd_line
-      ${PROJECT_NAME}_datamatrix_detector
-      ${PROJECT_NAME}_qrcode_detector
-    ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-    LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-    RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-  )
-else()
-  target_link_libraries(${PROJECT_NAME}
-    auto_tracker
-    ${resource_retriever_LIBRARIES}
-    ${catkin_LIBRARIES}
-    ${Boost_LIBRARIES})
-
-  install(
-    TARGETS
-      auto_tracker
-      ${PROJECT_NAME}
-      ${PROJECT_NAME}_cmd_line
-    ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-    LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-    RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-  )
-endif()
-
-install(DIRECTORY launch
-  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+install(
+  TARGETS
+  ${PROJECT_NAME}_main
+  DESTINATION lib/${PROJECT_NAME}
 )
 
-install(DIRECTORY models
-  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+install(DIRECTORY
+  launch models
+  DESTINATION share/${PROJECT_NAME}
 )
 
-#############
+# ############
 # Bag files #
-#############
+# ############
+include(ExternalProject)
+ExternalProject_Add(
+  external_bag
+  PREFIX "externals"
+  URL https://github.com/lagadic/vision_visp/releases/download/vision_visp-0.5.0/tutorial-qrcode.bag
+  DOWNLOAD_NO_EXTRACT true
+  CONFIGURE_COMMAND ""
+  PATCH_COMMAND rosbags-convert ../tutorial-qrcode.bag
+  BUILD_COMMAND ""
+  INSTALL_COMMAND ""
+)
 
-# Tutorial
-if(CATKIN_ENABLE_TESTING)
-  catkin_download_test_data(
-    ${PROJECT_NAME}_bag
-    https://github.com/lagadic/vision_visp/releases/download/vision_visp-0.5.0/tutorial-qrcode.bag
-    DESTINATION ${CATKIN_DEVEL_PREFIX}/${CATKIN_PACKAGE_SHARE_DESTINATION}/bag
-    MD5 0f80ceea2610b8400591ca7aff764dfa)
-
-  install(DIRECTORY ${CATKIN_DEVEL_PREFIX}/${CATKIN_PACKAGE_SHARE_DESTINATION}/bag
-    DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
-  )
+ExternalProject_Get_Property(external_bag DOWNLOADED_FILE)
+if(EXISTS ${DOWNLOADED_FILE})
+  message("Successfully download ${DOWNLOADED_FILE}")
 endif()
-else() # VISP_HAVE_ZBAR OR VISP_HAVE_DMTX OR VISP_HAVE_APRILTAG
-message("${PROJECT_NAME} build is disabled since ViSP is not built with libzbar-dev 3rd party")
-endif() # VISP_HAVE_ZBAR OR VISP_HAVE_DMTX OR VISP_HAVE_APRILTAG
 
+install(DIRECTORY
+  ${CMAKE_CURRENT_BINARY_DIR}/externals/src/tutorial-qrcode
+  DESTINATION share/bag
+)
+message("Bagfile installed in ${CMAKE_INSTALL_PREFIX}/share/bag/tutorial-qrcode")
+
+ament_export_dependencies(rosidl_default_runtime)
+
+ament_package()

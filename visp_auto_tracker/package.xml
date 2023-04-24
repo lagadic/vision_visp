@@ -1,5 +1,8 @@
 <?xml version="1.0"?>
-<package>
+<?xml-model
+  href="http://download.ros.org/schema/package_format3.xsd"
+  schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
   <name>visp_auto_tracker</name>
   <version>0.13.1</version>
 
@@ -20,35 +23,41 @@
   <author>Filip Novotny</author>
   <maintainer email="Fabien.Spindler@inria.fr">Fabien Spindler</maintainer>
   <license>GPLv2</license>
-  <url>http://wiki.ros.org/visp_auto_tracker</url>
+  <url type="website">http://wiki.ros.org/visp_auto_tracker</url>
+  <url type="repository">https://github.com/lagadic/vision_visp/tree/ros2</url>
+  <url type="bugtracker">https://github.com/lagadic/vision_visp/issues</url>
 
-  <buildtool_depend>catkin</buildtool_depend>
+  <buildtool_depend>ament_cmake_ros</buildtool_depend>
+  <buildtool_depend>rosidl_default_generators</buildtool_depend>
 
   <build_depend>geometry_msgs</build_depend>
   <build_depend>libdmtx-dev</build_depend>
   <build_depend>message_filters</build_depend>
   <build_depend>resource_retriever</build_depend>
-  <build_depend>roscpp</build_depend>
   <build_depend>sensor_msgs</build_depend>
   <build_depend>std_msgs</build_depend>
-  <!-- catkin_lint produce an error arround build_depend visp. -->
-  <!-- This error shouldn't be considered. If build_depend visp is removed, -->
-  <!-- the package is not able to build on ros buildfarm. -->
   <build_depend>visp</build_depend>
   <build_depend>visp_bridge</build_depend>
   <build_depend>visp_tracker</build_depend>
   <build_depend>zbar</build_depend>
 
-  <run_depend>geometry_msgs</run_depend>
-  <run_depend>libdmtx-dev</run_depend>
-  <run_depend>message_filters</run_depend>
-  <run_depend>resource_retriever</run_depend>
-  <run_depend>roscpp</run_depend>
-  <run_depend>sensor_msgs</run_depend>
-  <run_depend>std_msgs</run_depend>
-  <run_depend>visp</run_depend>
-  <run_depend>visp_bridge</run_depend>
-  <run_depend>visp_tracker</run_depend>
-  <run_depend>zbar</run_depend>
-  <run_depend>usb_cam</run_depend>
+  <exec_depend>geometry_msgs</exec_depend>
+  <exec_depend>libdmtx-dev</exec_depend>
+  <exec_depend>message_filters</exec_depend>
+  <exec_depend>resource_retriever</exec_depend>
+  <exec_depend>sensor_msgs</exec_depend>
+  <exec_depend>std_msgs</exec_depend>
+  <exec_depend>visp</exec_depend>
+  <exec_depend>visp_bridge</exec_depend>
+  <exec_depend>visp_tracker</exec_depend>
+  <exec_depend>zbar</exec_depend>
+  <exec_depend>usb_cam</exec_depend>
+
+  <!-- Recommanded: https://docs.ros.org/en/foxy/Tutorials/Intermediate/Launch/Creating-Launch-Files.html -->
+  <exec_depend>ros2launch</exec_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+
 </package>

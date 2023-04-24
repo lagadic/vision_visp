@@ -1,77 +1,93 @@
-cmake_minimum_required(VERSION 3.0.0)
+cmake_minimum_required(VERSION 3.5)
 project(visp_bridge)
 
-find_package(Boost REQUIRED COMPONENTS system thread filesystem program_options)
+# Default to C++14
+if(NOT CMAKE_CXX_STANDARD)
+  set(CMAKE_CXX_STANDARD 14)
+endif()
 
-find_package(catkin REQUIRED COMPONENTS
-  camera_calibration_parsers
+if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  add_compile_options(-Wall -Wextra)
+endif()
+
+find_package(ament_cmake_ros REQUIRED)
+find_package(geometry_msgs REQUIRED)
+find_package(sensor_msgs REQUIRED)
+find_package(camera_calibration_parsers REQUIRED)
+find_package(VISP REQUIRED COMPONENTS visp_core)
+
+# add library 
+add_library(${PROJECT_NAME} src/3dpose.cpp src/camera.cpp src/image.cpp src/path_retriever.cpp)
+
+ament_target_dependencies(${PROJECT_NAME}
   geometry_msgs
-  roscpp
+  rclcpp
   sensor_msgs
-  std_msgs
+  VISP
 )
 
-# ViSP cannot be found by Catkin.
-# see https://github.com/ros/catkin/issues/606
-find_package(VISP REQUIRED)
+include(GenerateExportHeader)
+generate_export_header(${PROJECT_NAME} EXPORT_FILE_NAME ${PROJECT_NAME}/${PROJECT_NAME}_export.h)
 
-catkin_package(
-  INCLUDE_DIRS
-    include
+target_include_directories(${PROJECT_NAME} PUBLIC
+  "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+  "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>"
+  "$<INSTALL_INTERFACE:include/${PROJECT_NAME}>"
+  ${VISP_INCLUDE_DIRS})
 
-  LIBRARIES
-    ${PROJECT_NAME}
-
-  CATKIN_DEPENDS
-    camera_calibration_parsers
-    geometry_msgs
-    roscpp
-    sensor_msgs
-    std_msgs
-
-  DEPENDS
-    Boost
-    VISP
+install(TARGETS ${PROJECT_NAME} EXPORT export_${PROJECT_NAME}
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib
+  RUNTIME DESTINATION bin
 )
 
-include_directories(include)
+install(FILES
+  ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}/${PROJECT_NAME}_export.h
+  DESTINATION include/${PROJECT_NAME}/${PROJECT_NAME})
 
-include_directories(SYSTEM
-  ${VISP_INCLUDE_DIRS}
-  ${catkin_INCLUDE_DIRS}
-  ${Boost_INCLUDE_DIRS}
+# tools
+add_executable(${PROJECT_NAME}_cam_param_converter tool/cam_param_converter.cpp)
+
+target_include_directories(${PROJECT_NAME}_cam_param_converter PUBLIC
+  "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../include>"
+  "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>"
+  "$<INSTALL_INTERFACE:include/${PROJECT_NAME}>"
+  ${VISP_INCLUDE_DIRS})
+
+target_link_libraries(${PROJECT_NAME}_cam_param_converter PUBLIC
+  ${camera_calibration_parsers_TARGETS}
+  ${geometry_msgs_TARGETS}
+  ${sensor_msgs_TARGETS}
+  ${VISP_LIBRARIES}
+  ${PROJECT_NAME})
+
+target_link_libraries(${PROJECT_NAME}_cam_param_converter PRIVATE
+  rcpputils::rcpputils)
+
+install(TARGETS ${PROJECT_NAME}_cam_param_converter
+  DESTINATION lib/${PROJECT_NAME})
+
+install(DIRECTORY
+  ${CMAKE_SOURCE_DIR}/data
+  DESTINATION share
 )
 
-# Make sure Boost.Filesystem v3 is used.
-add_definitions(-DBOOST_FILESYSTEM_VERSION=3)
+# visp_bridge_lib_dir is passed as APPEND_LIBRARY_DIRS for each ament_add_gtest call so
+# the project library that they link against is on the library path.
+# This is especially important on Windows.
+# This is overwritten each loop, but which one it points to doesn't really matter.
+set(visp_bridge_lib_dir "$<TARGET_FILE_DIR:${PROJECT_NAME}>")
 
-## Declare a cpp library
-add_library(${PROJECT_NAME}
-  include/${PROJECT_NAME}/3dpose.h
-  include/${PROJECT_NAME}/camera.h
-  include/${PROJECT_NAME}/image.h
-  include/${PROJECT_NAME}/vpQuaternionVector.h
-  src/compat/vpQuaternionVector.cpp
-  src/conversions/3dpose.cpp
-  src/conversions/camera.cpp
-  src/conversions/image.cpp
-)
-target_link_libraries(${PROJECT_NAME} ${VISP_LIBRARIES})
-
-add_executable(${PROJECT_NAME}_convert_camera_parameters src/conversions/convert_cam_param_file.cpp)
-target_link_libraries(${PROJECT_NAME}_convert_camera_parameters ${VISP_LIBRARIES} ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${PROJECT_NAME})
-
-## Mark executables and/or libraries for installation
-install(TARGETS ${PROJECT_NAME} ${PROJECT_NAME}_convert_camera_parameters 
-  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-)
+ament_export_targets(export_${PROJECT_NAME})
+ament_export_dependencies(VISP)
 
 # Mark cpp header files for installation
-install(DIRECTORY include/${PROJECT_NAME}/
-  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
-  FILES_MATCHING PATTERN "*.h"
-  PATTERN ".svn" EXCLUDE
+install(DIRECTORY include/ DESTINATION include/${PROJECT_NAME})
+
+install(TARGETS ${PROJECT_NAME}
+  RUNTIME DESTINATION bin
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib
 )
 
+ament_package()

@@ -1,34 +1,30 @@
-<?xml version="1.0"?>
-<package>
+<package format="2">
   <name>visp_bridge</name>
   <version>0.13.1</version>
   <description>
     Converts between ROS structures and ViSP structures.
   </description>
 
+  <author>Fabien Spindler</author>
+  <author>Riccardo Spica</author>
   <author>Filip Novotny</author>
   <maintainer email="Fabien.Spindler@inria.fr">Fabien Spindler</maintainer>
 
   <license>GPLv2</license>
 
-  <url>http://wiki.ros.org/visp_bridge</url>
+  <url type="website">http://wiki.ros.org/visp_bridge</url>
+  <url type="repository">https://github.com/lagadic/vision_visp/tree/ros2</url>
+  <url type="bugtracker">https://github.com/lagadic/vision_visp/issues</url>
 
-  <buildtool_depend>catkin</buildtool_depend>
+  <buildtool_depend>ament_cmake_ros</buildtool_depend>
+
   <build_depend>geometry_msgs</build_depend>
-  <build_depend>roscpp</build_depend>
   <build_depend>sensor_msgs</build_depend>
-  <build_depend>std_msgs</build_depend>
-  <!-- catkin_lint produce an error arround build_depend visp. -->
-  <!-- This error shouldn't be considered. If build_depend visp is removed, -->
-  <!-- the package is not able to build on ros buildfarm. -->
   <build_depend>visp</build_depend>
   <build_depend>camera_calibration_parsers</build_depend>
 
-  <run_depend>geometry_msgs</run_depend>
-  <run_depend>roscpp</run_depend>
-  <run_depend>sensor_msgs</run_depend>
-  <run_depend>std_msgs</run_depend>
-  <run_depend>visp</run_depend>
-  <run_depend>camera_calibration_parsers</run_depend>
-  
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+
 </package>

@@ -2,7 +2,7 @@
 
 set -e
 
-function travis_time_start {
+function tavis_time_start {
     set +x
     TRAVIS_START_TIME=$(date +%s%N)
     TRAVIS_TIME_ID=$(cat /dev/urandom | tr -dc 'a-z0-9' | fold -w 8 | head -n 1)

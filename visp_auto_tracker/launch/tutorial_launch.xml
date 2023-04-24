@@ -1,0 +1,22 @@
+<!-- -*- xml -*-
+     This tutorial relies on a recorded video sequence where the
+     camera is fixed in front of QR code planar target. The model
+     corresponding to this target is given into the models directory
+     of this package.
+     See http://www.ros.org/wiki/visp_auto_tracker for more information.
+  -->
+<launch>
+
+  <!-- Play the video sequence, publish the clock topic to preserve
+       the original timestamps. -->
+  <executable cmd="ros2 bag play install/visp_auto_tracker/share/bag/tutorial-qrcode --loop"/>
+
+  <!-- Launch the tracking node -->
+  <node pkg="visp_auto_tracker" exec="visp_auto_tracker_main" name="visp_auto_tracker" output="screen">
+    <param name="model_path" value="package://visp_auto_tracker/models" />
+    <param name="model_name" value="pattern" />
+    <param name="camera_prefix" value="camera" />
+    <param name="debug_display" value="True" />
+  </node>
+
+</launch>

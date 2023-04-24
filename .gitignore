@@ -1,3 +1,16 @@
 *~
-/CMakeLists.txt
+*.pyc
+CMakeCache.txt
+CMakeFiles
+bin
+build
+lib
+log
+*.dox
+*_gen
+.cproject
+.project
+.pydevproject
 
+# Retrieved from internet.
+bag/tutorial-static-box.*
