@@ -3,85 +3,55 @@ ViSP stack for ROS
 
 ![GPL-2](https://www.gnu.org/graphics/gplv3-127x51.png)
 
-`vision_visp` provides ViSP algorithms as ROS components. [ViSP]
-[visp] is the Visual Servoing Platform and [ROS] [ros] a robotics
-middleware.
+## 1. Introduction
 
-These packages are released under the [GPL-2](COPYING) license.
+ROS 2 vision_visp contains packages to interface ROS 2 with [ViSP](https://visp.inria.fr) which is a library designed 
+for visual-servoing and visual tracking applications. This repository contains:
 
+- visp_bridge: Bridge between ROS 2 image and geometry messages and ViSP image and 3D transformation representation.
+- visp_tracker: ViSP model-based tracker interfaced in ROS 2 and initialized from a client that requires user interaction.
+- visp_auto_tracker: ViSP model-based tracker interfaced in ROS 2 and initialized thanks to a marker (AprilTag, 
+  QRcode, flashcode). Recovers when tracking fails.
+- visp_camera_calibration: ViSP based tool to calibrate camera intrinsic parameters.
+- visp_handeye_calibration: ViSP based tool to estimated the robot end-effector to camera geometric transformation.
 
-Components documentation is hosted on the [ros.org wiki] [vision_visp-wiki].
+##  2. Install dependencies
+### 2.1. Install ROS 2
 
-Support is provided through [ROS Answers] [vision_visp-answers] .
+Firstly, it assumes that the ROS 2 core has already been installed, please refer to 
+[ROS 2 installation](https://docs.ros.org/en/rolling/Installation.html) to get started.
 
+### 2.2. Install ViSP
 
-Which branch should I use?
---------------------------
+Please refer to the official installation guide from [ViSP installation tutorials](https://visp-doc.inria.fr/doxygen/visp-daily/tutorial_install.html).
 
-Branches come in two flavors:
+## 3. Build vision_visp
 
- * development branch,
- * release branch
+Fetch the latest code and build
 
-Package for each ROS release is maintained on separate
-branches. I.e. `melodic-devel` is the Melodic Morenia development branch whereas
-`melodic` is the Melodic Morenia release branch.
+```
+$ cd <YOUR_ROS2_WORKSPACE>/src
+$ git clone https://github.com/lagadic/vision_visp.git -b rolling
+$ cd ..
+$ colcon build --symlink-install
+```
 
-`master` means the next ROS release.
+If ViSP is not found, use `VISP_DIR` to point to `$VISP_WS/visp-build` folder like:
 
-If you are a user you should use a release branch as they contain
-stable and tested versions of the packages. If you are a developper
-you must provide new patches against `master`. You may also provide
-version-specific bug fix again older releases.
+```
+$ colcon build --symlink-install --cmake-args -DVISP_DIR=$VISP_WS/visp-build
+```
 
+## 4. Usage
 
- - Never implement new features in old branches (i.e. not
-   master). These Pull Requests will not be accepted. If you provide a
-   bug fix then you may ask for it to be backported. ABI/API breakage
-   prevent patches from being backported.
- - The *only* action allowed in release branches is merging the
-   development branch in the current branch.
+- To run `visp_auto_tracker` launch:
 
+  ```
+  $ ros2 launch visp_auto_tracker tutorial_launch.xml
+  ```
 
-*Warning:* the Fuerte branches still rely on the legacy `rosbuild`
- build system. We recommend you to update to a newer ROS release. Only
- minimum maintained will be done for this release.
+- To run `visp_tracker` launch:
 
-
-Additional development guidelines are provided in
-[CONTRIBUTING.md](CONTRIBUTING.md).
-
-
-
-Build Status
-------------
-
-This stack supports the following ROS releases:
-
- * Hydro
- * Groovy
- * Fuerte
- * Indigo
- * Jade
- * Kinetic
- * Lunar
- * Melodic
- * Noetic
-
-The master branch holds the development that will be available in the
-next ROS release.
-
-
-| ROS Release   | Development Branch           | Release Branch |
-| ------------- | ---------------------------- | -------------- |
-| Master        | [![Build Status](https://travis-ci.org/lagadic/vision_visp.png?branch=master)](https://travis-ci.org/lagadic/vision_visp) | N/A |
-| Melodic       | [![Build Status](https://travis-ci.org/lagadic/vision_visp.png?branch=melodic-devel)](https://travis-ci.org/lagadic/vision_visp) | [![Build Status](https://travis-ci.org/lagadic/vision_visp.png?branch=melodic)](https://travis-ci.org/lagadic/vision_visp) |
-| Lunar         | [![Build Status](https://travis-ci.org/lagadic/vision_visp.png?branch=lunar-devel)](https://travis-ci.org/lagadic/vision_visp) | [![Build Status](https://travis-ci.org/lagadic/vision_visp.png?branch=lunar)](https://travis-ci.org/lagadic/vision_visp) |
-| Kinetic       | [![Build Status](https://travis-ci.org/lagadic/vision_visp.png?branch=kinetic-devel)](https://travis-ci.org/lagadic/vision_visp) | [![Build Status](https://travis-ci.org/lagadic/vision_visp.png?branch=kinetic)](https://travis-ci.org/lagadic/vision_visp) |
-
-
-
-[visp]: https://visp.inria.fr
-[ros]: http://www.ros.org
-[vision_visp-wiki]: http://wiki.ros.org/vision_visp
-[vision_visp-answers]: http://answers.ros.org/questions/scope:all/sort:activity-desc/tags:vision_visp/page:1/
+  ```
+  $ ros2 launch visp_tracker tutorial_launch.xml
+  ```
