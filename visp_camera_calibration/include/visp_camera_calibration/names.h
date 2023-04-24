@@ -69,7 +69,6 @@ extern std::string selected_points_x_param;
 extern std::string selected_points_y_param;
 extern std::string selected_points_z_param;
 
-void remap();
 } // namespace visp_camera_calibration
 
 #endif

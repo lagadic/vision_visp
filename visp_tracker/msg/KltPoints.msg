@@ -4,5 +4,5 @@
 # Used by the viewer to display KLT points positions and allow
 # tracking debug.
 
-Header header                        # Header (required for synchronization).
-KltPoint[] klt_points_positions      # List of KLT points positions.
+std_msgs/Header header                        # Header (required for synchronization).
+visp_tracker/KltPoint[] klt_points_positions      # List of KLT points positions.

@@ -69,13 +69,5 @@ std::string
 
 std::string
     calibration_path_param("/visp_camera_calibration/visp_camera_calibration_image_processing/calibration_path");
-// FIXME L.Garnier: To be done
-void remap()
-{
-  /*    if (rclcpp::resolve_topic_name("camera_prefix") != "camera_prefix") {
-        camera_prefix = rclcpp::resolve_topic_name("camera_prefix");
-        raw_image_topic = camera_prefix + "/image_raw";
-        set_camera_info_service = camera_prefix + "/set_camera_info";
-      } */
-}
+
 } // namespace visp_camera_calibration

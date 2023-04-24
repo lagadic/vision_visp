@@ -8,15 +8,15 @@ endif()
 find_package(ament_cmake_auto REQUIRED)
 ament_auto_find_build_dependencies()
 
-find_package(rclcpp REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
+find_package(rclcpp REQUIRED)
 find_package(visp_bridge REQUIRED)
 find_package(VISP REQUIRED COMPONENTS visp_core visp_vision)
 
-# include_directories(include)
+#include_directories(include)
 rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/TransformArray.msg"
   "srv/ComputeEffectorCamera.srv"

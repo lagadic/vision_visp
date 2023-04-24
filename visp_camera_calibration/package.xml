@@ -30,15 +30,12 @@
 
   <build_depend>camera_calibration_parsers</build_depend> <!-- Write camera data to ini file -->
   <build_depend>geometry_msgs</build_depend>
-  <build_depend>message_generation</build_depend>
   <build_depend>rclcpp</build_depend>
   <build_depend>sensor_msgs</build_depend>
   <build_depend>std_msgs</build_depend>
 
   <exec_depend>camera_calibration_parsers</exec_depend>
   <exec_depend>geometry_msgs</exec_depend>
-  <exec_depend>message_generation</exec_depend>
-  <exec_depend>message_runtime</exec_depend>
   <exec_depend>rclcpp</exec_depend>
   <exec_depend>sensor_msgs</exec_depend>
   <exec_depend>std_msgs</exec_depend>

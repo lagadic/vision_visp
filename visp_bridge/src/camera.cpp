@@ -79,9 +79,40 @@ vpCameraParameters toVispCameraParameters(const sensor_msgs::msg::CameraInfo &ca
   }
 
   throw std::runtime_error("unsupported distortion model");
+}
 
-  // return vpCameraParameters(cam_info.p[0 * 4 + 0],cam_info.p[1 * 4 + 1],cam_info.p[0 * 4 + 2],cam_info.p[1 * 4 +
-  // 2],-cam_info.d[0],cam_info.d[0]);
+vpCameraParameters toVispCameraParameters(const sensor_msgs::msg::CameraInfo::ConstSharedPtr &cam_info)
+{
+  vpCameraParameters cam;
+  // Check that the camera is calibrated, as specified in the
+  // sensor_msgs/CameraInfo message documentation.
+  if (cam_info->k.size() != 3 * 3 || cam_info->k[0] == 0.)
+    throw std::runtime_error("uncalibrated camera");
+
+  // Check matrix size.
+  if (cam_info->p.size() != 3 * 4)
+    throw std::runtime_error("camera calibration P matrix has an incorrect size");
+
+  if (cam_info->distortion_model.empty()) {
+    const double &px = cam_info->k[0 * 3 + 0];
+    const double &py = cam_info->k[1 * 3 + 1];
+    const double &u0 = cam_info->k[0 * 3 + 2];
+    const double &v0 = cam_info->k[1 * 3 + 2];
+    cam.initPersProjWithoutDistortion(px, py, u0, v0);
+    return cam;
+  }
+
+  if (cam_info->distortion_model == sensor_msgs::distortion_models::PLUMB_BOB) {
+    const double &px = cam_info->p[0 * 4 + 0];
+    const double &py = cam_info->p[1 * 4 + 1];
+    const double &u0 = cam_info->p[0 * 4 + 2];
+    const double &v0 = cam_info->p[1 * 4 + 2];
+    cam.initPersProjWithoutDistortion(px, py, u0, v0);
+    // cam.initPersProjWithDistortion(px, py, u0, v0, -cam_info.d[0], cam_info.d[0]);
+    return cam;
+  }
+
+  throw std::runtime_error("unsupported distortion model");
 }
 
 sensor_msgs::msg::CameraInfo toSensorMsgsCameraInfo(vpCameraParameters &cam_info, unsigned int cam_image_width,

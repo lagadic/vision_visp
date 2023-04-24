@@ -57,6 +57,12 @@ namespace visp_bridge
   \return Corresponding transformation in ViSP format.
 */
 vpHomogeneousMatrix toVispHomogeneousMatrix(const geometry_msgs::msg::Transform &trans);
+/*!
+  \brief Converts a geometry_msgs::msg::Transform to a ViSP homogeneous matrix (vpHomogeneousMatrix).
+  \param[in] trans Homogeneous transformation in ROS/geometry_msgs format.
+  \return Corresponding transformation in ViSP format.
+*/
+vpHomogeneousMatrix toVispHomogeneousMatrix(const geometry_msgs::msg::Transform::ConstSharedPtr &trans);
 
 /*!
   \brief Converts a geometry_msgs::msg::Pose to a ViSP homogeneous matrix (vpHomogeneousMatrix).
@@ -64,6 +70,14 @@ vpHomogeneousMatrix toVispHomogeneousMatrix(const geometry_msgs::msg::Transform 
   \return Corresponding transformation in ViSP format.
 */
 vpHomogeneousMatrix toVispHomogeneousMatrix(const geometry_msgs::msg::Pose &pose);
+
+/*!
+  \brief Converts a geometry_msgs::msg::Pose to a ViSP homogeneous matrix (vpHomogeneousMatrix).
+  \param[in] pose Homogeneous transformation in ROS/geometry_msgs format.
+  \return Corresponding transformation in ViSP format.
+*/
+vpHomogeneousMatrix toVispHomogeneousMatrix(const geometry_msgs::msg::Pose::ConstSharedPtr &pose);
+
 /*!
   \brief Converts a ViSP homogeneous matrix (vpHomogeneousMatrix) to a geometry_msgs::msg::Transform.
   \param[in] mat Homogeneous transformation in ViSP format.

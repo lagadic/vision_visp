@@ -52,14 +52,14 @@
 namespace visp_bridge
 {
 /*!
-  \brief Converts a ViSP image (vpImage) to a sensor_msgs::Image. Only works for greyscale images
+  \brief Converts a ViSP image (vpImage) to a sensor_msgs::Image. Only works for grayscale images
   \param[in] src Image in ViSP format.
   \return Image in ROS/sensor_msgs format.
 */
 sensor_msgs::msg::Image toSensorMsgsImage(const vpImage<unsigned char> &src);
 sensor_msgs::msg::Image toSensorMsgsImage(const vpImage<vpRGBa> &src);
 /*!
-  \brief Converts a sensor_msgs::Image to a ViSP image (vpImage). Only works for greyscale images
+  \brief Converts a sensor_msgs::Image to a ViSP image (vpImage). Only works for grayscale images
   \param[in] src Image in ROS/sensor_msgs format.
   \return Image in ViSP format.
 */

@@ -16,8 +16,7 @@
 #define VISP_HAND2EYE_CALIBRATION__VISIBILITY_H_
 
 #ifdef __cplusplus
-extern "C"
-{
+extern "C" {
 #endif
 
 // This logic was borrowed (then namespaced) from the examples on the gcc wiki:
@@ -25,42 +24,42 @@ extern "C"
 
 #if defined _WIN32 || defined __CYGWIN__
 
-  #ifdef __GNUC__
-    #define VISP_HAND2EYE_CALIBRATION_EXPORT __attribute__ ((dllexport))
-    #define VISP_HAND2EYE_CALIBRATION_IMPORT __attribute__ ((dllimport))
-  #else
-    #define VISP_HAND2EYE_CALIBRATION_EXPORT __declspec(dllexport)
-    #define VISP_HAND2EYE_CALIBRATION_IMPORT __declspec(dllimport)
-  #endif
+#ifdef __GNUC__
+#define VISP_HAND2EYE_CALIBRATION_EXPORT __attribute__((dllexport))
+#define VISP_HAND2EYE_CALIBRATION_IMPORT __attribute__((dllimport))
+#else
+#define VISP_HAND2EYE_CALIBRATION_EXPORT __declspec(dllexport)
+#define VISP_HAND2EYE_CALIBRATION_IMPORT __declspec(dllimport)
+#endif
 
-  #ifdef VISP_HAND2EYE_CALIBRATION_DLL
-    #define VISP_HAND2EYE_CALIBRATION_PUBLIC VISP_HAND2EYE_CALIBRATION_EXPORT
-  #else
-    #define VISP_HAND2EYE_CALIBRATION_PUBLIC VISP_HAND2EYE_CALIBRATION_IMPORT
-  #endif
+#ifdef VISP_HAND2EYE_CALIBRATION_DLL
+#define VISP_HAND2EYE_CALIBRATION_PUBLIC VISP_HAND2EYE_CALIBRATION_EXPORT
+#else
+#define VISP_HAND2EYE_CALIBRATION_PUBLIC VISP_HAND2EYE_CALIBRATION_IMPORT
+#endif
 
-  #define VISP_HAND2EYE_CALIBRATION_PUBLIC_TYPE VISP_HAND2EYE_CALIBRATION_PUBLIC
+#define VISP_HAND2EYE_CALIBRATION_PUBLIC_TYPE VISP_HAND2EYE_CALIBRATION_PUBLIC
 
-  #define VISP_HAND2EYE_CALIBRATION_LOCAL
+#define VISP_HAND2EYE_CALIBRATION_LOCAL
 
 #else
 
-  #define VISP_HAND2EYE_CALIBRATION_EXPORT __attribute__ ((visibility("default")))
-  #define VISP_HAND2EYE_CALIBRATION_IMPORT
+#define VISP_HAND2EYE_CALIBRATION_EXPORT __attribute__((visibility("default")))
+#define VISP_HAND2EYE_CALIBRATION_IMPORT
 
-  #if __GNUC__ >= 4
-    #define VISP_HAND2EYE_CALIBRATION_PUBLIC __attribute__ ((visibility("default")))
-    #define VISP_HAND2EYE_CALIBRATION_LOCAL  __attribute__ ((visibility("hidden")))
-  #else
-    #define VISP_HAND2EYE_CALIBRATION_PUBLIC
-    #define VISP_HAND2EYE_CALIBRATION_LOCAL
-  #endif
+#if __GNUC__ >= 4
+#define VISP_HAND2EYE_CALIBRATION_PUBLIC __attribute__((visibility("default")))
+#define VISP_HAND2EYE_CALIBRATION_LOCAL __attribute__((visibility("hidden")))
+#else
+#define VISP_HAND2EYE_CALIBRATION_PUBLIC
+#define VISP_HAND2EYE_CALIBRATION_LOCAL
+#endif
 
-  #define VISP_HAND2EYE_CALIBRATION_PUBLIC_TYPE
+#define VISP_HAND2EYE_CALIBRATION_PUBLIC_TYPE
 #endif
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif  // VISP_HAND2EYE_CALIBRATION__VISIBILITY_H_
+#endif // VISP_HAND2EYE_CALIBRATION__VISIBILITY_H_
