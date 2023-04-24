@@ -1,9 +1,7 @@
 /****************************************************************************
  *
- * $Id: file.cpp 3496 2011-11-22 15:14:32Z fnovotny $
- *
  * This file is part of the ViSP software.
- * Copyright (C) 2005 - 2012 by INRIA. All rights reserved.
+ * Copyright (C) 2005 - 2022 by INRIA. All rights reserved.
  *
  * This software is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -15,14 +13,14 @@
  * GPL, please contact INRIA about acquiring a ViSP Professional
  * Edition License.
  *
- * See http://www.irisa.fr/lagadic/visp/visp.html for more information.
+ * See https://visp.inria.fr for more information.
  *
  * This software was developed at:
  * INRIA Rennes - Bretagne Atlantique
  * Campus Universitaire de Beaulieu
  * 35042 Rennes Cedex
  * France
- * http://www.irisa.fr/lagadic
+ * https://team.inria.fr/rainbow/
  *
  * If you have questions regarding the use of this file, please contact
  * INRIA at visp@inria.fr
@@ -36,10 +34,6 @@
  * Description:
  * Entry point for calibrator node
  *
- * Authors:
- * Filip Novotny
- *
- *
  *****************************************************************************/
 
 /*!
@@ -47,14 +41,14 @@
   \brief Entry point for calibrator node
 */
 
-#include "calibrator.h"
-#include "ros/ros.h"
+#include "visp_hand2eye_calibration/calibrator.h"
 
 int main(int argc, char **argv)
 {
-  ros::init(argc, argv, "calibrator");
-  visp_hand2eye_calibration::Calibrator().spin();  
+  rclcpp::init(argc, argv);
+  auto node = std::make_shared<visp_hand2eye_calibration::Calibrator>();
+  rclcpp::spin(node);
+  rclcpp::shutdown();
 
   return 0;
 }
-

@@ -6,8 +6,10 @@
 # The model is retrieved through the parameter server using the
 # model_description parameter.
 
+string model_description_param 
+
 # Object initial pose.
-geometry_msgs/Transform initial_cMo
+geometry_msgs/Transform initial_pose
 
 # Common Tracker Parameters
 TrackerSettings tracker_param

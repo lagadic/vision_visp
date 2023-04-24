@@ -17,44 +17,50 @@
 <launch>
   <!-- FIXME: do not use the timestamps from the bag file,
     it makes the tracker hang for some reason. -->
-  <param name="use_sim_time" value="false" />
+  <arg name="use_sim_time" default="false" />
+  <executable cmd="ros2 bag play install/visp_tracker/share/bag/tutorial-static-box --loop"/>
 
-  <node pkg="rosbag" type="play" name="rosbag" args="--clock -l
-        $(find visp_tracker)/bag/tutorial-static-box.bag"/>
-
-  <group ns="tracker1">
-    <node pkg="visp_tracker" type="tracker" name="tracker_mbt">
+  <group>
+    <node pkg="visp_tracker" name="visp_tracker_mbt" exec="visp_tracker_mbt">
+      <param name="use_sim_time" value="$(var use_sim_time)" />
       <param name="camera_prefix" value="/wide_left/camera" />
       <param name="child_frame_id" value="box1" />
     </node>
 
-    <node pkg="visp_tracker" type="visp_tracker_client" name="tracker_mbt_client">
+    <node pkg="visp_tracker" name="visp_tracker_client" exec="visp_tracker_client">
       <param name="model_path" value="package://visp_tracker/models" />
       <param name="model_name" value="laas-box" />
-      <rosparam file="$(find visp_tracker)/models/laas-box/tracker.yaml" />
+      <param name="use_sim_time" value="$(var use_sim_time)" />
+      <param from="package://visp_tracker/models/laas-box/tracker.yaml" />
     </node>
 
-    <node pkg="visp_tracker" type="visp_tracker_viewer" name="tracker_mbt_viewer">
+    <node pkg="visp_tracker" name="visp_tracker_viewer" exec="visp_tracker_viewer">
+      <param name="use_sim_time" value="$(var use_sim_time)" />
       <param name="frame_size" value="0.2" />
-      <param name="tracker_name" value="tracker_mbt" />
+      <param name="tracker_name" value="visp_tracker_client" />
     </node>
+
   </group>
 
-  <group ns="tracker2">
-    <node pkg="visp_tracker" type="tracker" name="tracker_mbt">
+
+  <group>
+    <node pkg="visp_tracker" name="visp_tracker_mbt" exec="visp_tracker_mbt">
       <param name="camera_prefix" value="/wide_left/camera" />
       <param name="child_frame_id" value="box2" />
+      <param name="use_sim_time" value="$(var use_sim_time)" />
     </node>
 
-    <node pkg="visp_tracker" type="visp_tracker_client" name="tracker_mbt_client">
+    <node pkg="visp_tracker" name="visp_tracker_client" exec="visp_tracker_client">
       <param name="model_path" value="package://visp_tracker/models" />
       <param name="model_name" value="laas-box" />
-      <rosparam file="$(find visp_tracker)/models/laas-box/tracker.yaml" />
+      <param from="package://visp_tracker/models/laas-box/tracker.yaml" />
+      <param name="use_sim_time" value="$(var use_sim_time)" />
     </node>
     
-    <node pkg="visp_tracker" type="visp_tracker_viewer" name="tracker_mbt_viewer">
+    <node pkg="visp_tracker" name="visp_tracker_viewer" exec="visp_tracker_viewer">
       <param name="frame_size" value="0.2" />
-      <param name="tracker_name" value="tracker_mbt" />
+      <param name="tracker_name" value="visp_tracker_client" />
+      <param name="use_sim_time" value="$(var use_sim_time)" />
     </node>
   </group>
 </launch>

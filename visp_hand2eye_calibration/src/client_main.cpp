@@ -1,9 +1,7 @@
 /****************************************************************************
  *
- * $Id: file.cpp 3496 2011-11-22 15:14:32Z fnovotny $
- *
  * This file is part of the ViSP software.
- * Copyright (C) 2005 - 2012 by INRIA. All rights reserved.
+ * Copyright (C) 2005 - 2022 by INRIA. All rights reserved.
  *
  * This software is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -15,14 +13,14 @@
  * GPL, please contact INRIA about acquiring a ViSP Professional
  * Edition License.
  *
- * See http://www.irisa.fr/lagadic/visp/visp.html for more information.
+ * See https://visp.inria.fr for more information.
  *
  * This software was developed at:
  * INRIA Rennes - Bretagne Atlantique
  * Campus Universitaire de Beaulieu
  * 35042 Rennes Cedex
  * France
- * http://www.irisa.fr/lagadic
+ * https://team.inria.fr/rainbow/
  *
  * If you have questions regarding the use of this file, please contact
  * INRIA at visp@inria.fr
@@ -36,10 +34,6 @@
  * Description:
  * Entry point for client node
  *
- * Authors:
- * Filip Novotny
- *
- *
  *****************************************************************************/
 
 /*!
@@ -47,17 +41,17 @@
   \brief Entry point for client node
 */
 
-#include "client.h"
-#include "ros/ros.h"
+#include "visp_hand2eye_calibration/client.h"
 
-int main(int argc,char**argv){
-  ros::init(argc, argv, "client");
+int main(int argc, char **argv)
+{
+  rclcpp::init(argc, argv);
+  auto node = std::make_shared<visp_hand2eye_calibration::Client>();
+  node->initAndSimulate();
 
-  visp_hand2eye_calibration::Client ct;
+  node->computeUsingQuickService();
+  node->computeFromTopicStream();
+  rclcpp::shutdown();
 
-  ct.initAndSimulate();
-
-  ct.computeUsingQuickService();
-  ct.computeFromTopicStream();
-  return 0 ;
+  return 0;
 }

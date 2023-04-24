@@ -1,0 +1,48 @@
+<!-- -*- xml -*-
+
+     This tutorial relies on a recorded video sequence where the
+     camera is fixed in front of a cube. The model corresponding to
+     this cube is given into the models/laas-box directoy of this
+     package.
+
+     See http://www.ros.org/wiki/visp_tracker/Tutorials for more
+     information.
+
+  -->
+<launch>
+  <executable cmd="ros2 bag play install/visp_tracker/share/bag/tutorial-static-box --loop"/>
+
+  <node pkg="visp_tracker" name="visp_tracker_client" exec="visp_tracker_client">
+    <param name="model_path"    value="package://visp_tracker/models" />
+    <param name="model_name"    value="laas-box" />
+    <param name="tracker_type"  value="mbt+klt" />
+    <param name="frame_size"    value="0.2" />
+    <param name="camera_prefix" value="/wide_left/camera" />
+
+    <!-- Load recommended settings for tracking initialization. They
+      will be automatically forwarded to the tracking node if the
+      initialization succeed. -->
+    <!-- param from="$(find-pkg-share visp_tracker)/models/laas-box/tracker.yaml" / -->
+  </node>
+
+  <!-- Launch the tracking node -->
+  <node pkg="visp_tracker" name="visp_tracker_mbt" exec="visp_tracker_mbt" >
+    <param name="camera_prefix" value="/wide_left/camera" />
+    <param name="tracker_type"  value="mbt+klt" />
+  </node>
+
+
+  <!-- Launch the viewer (GUI)
+
+       This is totally optional. When the tracker is running on a
+       remote computer, it is highly recommended to rely on
+       image_transport to stream compressed images. You can use the
+       ~image_transport parameter to do so, see the image_transport
+       package documentation for more information.
+  -->
+  <node pkg="visp_tracker" name="visp_tracker_viewer" exec="visp_tracker_viewer">
+    <param name="frame_size" value="0.2" />
+    <param name="tracker_name" value="visp_tracker_client" />
+  </node>
+
+</launch>
