@@ -19,7 +19,7 @@ This is my test equipment:
 - GPU
 	- RTX 2080ti with 12GB VRAM 
 	
-		your GPU VRAM must be bigger than 9GB due to [Out of memory issue while running megapose6d #53](https://github.com/megapose6d/megapose6d/issues/53)
+		Your GPU VRAM must be bigger than 9GB due to [Out of memory issue while running megapose6d #53](https://github.com/megapose6d/megapose6d/issues/53)
 	- CUDA 11.3
 	- cuDNN 8.5.0
 - Camera
@@ -59,11 +59,11 @@ The visp_megapose server provides 3 services:
 
 	 Input the bounding box and camera image; the MegaPose server will return a pose. Initial pose estimation takes around 2-4 seconds on an Nvidia RTX 2080ti.
 
-2. Tracking Pose:
+2. Tracking Pose Service:
 
 	Input the previous pose and current camera image; the MegaPose server will return the current pose. On the same setup, a pose update (refinement) iteration takes around 60-70 milliseconds.
 
-3. Render Object:
+3. Render Object Service:
 
 	Input the pose, and the MegaPose server will return a rendered image to verify the correctness of the MegaPose pose.
 
@@ -143,5 +143,7 @@ If your detector_method is "DNN".
 
 If your detector_method is "CLICK".
 
-# Future work
+## Future work
+
+MegaPose can use RGB-D images to get a 6D pose, not only RGB. Future updates will integrate visp_megapose more closely.
 
