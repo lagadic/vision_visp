@@ -1,0 +1,15 @@
+# The name of the object to be tracked.
+string object_name
+# Initial pose of the object required for tracking.
+geometry_msgs/Transform init_pose
+# The number of refinement iterations to perform each time initialization or tracking is called. This affects performance.
+int16 refiner_iterations
+# The image in which the object is to be tracked.
+sensor_msgs/Image image
+# The camera parameters.
+sensor_msgs/CameraInfo camera_info
+---
+# The result of the pose estimation.
+geometry_msgs/Transform pose
+# The confidence level of the pose estimation.
+float64 confidence

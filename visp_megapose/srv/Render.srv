@@ -1,0 +1,9 @@
+# The name of the object to be rendered.
+string object_name
+# The pose in which to render the object.
+geometry_msgs/Transform pose
+# The camera parameters.
+sensor_msgs/CameraInfo camera_info
+---
+# The image resulting from rendering.
+sensor_msgs/Image image
