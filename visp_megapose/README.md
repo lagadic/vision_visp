@@ -140,8 +140,11 @@ https://drive.google.com/file/d/19j8EUod1O1bmtc549R-V6tZ8BN8O80-c/view?usp=shari
 
 If your detector_method is "DNN".
 
+![](README_src/dnn.gif)
 
 If your detector_method is "CLICK".
+
+![](README_src/click.gif)
 
 ## Future work
 
