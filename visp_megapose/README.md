@@ -125,12 +125,12 @@ The fellowing ROS2 Denpendence recommand install by source code.
 1. Download the bag file 
 
 https://drive.google.com/file/d/19j8EUod1O1bmtc549R-V6tZ8BN8O80-c/view?usp=sharing
-
+	
 	$ unzip visp_megapose_bag.zip
 
 2. Play the ROS2 bag file:
 
-	$ ros2 bag play megapose_bag/subset
+	$ ros2 bag play visp_megapose_bag
 
 3. Run the visp_megapose Demo:
 
