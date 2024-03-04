@@ -1,0 +1,60 @@
+<?xml version="1.0"?>
+<?xml-model
+  href="http://download.ros.org/schema/package_format3.xsd"
+  schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>visp_megapose</name>
+  <version>0.13.1</version>
+
+  <description>
+  TODO: Package description
+  </description>
+  <author>Filip Novotny</author>
+  <maintainer email="Fabien.Spindler@inria.fr">Fabien Spindler</maintainer>
+  <license>GPLv2</license>
+  <url type="website">https://visp-doc.inria.fr/doxygen/visp-daily/tutorial-tracking-megapose.html</url>
+
+
+  <buildtool_depend>ament_cmake_ros</buildtool_depend>
+  <buildtool_depend>rosidl_default_generators</buildtool_depend>
+  <buildtool_depend>ament_cmake_python</buildtool_depend>
+  
+  <build_depend>geometry_msgs</build_depend>
+  <build_depend>libdmtx-dev</build_depend>
+  <build_depend>message_filters</build_depend>
+  <build_depend>resource_retriever</build_depend>
+  <build_depend>sensor_msgs</build_depend>
+  <build_depend>std_msgs</build_depend>
+  <build_depend>visp</build_depend>
+  <build_depend>visp_bridge</build_depend>
+  <build_depend>zbar</build_depend>
+  <build_depend>tf2_ros</build_depend>
+  <build_depend>tf2</build_depend>
+
+  <exec_depend>geometry_msgs</exec_depend>
+  <exec_depend>libdmtx-dev</exec_depend>
+  <exec_depend>message_filters</exec_depend>
+  <exec_depend>resource_retriever</exec_depend>
+  <exec_depend>sensor_msgs</exec_depend>
+  <exec_depend>std_msgs</exec_depend>
+  <exec_depend>visp</exec_depend>
+  <exec_depend>visp_bridge</exec_depend>
+  <exec_depend>zbar</exec_depend>
+  <exec_depend>usb_cam</exec_depend>
+  <exec_depend>tf2_ros</exec_depend>
+  <exec_depend>tf2</exec_depend>
+  <exec_depend>rosidl_default_runtime</exec_depend>
+  <exec_depend>rclpy</exec_depend>
+  <depend>cv_bridge</depend>
+  <member_of_group>rosidl_interface_packages</member_of_group>
+  
+
+
+  <!-- Recommanded: https://docs.ros.org/en/foxy/Tutorials/Intermediate/Launch/Creating-Launch-Files.html -->
+  <exec_depend>ros2launch</exec_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+
+</package>

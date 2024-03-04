@@ -1,0 +1,21 @@
+<launch>
+   <node pkg="visp_megapose" exec="megapose_server_.py" name="megapose_server" output="screen">
+      <param name="mesh_dir" value="$(find-pkg-share visp_megapose)/data/models"/>
+      <!-- MESHES_DIRECTORY
+        Directory containing the 3D models. each 3D model must be
+        in its own subfolder -->
+      <param name="megapose_models" value="RGB"/>
+      <!-- {RGB,RGBD,RGB-multi-hypothesis,RGBD-multi-hypothesis}
+        Which MegaPose model to use. Some models require the depth
+        map. Some models generate multiple hypotheses when
+        estimating the pose, at the cost of more computation.
+        Options: RGB, RGBD, RGB-multi-hypothesis, RGBD-multi-
+        hypothesis -->
+      <param name="num_workers" value="8"/>
+      <!-- Number of workers for rendering -->
+      <param name="optimize" value="False"/>
+      <!-- Experimental: Optimize network for inference speed.
+        This may incur a loss of accuracy. -->
+      
+   </node>
+</launch>

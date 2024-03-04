@@ -1,0 +1,18 @@
+# The name of the object to be tracked.
+string object_name
+# Initializing tracking requires a bounding box of the object to track.
+int16 topleft_i
+int16 topleft_j
+int16 bottomright_i
+int16 bottomright_j
+# The image in which to track the object.
+sensor_msgs/Image image
+# The camera parameters.
+sensor_msgs/CameraInfo camera_info
+---
+# The result of the pose estimation.
+geometry_msgs/Transform pose
+# The confidence level of the pose estimation.
+float64 confidence
+
+
