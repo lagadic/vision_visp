@@ -19,8 +19,8 @@ namespace tracking
 Tracker_::Tracker_(CmdLine &cmd, vpDetectorBase *detector, vpMbTracker *tracker, bool flush_display)
   :
 
-    cmd(cmd), iter_(0), flashcode_center_(640 / 2, 480 / 2), detector_(detector), tracker_(tracker),
-    flush_display_(flush_display)
+  cmd(cmd), iter_(0), flashcode_center_(640 / 2, 480 / 2), detector_(detector), tracker_(tracker),
+  flush_display_(flush_display)
 {
   RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"), "starting tracker");
   cvTrackingBox_init_ = false;
@@ -121,7 +121,8 @@ bool Tracker_::flashcode_detected(input_ready const &evt)
     if (cmd.get_code_message().empty()) {
       cmd.set_code_message_index(0); // we retain the largest code at index 0
       return true;
-    } else {
+    }
+    else {
       for (size_t i = 0; i < detector_->getNbObjects(); i++) {
         if (detector_->getMessage(i) == cmd.get_code_message()) {
           cmd.set_code_message_index(i);
@@ -152,7 +153,8 @@ bool Tracker_::flashcode_redetected(input_ready const &evt)
     if (cmd.get_code_message().empty()) {
       cmd.set_code_message_index(0); // we retain the largest code at index 0
       return true;
-    } else {
+    }
+    else {
       for (size_t i = 0; i < detector_->getNbObjects(); i++) {
         if (detector_->getMessage(i) == cmd.get_code_message()) {
           cmd.set_code_message_index(i);
@@ -217,7 +219,8 @@ bool Tracker_::model_detected(msm::front::none const &)
       cMo_ = cMo_lag;
     pose.computePose(vpPose::VIRTUAL_VS, cMo_);
     // vpDisplay::displayFrame(*I_,cMo_,cam_,0.01,vpColor::none,2);
-  } catch (vpException &e) {
+  }
+  catch (vpException &e) {
     RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"), "Pose computation failed: " << e.getStringMessage());
     return false;
   }
@@ -262,7 +265,8 @@ bool Tracker_::model_detected(msm::front::none const &)
       tracker_->track(Igray_); // track the object on this image
       tracker_->getPose(cMo_); // get the pose
     }
-  } catch (vpException &e) {
+  }
+  catch (vpException &e) {
     RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"), "Tracking failed");
     RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"), e.getStringMessage());
     return false;
@@ -334,7 +338,7 @@ bool Tracker_::mbt_success(input_ready const &evt)
 
         boost::accumulators::accumulator_set<unsigned char, boost::accumulators::stats<boost::accumulators::tag::median(
                                                                 boost::accumulators::with_p_square_quantile)> >
-            acc;
+          acc;
 
         int region_width = std::max((int)(std::abs(_u - _u_inner) * cmd.get_adhoc_recovery_size()), 1);
         int region_height = std::max((int)(std::abs(_v - _v_inner) * cmd.get_adhoc_recovery_size()), 1);
@@ -353,7 +357,8 @@ bool Tracker_::mbt_success(input_ready const &evt)
           return false;
       }
     }
-  } catch (vpException &e) {
+  }
+  catch (vpException &e) {
     RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"), "Tracking lost");
     return false;
   }
@@ -399,7 +404,8 @@ void Tracker_::track_model(input_ready const &evt)
       tracker_me->getMovingEdge(tracker_me_config_);
       tracker_me_config_.setRange(range);
       tracker_me->setMovingEdge(tracker_me_config_);
-    } else
+    }
+    else
       RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"),
                          "error: could not init moving edges on tracker that doesn't support them.");
   }
@@ -459,21 +465,26 @@ void Tracker_::updateMovingEdgeSites(visp_tracker::msg::MovingEdgeSites &sites)
 
       for (; sitesIterator != line->meline->list.end(); ++sitesIterator)
 #endif
-          {
-            visp_tracker::msg::MovingEdgeSite movingEdgeSite;
-            movingEdgeSite.x = sitesIterator->ifloat;
-            movingEdgeSite.y = sitesIterator->jfloat;
-            sites.moving_edge_sites.push_back(movingEdgeSite);
-          }
-          noVisibleLine = false;
+      {
+        visp_tracker::msg::MovingEdgeSite movingEdgeSite;
+#if VISP_VERSION_INT >= VP_VERSION_INT(3, 6, 0) // ViSP >= 3.6.0
+        movingEdgeSite.x = sitesIterator->m_ifloat;
+        movingEdgeSite.y = sitesIterator->m_jfloat;
+#else
+        movingEdgeSite.x = sitesIterator->ifloat;
+        movingEdgeSite.y = sitesIterator->jfloat;
+#endif
+        sites.moving_edge_sites.push_back(movingEdgeSite);
+      }
+      noVisibleLine = false;
         }
 #if VISP_VERSION_INT >= VP_VERSION_INT(3, 0, 0) // ViSP >= 3.0.0
-      }
     }
-#endif
   }
-  if (noVisibleLine)
-    RCLCPP_DEBUG_THROTTLE(rclcpp::get_logger("rclcpp"), clock, 10, "no distance lines");
+#endif
+}
+if (noVisibleLine)
+RCLCPP_DEBUG_THROTTLE(rclcpp::get_logger("rclcpp"), clock, 10, "no distance lines");
 }
 
 void Tracker_::updateKltPoints(visp_tracker::msg::KltPoints &klt)
