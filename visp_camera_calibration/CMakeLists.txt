@@ -13,6 +13,8 @@ find_package(catkin REQUIRED COMPONENTS
 
 find_package(VISP REQUIRED)
 
+find_package(Boost REQUIRED system thread)
+
 include_directories(SYSTEM
   ${BULLET_INCLUDE_DIRS}
   ${Boost_INCLUDE_DIRS}
@@ -46,6 +48,7 @@ catkin_package(
     sensor_msgs
     std_msgs
   DEPENDS
+    Boost
     VISP
 )
 
@@ -63,7 +66,8 @@ target_link_libraries(${PROJECT_NAME}_calibrator
   ${PROJECT_NAME}_common
   ${catkin_LIBRARIES}
   ${roscpp_LIBRARIES}
-  ${VISP_LIBRARIES})
+  ${VISP_LIBRARIES}
+  ${Boost_LIBRARIES})
 add_dependencies(${PROJECT_NAME}_calibrator
   ${catkin_EXPORTED_TARGETS} ${PROJECT_NAME}_gencpp)
 
@@ -76,11 +80,13 @@ target_link_libraries(${PROJECT_NAME}_image_processing
   ${catkin_LIBRARIES}
   ${roscpp_LIBRARIES}
   ${VISP_LIBRARIES}
+  ${Boost_LIBRARIES}
   )
 add_dependencies(${PROJECT_NAME}_image_processing
   ${catkin_EXPORTED_TARGETS}
   ${PROJECT_NAME}_gencpp
-  ${VISP_LIBRARIES})
+  ${VISP_LIBRARIES}
+  ${Boost_LIBRARIES})
 
 add_executable(${PROJECT_NAME}_camera
   src/camera.cpp
@@ -90,7 +96,8 @@ target_link_libraries(${PROJECT_NAME}_camera
   ${PROJECT_NAME}_common
   ${catkin_LIBRARIES}
   ${roscpp_LIBRARIES}
-  ${VISP_LIBRARIES})
+  ${VISP_LIBRARIES}
+  ${Boost_LIBRARIES})
 add_dependencies(${PROJECT_NAME}_camera
   ${catkin_EXPORTED_TARGETS} ${PROJECT_NAME}_gencpp)
 
