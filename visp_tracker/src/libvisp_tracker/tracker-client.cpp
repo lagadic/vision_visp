@@ -192,7 +192,7 @@ namespace visp_tracker
     if(trackerType_!="klt"){
       ROS_INFO_STREAM(convertVpMeToRosMessage(tracker_, movingEdge_));
     }
-    
+
     if(trackerType_!="mbt"){
       ROS_INFO_STREAM(convertVpKltOpencvToRosMessage(tracker_,kltTracker_));
     }
@@ -258,7 +258,7 @@ namespace visp_tracker
                              vpColor::red, 2);
             vpDisplay::displayFrame(image_, cMo, cameraParameters_,frameSize_,vpColor::none,2);
             mutex_.unlock();
-            vpDisplay::displayCharString
+            vpDisplay::displayText
                 (image_, point, "tracking, click to initialize tracker",
                  vpColor::red);
             vpDisplay::flush(image_);
@@ -307,7 +307,7 @@ namespace visp_tracker
       ROS_ERROR("unknown error happened while sending the cMo, retrying...");
     }
   }
-  
+
   TrackerClient::~TrackerClient()
   {
     if(reconfigureSrv_ != NULL)
@@ -336,13 +336,13 @@ namespace visp_tracker
     nodeHandle_.setParam (model_description_param, modelDescription);
 
     vpHomogeneousMatrixToTransform(srv.request.initial_cMo, cMo);
-    
+
     convertVpMbTrackerToInitRequest(tracker_, srv);
 
     if(trackerType_!="klt"){
       convertVpMeToInitRequest(movingEdge_, tracker_, srv);
     }
-    
+
     if(trackerType_!="mbt"){
       convertVpKltOpencvToInitRequest(kltTracker_, tracker_, srv);
     }
@@ -464,7 +464,11 @@ namespace visp_tracker
           return cMo;
         }
       }
+#if VISP_VERSION_INT > VP_VERSION_INT(3, 6, 0)
+      cMo.build(pose);
+#else
       cMo.buildFrom(pose);
+#endif
       return cMo;
     }
     catch (...)
@@ -487,7 +491,11 @@ namespace visp_tracker
         std::ifstream in( filename.c_str() );
         vpPoseVector pose;
         pose.load(in);
+#if VISP_VERSION_INT > VP_VERSION_INT(3, 6, 0)
+        cMo.build(pose);
+#else
         cMo.buildFrom(pose);
+#endif
         in.close();
       }
 
@@ -529,7 +537,11 @@ namespace visp_tracker
       std::fstream finitpos ;
       finitpos.open(filename.c_str(), std::ios::out) ;
       vpPoseVector pose;
+#if VISP_VERSION_INT > VP_VERSION_INT(3, 6, 0)
+      pose.build(cMo);
+#else
       pose.buildFrom(cMo);
+#endif
 
       finitpos << pose;
       finitpos.close();
@@ -537,7 +549,11 @@ namespace visp_tracker
     else {
       ROS_INFO_STREAM("Save initial pose in: " << initialPose);
       vpPoseVector pose;
+#if VISP_VERSION_INT > VP_VERSION_INT(3, 6, 0)
+      pose.build(cMo);
+#else
       pose.buildFrom(cMo);
+#endif
       file << pose;
     }
   }
@@ -609,7 +625,7 @@ namespace visp_tracker
     tracker_.setDisplayFeatures(false);
     tracker_.display(image_, cMo, cameraParameters_, vpColor::green);
     vpDisplay::displayFrame(image_, cMo, cameraParameters_,frameSize_,vpColor::none,2);
-    vpDisplay::displayCharString(image_, 15, 10,
+    vpDisplay::displayText(image_, 15, 10,
                                  "Left click to validate, right click to modify initial pose",
                                  vpColor::red);
     vpDisplay::flush(image_);
@@ -763,7 +779,7 @@ namespace visp_tracker
     do
     {
       vpDisplay::display(image_);
-      vpDisplay::displayCharString
+      vpDisplay::displayText
           (image_, 15, 10,
            fmt.str().c_str(),
            vpColor::red);

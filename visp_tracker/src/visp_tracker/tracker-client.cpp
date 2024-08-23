@@ -415,7 +415,11 @@ TrackerClient::loadInitialPose()
         return cMo;
       }
     }
+#if VISP_VERSION_INT > VP_VERSION_INT(3, 6, 0)
+    cMo.build( pose );
+#else
     cMo.buildFrom( pose );
+#endif
     return cMo;
   }
   catch ( ... )
@@ -444,7 +448,11 @@ TrackerClient::loadInitialPose()
       std::ifstream in( filename.c_str() );
       vpPoseVector pose;
       pose.load( in );
+#if VISP_VERSION_INT > VP_VERSION_INT(3, 6, 0)
+      cMo.build( pose );
+#else
       cMo.buildFrom( pose );
+#endif
       in.close();
     }
 
@@ -496,7 +504,11 @@ TrackerClient::saveInitialPose( const vpHomogeneousMatrix &cMo )
     std::fstream finitpos;
     finitpos.open( filename.c_str(), std::ios::out );
     vpPoseVector pose;
+#if VISP_VERSION_INT > VP_VERSION_INT(3, 6, 0)
+    pose.build( cMo );
+#else
     pose.buildFrom( cMo );
+#endif
 
     finitpos << pose;
     finitpos.close();
@@ -505,7 +517,11 @@ TrackerClient::saveInitialPose( const vpHomogeneousMatrix &cMo )
   {
     RCLCPP_INFO_STREAM( this->get_logger(), "Save initial pose in: " << initialPose );
     vpPoseVector pose;
+#if VISP_VERSION_INT > VP_VERSION_INT(3, 6, 0)
+    pose.build( cMo );
+#else
     pose.buildFrom( cMo );
+#endif
     file << pose;
   }
 }
