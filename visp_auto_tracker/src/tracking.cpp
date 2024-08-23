@@ -467,13 +467,8 @@ void Tracker_::updateMovingEdgeSites(visp_tracker::msg::MovingEdgeSites &sites)
 #endif
       {
         visp_tracker::msg::MovingEdgeSite movingEdgeSite;
-#if VISP_VERSION_INT >= VP_VERSION_INT(3, 6, 0) // ViSP >= 3.6.0
-        movingEdgeSite.x = sitesIterator->m_ifloat;
-        movingEdgeSite.y = sitesIterator->m_jfloat;
-#else
-        movingEdgeSite.x = sitesIterator->ifloat;
-        movingEdgeSite.y = sitesIterator->jfloat;
-#endif
+        movingEdgeSite.x = sitesIterator->get_ifloat();
+        movingEdgeSite.y = sitesIterator->get_jfloat();
         sites.moving_edge_sites.push_back(movingEdgeSite);
       }
       noVisibleLine = false;

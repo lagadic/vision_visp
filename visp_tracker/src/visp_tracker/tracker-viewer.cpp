@@ -7,7 +7,6 @@
 #include <rclcpp/rclcpp.hpp>
 #include <visp3/gui/vpDisplayX.h>
 
-#include "visp_tracker/callbacks.h"
 #include "visp_tracker/conversion.h"
 #include "visp_tracker/file.h"
 #include "visp_tracker/names.h"
@@ -362,7 +361,7 @@ TrackerViewer::displayKltPoints()
     pos.set_j( vpMath::round( jj + 7 ) );
     char ide[10];
     sprintf( ide, "%d", id );
-    vpDisplay::displayCharString( image_, pos, ide, vpColor::red );
+    vpDisplay::displayText( image_, pos, ide, vpColor::red );
   }
 }
 
