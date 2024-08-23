@@ -54,6 +54,7 @@ catkin_package(
     visp_tracker
 
   DEPENDS
+    Boost
     VISP
 )
 

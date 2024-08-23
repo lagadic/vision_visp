@@ -140,7 +140,11 @@ void transformToVpHomogeneousMatrix(vpHomogeneousMatrix& dst,
 {
   vpTranslationVector translation(src.translation.x,src.translation.y,src.translation.z);
   vpQuaternionVector quaternion(src.rotation.x,src.rotation.y,src.rotation.z,src.rotation.w);
+#if VISP_VERSION_INT > VP_VERSION_INT(3,6,0)
+  dst.build(translation, quaternion);
+#else
   dst.buildFrom(translation, quaternion);
+#endif
 }
 
 void transformToVpHomogeneousMatrix(vpHomogeneousMatrix& dst,

@@ -99,7 +99,11 @@ void Client::initAndSimulate()
   erc[1] = vpMath::rad(-10); // -10 deg
   erc[2] = vpMath::rad(25); // 25 deg
 
+#if VISP_VERSION_INT > VP_VERSION_INT(3,6,0)
+  eMc.build(etc, erc);
+#else
   eMc.buildFrom(etc, erc);
+#endif
   ROS_INFO("1) GROUND TRUTH:");
 
   ROS_INFO_STREAM("hand to eye transformation: " <<std::endl<<visp_bridge::toGeometryMsgsTransform(eMc)<<std::endl);
@@ -111,8 +115,13 @@ void Client::initAndSimulate()
     if (i == 0)
     {
       // Initialize first poses
+#if VISP_VERSION_INT > VP_VERSION_INT(3,6,0)
+      cMo.build(0, 0, 0.5, 0, 0, 0); // z=0.5 m
+      wMe.build(0, 0, 0, 0, 0, 0); // Id
+#else
       cMo.buildFrom(0, 0, 0.5, 0, 0, 0); // z=0.5 m
       wMe.buildFrom(0, 0, 0, 0, 0, 0); // Id
+#endif
     }
     else if (i == 1)
       v_c[3] = M_PI / 8;

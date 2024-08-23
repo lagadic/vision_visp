@@ -98,7 +98,7 @@ Camera::Camera() :
   disp->setTitle("camera");
 
   vpDisplay::display(img_);
-  vpDisplay::displayCharString(img_,img_.getHeight()/2,img_.getWidth()/4,"Click to publish camera feed.",vpColor::red);
+  vpDisplay::displayText(img_,img_.getHeight()/2,img_.getWidth()/4,"Click to publish camera feed.",vpColor::red);
   vpDisplay::flush(img_);
 
   spinner.start();
@@ -121,7 +121,7 @@ void Camera::sendVideo(){
 
     vpDisplay::display(img_);
 
-    vpDisplay::displayCharString(img_,img_.getHeight()/2,img_.getWidth()/4,boost::str(boost::format("publishing frame %1% on %2%") % (i+1) % raw_image_publisher_.getTopic()).c_str(),vpColor::red);
+    vpDisplay::displayText(img_,img_.getHeight()/2,img_.getWidth()/4,boost::str(boost::format("publishing frame %1% on %2%") % (i+1) % raw_image_publisher_.getTopic()).c_str(),vpColor::red);
     vpDisplay::flush(img_);
 
     raw_image_publisher_.publish(image);
@@ -131,7 +131,7 @@ void Camera::sendVideo(){
   }
 
   ROS_INFO("When finished selecting points, click on the camera window for calibration");
-  vpDisplay::displayCharString(img_,img_.getHeight()/2+30,img_.getWidth()/4,"When finished selecting points, click here for calibration",vpColor::red);
+  vpDisplay::displayText(img_,img_.getHeight()/2+30,img_.getWidth()/4,"When finished selecting points, click here for calibration",vpColor::red);
   vpDisplay::flush(img_);
   while(ros::ok() && !vpDisplay::getClick(img_,false));
   visp_camera_calibration::calibrate calibrate_comm;
