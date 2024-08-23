@@ -63,12 +63,17 @@
 
 namespace visp_bridge{
 
-#if VISP_VERSION_INT > (2<<16 | 6<<8 | 1)
+#if VISP_VERSION_INT > VP_VERSION_INT(2,6,1)
   vpHomogeneousMatrix toVispHomogeneousMatrix(const geometry_msgs::Pose& pose){
     vpHomogeneousMatrix mat;
     vpTranslationVector vec(pose.position.x,pose.position.y,pose.position.z);
     vpQuaternionVector q(pose.orientation.x,pose.orientation.y,pose.orientation.z,pose.orientation.w);
+
+#if VISP_VERSION_INT > VP_VERSION_INT(3,6,0)
+    mat.build(vec,q);
+#else
     mat.buildFrom(vec,q);
+#endif
 
     return mat;
   }
@@ -77,7 +82,11 @@ namespace visp_bridge{
      vpHomogeneousMatrix mat;
      vpTranslationVector vec(trans.translation.x,trans.translation.y,trans.translation.z);
      vpQuaternionVector q(trans.rotation.x,trans.rotation.y,trans.rotation.z,trans.rotation.w);
+#if VISP_VERSION_INT > VP_VERSION_INT(3,6,0)
+     mat.build(vec,q);
+#else
      mat.buildFrom(vec,q);
+#endif
 
      return mat;
    }
@@ -146,7 +155,11 @@ namespace visp_bridge{
       rmat[2][1] = 2*a*b+2*c*d;
       rmat[2][2] = a*a-b*b-c*c+d*d;
 
+#if VISP_VERSION_INT > VP_VERSION_INT(3,6,0)
+      mat.build(vec,rmat);
+#else
       mat.buildFrom(vec,rmat);
+#endif
 
       return mat;
     }
@@ -191,7 +204,11 @@ namespace visp_bridge{
       rmat[2][1] = 2*a*b+2*c*d;
       rmat[2][2] = a*a-b*b-c*c+d*d;
 
+#if VISP_VERSION_INT > VP_VERSION_INT(3,6,0)
+      mat.build(vec,rmat);
+#else
       mat.buildFrom(vec,rmat);
+#endif
 
       return mat;
     }
