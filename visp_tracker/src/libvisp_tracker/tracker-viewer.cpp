@@ -282,17 +282,17 @@ namespace visp_tracker
         ROS_DEBUG_STREAM_THROTTLE(10, "cMo viewer:\n" << *cMo_);
 
         fmt % (*cMo_)[0][3] % (*cMo_)[1][3] % (*cMo_)[2][3];
-        vpDisplay::displayCharString
+        vpDisplay::displayText
             (image_, point, fmt.str().c_str(), vpColor::red);
         fmtTime % info_->header.stamp.toSec();
-        vpDisplay::displayCharString
+        vpDisplay::displayText
             (image_, pointTime, fmtTime.str().c_str(), vpColor::red);
-        vpDisplay::displayCharString
+        vpDisplay::displayText
             (image_, pointCameraTopic, fmtCameraTopic.str().c_str(),
              vpColor::red);
       }
       else{
-        vpDisplay::displayCharString
+        vpDisplay::displayText
             (image_, point, "tracking failed", vpColor::red);
       }
 
@@ -481,7 +481,7 @@ namespace visp_tracker
       pos.set_j( vpMath::round( jj + 7 ) );
       char ide[10];
       sprintf(ide, "%d", id);
-      vpDisplay::displayCharString(image_, pos, ide, vpColor::red);
+      vpDisplay::displayText(image_, pos, ide, vpColor::red);
     }
   }
 

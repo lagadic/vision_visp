@@ -563,8 +563,8 @@ namespace tracking{
 #endif
         {
           visp_tracker::MovingEdgeSite movingEdgeSite;
-          movingEdgeSite.x = sitesIterator->ifloat;
-          movingEdgeSite.y = sitesIterator->jfloat;
+          movingEdgeSite.x = sitesIterator->get_ifloat();
+          movingEdgeSite.y = sitesIterator->get_jfloat();
 #if VISP_VERSION_INT < VP_VERSION_INT(2,10,0)// ViSP < 2.10.0
           movingEdgeSite.suppress = sitesIterator->suppress;
 #endif

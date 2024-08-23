@@ -258,7 +258,7 @@ namespace visp_tracker
                              vpColor::red, 2);
             vpDisplay::displayFrame(image_, cMo, cameraParameters_,frameSize_,vpColor::none,2);
             mutex_.unlock();
-            vpDisplay::displayCharString
+            vpDisplay::displayText
                 (image_, point, "tracking, click to initialize tracker",
                  vpColor::red);
             vpDisplay::flush(image_);
@@ -464,7 +464,11 @@ namespace visp_tracker
           return cMo;
         }
       }
+#if VISP_VERSION_INT > VP_VERSION_INT(3,6,0)
+      cMo.build(pose);
+#else
       cMo.buildFrom(pose);
+#endif
       return cMo;
     }
     catch (...)
@@ -487,7 +491,11 @@ namespace visp_tracker
         std::ifstream in( filename.c_str() );
         vpPoseVector pose;
         pose.load(in);
+#if VISP_VERSION_INT > VP_VERSION_INT(3,6,0)
+        cMo.build(pose);
+#else
         cMo.buildFrom(pose);
+#endif
         in.close();
       }
 
@@ -529,7 +537,11 @@ namespace visp_tracker
       std::fstream finitpos ;
       finitpos.open(filename.c_str(), std::ios::out) ;
       vpPoseVector pose;
+#if VISP_VERSION_INT > VP_VERSION_INT(3,6,0)
+      pose.build(cMo);
+#else
       pose.buildFrom(cMo);
+#endif
 
       finitpos << pose;
       finitpos.close();
@@ -537,7 +549,11 @@ namespace visp_tracker
     else {
       ROS_INFO_STREAM("Save initial pose in: " << initialPose);
       vpPoseVector pose;
+#if VISP_VERSION_INT > VP_VERSION_INT(3,6,0)
+      pose.build(cMo);
+#else
       pose.buildFrom(cMo);
+#endif
       file << pose;
     }
   }
@@ -609,7 +625,7 @@ namespace visp_tracker
     tracker_.setDisplayFeatures(false);
     tracker_.display(image_, cMo, cameraParameters_, vpColor::green);
     vpDisplay::displayFrame(image_, cMo, cameraParameters_,frameSize_,vpColor::none,2);
-    vpDisplay::displayCharString(image_, 15, 10,
+    vpDisplay::displayText(image_, 15, 10,
                                  "Left click to validate, right click to modify initial pose",
                                  vpColor::red);
     vpDisplay::flush(image_);
@@ -763,7 +779,7 @@ namespace visp_tracker
     do
     {
       vpDisplay::display(image_);
-      vpDisplay::displayCharString
+      vpDisplay::displayText
           (image_, 15, 10,
            fmt.str().c_str(),
            vpColor::red);
