@@ -56,11 +56,7 @@ vpHomogeneousMatrix toVispHomogeneousMatrix(const geometry_msgs::msg::Pose &pose
   vpHomogeneousMatrix mat;
   vpTranslationVector vec(pose.position.x, pose.position.y, pose.position.z);
   vpQuaternionVector q(pose.orientation.x, pose.orientation.y, pose.orientation.z, pose.orientation.w);
-#if VISP_VERSION_INT > VP_VERSION_INT(3, 6, 0)
-  mat.build(vec, q);
-#else
   mat.buildFrom(vec, q);
-#endif
 
   return mat;
 }
@@ -70,11 +66,7 @@ vpHomogeneousMatrix toVispHomogeneousMatrix(const geometry_msgs::msg::Pose::Cons
   vpHomogeneousMatrix mat;
   vpTranslationVector vec(pose->position.x, pose->position.y, pose->position.z);
   vpQuaternionVector q(pose->orientation.x, pose->orientation.y, pose->orientation.z, pose->orientation.w);
-#if VISP_VERSION_INT > VP_VERSION_INT(3, 6, 0)
-  mat.build(vec, q);
-#else
   mat.buildFrom(vec, q);
-#endif
   return mat;
 }
 
@@ -83,11 +75,7 @@ vpHomogeneousMatrix toVispHomogeneousMatrix(const geometry_msgs::msg::Transform 
   vpHomogeneousMatrix mat;
   vpTranslationVector vec(trans.translation.x, trans.translation.y, trans.translation.z);
   vpQuaternionVector q(trans.rotation.x, trans.rotation.y, trans.rotation.z, trans.rotation.w);
-#if VISP_VERSION_INT > VP_VERSION_INT(3, 6, 0)
-  mat.build(vec, q);
-#else
   mat.buildFrom(vec, q);
-#endif
   return mat;
 }
 
@@ -96,11 +84,7 @@ vpHomogeneousMatrix toVispHomogeneousMatrix(const geometry_msgs::msg::Transform:
   vpHomogeneousMatrix mat;
   vpTranslationVector vec(trans->translation.x, trans->translation.y, trans->translation.z);
   vpQuaternionVector q(trans->rotation.x, trans->rotation.y, trans->rotation.z, trans->rotation.w);
-#if VISP_VERSION_INT > VP_VERSION_INT(3, 6, 0)
-  mat.build(vec, q);
-#else
   mat.buildFrom(vec, q);
-#endif
   return mat;
 }
 

@@ -10,7 +10,7 @@
 
   -->
 <launch>
-  <executable cmd="ros2 bag play install/visp_tracker/share/bag/tutorial-static-box --loop"/>
+  <executable cmd="ros2 bag play install/visp_tracker/share/bag/tutorial-static-box-ros2 --loop"/>
 
   <node pkg="visp_tracker" name="visp_tracker_client" exec="visp_tracker_client">
     <param name="model_path"    value="package://visp_tracker/models" />
