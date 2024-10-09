@@ -18,7 +18,7 @@
   <!-- FIXME: do not use the timestamps from the bag file,
     it makes the tracker hang for some reason. -->
   <arg name="use_sim_time" default="false" />
-  <executable cmd="ros2 bag play install/visp_tracker/share/bag/tutorial-static-box --loop"/>
+  <executable cmd="ros2 bag play install/visp_tracker/share/bag/tutorial-static-box-ros2 --loop"/>
 
   <group>
     <node pkg="visp_tracker" name="visp_tracker_mbt" exec="visp_tracker_mbt">
@@ -56,7 +56,7 @@
       <param from="package://visp_tracker/models/laas-box/tracker.yaml" />
       <param name="use_sim_time" value="$(var use_sim_time)" />
     </node>
-    
+
     <node pkg="visp_tracker" name="visp_tracker_viewer" exec="visp_tracker_viewer">
       <param name="frame_size" value="0.2" />
       <param name="tracker_name" value="visp_tracker_client" />

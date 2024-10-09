@@ -129,11 +129,11 @@ include(ExternalProject)
 ExternalProject_Add(
     external_bag
     PREFIX "externals"
-    URL https://github.com/lagadic/vision_visp/releases/download/vision_visp-0.5.0/tutorial-static-box.bag
+    URL https://github.com/lagadic/vision_visp/releases/download/vision_visp-0.5.0/tutorial-static-box-ros2.bag
     DOWNLOAD_NO_EXTRACT true
     CONFIGURE_COMMAND ""
     BUILD_COMMAND ""
-    PATCH_COMMAND rosbags-convert ../tutorial-static-box.bag
+    PATCH_COMMAND ""
     INSTALL_COMMAND ""
 )
 
@@ -143,10 +143,10 @@ if(EXISTS ${DOWNLOADED_FILE})
 endif()
 
 install(DIRECTORY
-  ${CMAKE_CURRENT_BINARY_DIR}/externals/src/tutorial-static-box
+  ${CMAKE_CURRENT_BINARY_DIR}/externals/src/tutorial-static-box-ros2.bag
   DESTINATION share/bag
 )
-message("Bagfile installed in ${CMAKE_INSTALL_PREFIX}/share/bag/tutorial-static-box")
+message("Bagfile installed in ${CMAKE_INSTALL_PREFIX}/share/bag/tutorial-static-box-ros2")
 
 install(
   TARGETS

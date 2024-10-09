@@ -17,7 +17,7 @@
   <!-- Play the video sequence, publish the clock topic to preserve
        the original timestamps. -->
   <node pkg="rosbag" type="play" name="rosbag" args="--clock -l
-  $(find visp_tracker)/bag/tutorial-static-box.bag"/>
+  $(find visp_tracker)/bag/tutorial-static-box-ros2.bag"/>
 
  <!-- Launch the tracking node -->
   <node pkg="visp_tracker" type="tracker" name="tracker_mbt">

@@ -114,10 +114,10 @@ include(ExternalProject)
 ExternalProject_Add(
   external_bag
   PREFIX "externals"
-  URL https://github.com/lagadic/vision_visp/releases/download/vision_visp-0.5.0/tutorial-qrcode.bag
+  URL https://github.com/lagadic/vision_visp/releases/download/vision_visp-0.5.0/tutorial-qrcode-ros2.bag
   DOWNLOAD_NO_EXTRACT true
   CONFIGURE_COMMAND ""
-  PATCH_COMMAND rosbags-convert ../tutorial-qrcode.bag
+  PATCH_COMMAND ""
   BUILD_COMMAND ""
   INSTALL_COMMAND ""
 )
@@ -128,10 +128,10 @@ if(EXISTS ${DOWNLOADED_FILE})
 endif()
 
 install(DIRECTORY
-  ${CMAKE_CURRENT_BINARY_DIR}/externals/src/tutorial-qrcode
+  ${CMAKE_CURRENT_BINARY_DIR}/externals/src/tutorial-qrcode-ros2.bag
   DESTINATION share/bag
 )
-message("Bagfile installed in ${CMAKE_INSTALL_PREFIX}/share/bag/tutorial-qrcode")
+message("Bagfile installed in ${CMAKE_INSTALL_PREFIX}/share/bag/tutorial-qrcode-ros2")
 
 ament_export_dependencies(rosidl_default_runtime)
 
