@@ -127,7 +127,7 @@ if(EXISTS ${DOWNLOADED_FILE})
   message("Successfully download ${DOWNLOADED_FILE}")
 endif()
 
-install(DIRECTORY
+install(FILES
   ${CMAKE_CURRENT_BINARY_DIR}/externals/src/tutorial-qrcode-ros2.bag
   DESTINATION share/bag
 )
