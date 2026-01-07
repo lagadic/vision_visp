@@ -129,7 +129,7 @@ include(ExternalProject)
 ExternalProject_Add(
     external_bag
     PREFIX "externals"
-    URL https://github.com/lagadic/vision_visp/releases/download/vision_visp-0.5.0/tutorial-static-box-ros2.bag
+    URL https://github.com/lagadic/vision_visp/releases/download/vision_visp-0.5.0/tutorial-static-box-ros2.tar.gz
     DOWNLOAD_NO_EXTRACT true
     CONFIGURE_COMMAND ""
     BUILD_COMMAND ""
@@ -138,15 +138,30 @@ ExternalProject_Add(
 )
 
 ExternalProject_Get_Property(external_bag DOWNLOADED_FILE)
-if(EXISTS ${DOWNLOADED_FILE})
-  message("Successfully download ${DOWNLOADED_FILE}")
-endif()
+
+set(BAG_DIR ${CMAKE_CURRENT_BINARY_DIR}/bag)
+set(BAG_METADATA ${BAG_DIR}/metadata.yaml)
+set(BAG_DB ${BAG_DIR}/dumb.db3)
+
+add_custom_command(
+  OUTPUT ${BAG_METADATA} ${BAG_DB}
+  COMMAND ${CMAKE_COMMAND} -E make_directory ${BAG_DIR}
+  COMMAND tar -xzvf ${DOWNLOADED_FILE} -C ${BAG_DIR}
+  DEPENDS external_bag
+  COMMENT "Extracting ROS2 bag"
+  VERBATIM
+)
+
+add_custom_target(
+  extract_bag ALL
+  DEPENDS ${BAG_METADATA} ${BAG_DB}
+  VERBATIM
+)
 
 install(DIRECTORY
-  ${CMAKE_CURRENT_BINARY_DIR}/externals/src/tutorial-static-box-ros2.bag
-  DESTINATION share/bag
+  ${BAG_DIR}
+  DESTINATION share
 )
-message("Bagfile installed in ${CMAKE_INSTALL_PREFIX}/share/bag/tutorial-static-box-ros2")
 
 install(
   TARGETS
