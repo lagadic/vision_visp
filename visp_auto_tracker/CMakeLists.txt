@@ -114,7 +114,7 @@ include(ExternalProject)
 ExternalProject_Add(
   external_bag
   PREFIX "externals"
-  URL https://github.com/lagadic/vision_visp/releases/download/vision_visp-0.5.0/tutorial-qrcode-ros2.bag
+  URL https://github.com/lagadic/vision_visp/releases/download/vision_visp-0.5.0/tutorial-qrcode-ros2.tar.gz
   DOWNLOAD_NO_EXTRACT true
   CONFIGURE_COMMAND ""
   PATCH_COMMAND ""
@@ -122,16 +122,29 @@ ExternalProject_Add(
   INSTALL_COMMAND ""
 )
 
-ExternalProject_Get_Property(external_bag DOWNLOADED_FILE)
-if(EXISTS ${DOWNLOADED_FILE})
-  message("Successfully download ${DOWNLOADED_FILE}")
-endif()
+set(BAG_DIR ${CMAKE_CURRENT_BINARY_DIR}/bag)
+set(BAG_METADATA ${BAG_DIR}/metadata.yaml)
+set(BAG_DB ${BAG_DIR}/tutorial-qrcode-ros2.db3)
 
-install(FILES
-  ${CMAKE_CURRENT_BINARY_DIR}/externals/src/tutorial-qrcode-ros2.bag
-  DESTINATION share/bag
+add_custom_command(
+  OUTPUT ${BAG_METADATA} ${BAG_DB}
+  COMMAND ${CMAKE_COMMAND} -E make_directory ${BAG_DIR}
+  COMMAND tar -xzvf ${DOWNLOADED_FILE} -C ${BAG_DIR}
+  DEPENDS external_bag
+  COMMENT "Extracting ROS2 bag"
+  VERBATIM
 )
-message("Bagfile installed in ${CMAKE_INSTALL_PREFIX}/share/bag/tutorial-qrcode-ros2")
+
+add_custom_target(
+  extract_bag ALL
+  DEPENDS ${BAG_METADATA} ${BAG_DB}
+  VERBATIM
+)
+
+install(DIRECTORY
+  ${BAG_DIR}
+  DESTINATION share
+)
 
 ament_export_dependencies(rosidl_default_runtime)
 
