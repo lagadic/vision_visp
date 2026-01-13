@@ -122,6 +122,8 @@ ExternalProject_Add(
   INSTALL_COMMAND ""
 )
 
+ExternalProject_Get_Property(external_bag DOWNLOADED_FILE)
+
 set(BAG_DIR ${CMAKE_CURRENT_BINARY_DIR}/bag)
 set(BAG_METADATA ${BAG_DIR}/metadata.yaml)
 set(BAG_DB ${BAG_DIR}/tutorial-qrcode-ros2.db3)
