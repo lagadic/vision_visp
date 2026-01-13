@@ -141,7 +141,7 @@ ExternalProject_Get_Property(external_bag DOWNLOADED_FILE)
 
 set(BAG_DIR ${CMAKE_CURRENT_BINARY_DIR}/bag)
 set(BAG_METADATA ${BAG_DIR}/metadata.yaml)
-set(BAG_DB ${BAG_DIR}/dumb.db3)
+set(BAG_DB ${BAG_DIR}/tutorial-static-box-ros2.db3)
 
 add_custom_command(
   OUTPUT ${BAG_METADATA} ${BAG_DB}
