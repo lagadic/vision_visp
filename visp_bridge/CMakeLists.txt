@@ -15,6 +15,7 @@ find_package(geometry_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(camera_calibration_parsers REQUIRED)
 find_package(VISP REQUIRED COMPONENTS visp_core)
+find_package(ament_index_cpp REQUIRED)
 
 # add library 
 add_library(${PROJECT_NAME} src/3dpose.cpp src/camera.cpp src/image.cpp src/path_retriever.cpp)
@@ -24,6 +25,7 @@ ament_target_dependencies(${PROJECT_NAME}
   rclcpp
   sensor_msgs
   VISP
+  ament_index_cpp
 )
 
 include(GenerateExportHeader)
