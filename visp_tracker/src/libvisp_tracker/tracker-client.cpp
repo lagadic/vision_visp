@@ -29,12 +29,12 @@
 #include <visp3/io/vpImageIo.h>
 #include <visp3/core/vpIoTools.h>
 
-#include "conversion.hh"
-#include "callbacks.hh"
-#include "file.hh"
-#include "names.hh"
+#include <visp_tracker/conversion.h>
+#include <visp_tracker/callbacks.h>
+#include <visp_tracker/file.h>
+#include <visp_tracker/names.h>
 
-#include "tracker-client.hh"
+#include <visp_tracker/tracker-client.h>
 
 
 namespace visp_tracker

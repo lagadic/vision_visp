@@ -15,7 +15,7 @@
 
 #include <visp3/mbt/vpMbGenericTracker.h>
 
-#include "visp_tracker/conversion.h"
+#include <visp_tracker/conversion.h>
 
 using namespace std::chrono_literals;
 

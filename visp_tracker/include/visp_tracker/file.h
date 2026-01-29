@@ -3,7 +3,7 @@
 #include <filesystem>
 #include <string>
 
-#include "visp_tracker/names.h"
+#include <visp_tracker/names.h>
 
 std::string
 getInitFileFromModelName( const std::string &modelName, const std::string &defaultPath );

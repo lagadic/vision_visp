@@ -140,7 +140,7 @@
     "xutility": "cpp"
   },
   "C_Cpp.vcFormat.indent.namespaceContents": false,
-  "editor.formatOnSave": true,
+  "editor.formatOnSave": false,
   "C_Cpp.vcFormat.indent.accessSpecifiers": false,
   "C_Cpp.vcFormat.indent.preserveWithinParentheses": true,
   "C_Cpp.vcFormat.indent.preprocessor": "leftmostColumn",

@@ -5,9 +5,9 @@
 
 #include <visp_tracker/srv/init.hpp>
 
-#include "visp_tracker/callbacks.h"
-#include "visp_tracker/conversion.h"
-#include "visp_tracker/names.h"
+#include <visp_tracker/callbacks.h>
+#include <visp_tracker/conversion.h>
+#include <visp_tracker/names.h>
 
 #include <visp3/mbt/vpMbGenericTracker.h>
 
