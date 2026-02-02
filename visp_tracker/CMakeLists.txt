@@ -165,9 +165,10 @@ install(DIRECTORY
 
 install(
   TARGETS
-  ${PROJECT_NAME}_viewer
+  ${PROJECT_NAME}_common
   ${PROJECT_NAME}_client
   ${PROJECT_NAME}_mbt
+  ${PROJECT_NAME}_viewer
   DESTINATION lib/${PROJECT_NAME}
 )
 
