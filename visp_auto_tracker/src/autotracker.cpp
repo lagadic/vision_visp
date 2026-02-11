@@ -12,6 +12,7 @@
 #include <visp_tracker/msg/moving_edge_sites.hpp>
 
 // visp includes
+#include <visp3/core/vpIoTools.h>
 #include <visp3/core/vpTime.h>
 #include <visp3/gui/vpDisplayX.h>
 #include <visp3/mbt/vpMbGenericTracker.h>
@@ -37,30 +38,24 @@ namespace visp_auto_tracker
 AutoTracker::AutoTracker()
   : Node("visp_auto_tracker_node"),
 
-    queue_size_(1000), tracker_config_path_(), model_description_(), model_path_(), model_name_(), code_message_(),
-    tracker_ref_frame_(), debug_display_(false), I_(), image_header_(), got_image_(false), cam_(), t_(NULL)
+  queue_size_(1000), tracker_config_path_(), model_description_(), model_path_(), model_name_(), code_message_(),
+  tracker_ref_frame_(), debug_display_(false), I_(), image_header_(), got_image_(false), cam_(), t_(NULL)
 {
 
   // get the tracker configuration file
   // this file contains all of the tracker's parameters, they are not passed to ros directly.
   tracker_config_path_ = this->declare_parameter<std::string>("tracker_config_path", "package://models/config.cfg");
   debug_display_ = this->declare_parameter<bool>("debug_display", false);
-  std::string model_full_path;
   model_path_ = this->declare_parameter<std::string>("model_path", visp_auto_tracker::default_model_path);
   model_name_ = this->declare_parameter<std::string>("model_name");
   this->declare_parameter<std::string>("code_message", code_message_);
   tracker_ref_frame_ = this->declare_parameter<std::string>("tracker_ref_frame", "/map");
   model_description_ = this->declare_parameter<std::string>("model_description", "");
-  model_full_path = model_path_ + model_name_;
-  tracker_config_path_ = model_path_ + "/" + model_name_ + ".cfg";
+  tracker_config_path_ = vpIoTools::createFilePath(model_path_, model_name_ + ".cfg");
 
   // Parse command line arguments from config file (as ros param)
-   RCLCPP_INFO_STREAM(this->get_logger(), "DBG Before cmd.init(" << tracker_config_path_ << ") ...");
   cmd_.init(tracker_config_path_);
-  RCLCPP_INFO_STREAM(this->get_logger(), "DBG Done");
-  RCLCPP_INFO_STREAM(this->get_logger(), "DBG Before cmd.set_data_directory(" << model_path_ << ") ...");
   cmd_.set_data_directory(model_path_); // force data path
-  RCLCPP_INFO_STREAM(this->get_logger(), "DBG Before cmd.set_pattern_name(" << model_name_ << ") ...");
   cmd_.set_pattern_name(model_name_);   // force model name
   cmd_.set_show_fps(false);
   if (!code_message_.empty()) {
