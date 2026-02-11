@@ -52,11 +52,15 @@ AutoTracker::AutoTracker()
   tracker_ref_frame_ = this->declare_parameter<std::string>("tracker_ref_frame", "/map");
   model_description_ = this->declare_parameter<std::string>("model_description", "");
   model_full_path = model_path_ + model_name_;
-  tracker_config_path_ = model_path_ + "/" + model_full_path + ".cfg";
+  tracker_config_path_ = model_path_ + "/" + model_name_ + ".cfg";
 
   // Parse command line arguments from config file (as ros param)
+   RCLCPP_INFO_STREAM(this->get_logger(), "DBG Before cmd.init(" << tracker_config_path_ << ") ...");
   cmd_.init(tracker_config_path_);
+  RCLCPP_INFO_STREAM(this->get_logger(), "DBG Done");
+  RCLCPP_INFO_STREAM(this->get_logger(), "DBG Before cmd.set_data_directory(" << model_path_ << ") ...");
   cmd_.set_data_directory(model_path_); // force data path
+  RCLCPP_INFO_STREAM(this->get_logger(), "DBG Before cmd.set_pattern_name(" << model_name_ << ") ...");
   cmd_.set_pattern_name(model_name_);   // force model name
   cmd_.set_show_fps(false);
   if (!code_message_.empty()) {
@@ -64,6 +68,7 @@ AutoTracker::AutoTracker()
     cmd_.set_code_message(code_message_);
   }
 
+  RCLCPP_INFO_STREAM(this->get_logger(), "DBG Before resource_retriever(" << cmd_.get_mbt_cad_file() << ") ...");
   resource_retriever::Retriever r;
   resource_retriever::MemoryResource res;
   try {
