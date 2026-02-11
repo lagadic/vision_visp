@@ -63,7 +63,6 @@ AutoTracker::AutoTracker()
     cmd_.set_code_message(code_message_);
   }
 
-  RCLCPP_INFO_STREAM(this->get_logger(), "DBG Before resource_retriever(" << cmd_.get_mbt_cad_file() << ") ...");
   resource_retriever::Retriever r;
   resource_retriever::MemoryResource res;
   try {
