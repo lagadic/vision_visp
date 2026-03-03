@@ -9,7 +9,7 @@
 
   <!-- Play the video sequence, publish the clock topic to preserve
        the original timestamps. -->
-  <executable cmd="ros2 bag play install/visp_auto_tracker/share/bag/tutorial-qrcode --loop"/>
+  <executable cmd="ros2 bag play install/visp_auto_tracker/share/bag/tutorial-qrcode-jazzy --loop"/>
 
   <!-- Launch the tracking node -->
   <node pkg="visp_auto_tracker" exec="visp_auto_tracker_main" name="visp_auto_tracker" output="screen">

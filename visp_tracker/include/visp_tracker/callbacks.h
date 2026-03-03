@@ -4,7 +4,7 @@
 #include <sensor_msgs/msg/image.hpp>
 #include <std_msgs/msg/header.hpp>
 
-#include "rclcpp/rclcpp.hpp"
+#include <rclcpp/rclcpp.hpp>
 #include <string>
 #include <visp3/core/vpImage.h>
 #include <visp3/klt/vpKltOpencv.h>

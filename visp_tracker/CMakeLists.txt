@@ -129,7 +129,7 @@ include(ExternalProject)
 ExternalProject_Add(
     external_bag
     PREFIX "externals"
-    URL https://github.com/lagadic/vision_visp/releases/download/vision_visp-0.5.0/tutorial-static-box-ros2.tar.gz
+    URL https://github.com/lagadic/vision_visp/releases/download/vision_visp-0.5.0/tutorial-static-box-jazzy.tar.gz
     DOWNLOAD_NO_EXTRACT true
     CONFIGURE_COMMAND ""
     BUILD_COMMAND ""
@@ -141,7 +141,7 @@ ExternalProject_Get_Property(external_bag DOWNLOADED_FILE)
 
 set(BAG_DIR ${CMAKE_CURRENT_BINARY_DIR}/bag)
 set(BAG_METADATA ${BAG_DIR}/metadata.yaml)
-set(BAG_DB ${BAG_DIR}/tutorial-static-box-ros2.db3)
+set(BAG_DB ${BAG_DIR}/tutorial-static-box-jazzy.db3)
 
 add_custom_command(
   OUTPUT ${BAG_METADATA} ${BAG_DB}
@@ -165,9 +165,10 @@ install(DIRECTORY
 
 install(
   TARGETS
-  ${PROJECT_NAME}_viewer
+  ${PROJECT_NAME}_common
   ${PROJECT_NAME}_client
   ${PROJECT_NAME}_mbt
+  ${PROJECT_NAME}_viewer
   DESTINATION lib/${PROJECT_NAME}
 )
 
