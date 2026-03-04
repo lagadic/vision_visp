@@ -3,21 +3,27 @@
 #include <visp3/core/vpCameraParameters.h>
 #include <visp3/core/vpImage.h>
 
+#ifdef ENABLE_VISP_NAMESPACE
+using namespace VISP_NAMESPACE_NAME;
+#endif
+
 namespace tracking
 {
 
-struct input_ready {
-  input_ready(vpImage<vpRGBa> &I, vpCameraParameters &cam) : I(I), cam_(cam), frame(0) {}
-  input_ready(vpImage<vpRGBa> &I, vpCameraParameters &cam, int frame) : I(I), cam_(cam), frame(frame) {}
+struct input_ready
+{
+  input_ready(vpImage<vpRGBa> &I, vpCameraParameters &cam) : I(I), cam_(cam), frame(0) { }
+  input_ready(vpImage<vpRGBa> &I, vpCameraParameters &cam, int frame) : I(I), cam_(cam), frame(frame) { }
   vpImage<vpRGBa> &I;
   vpCameraParameters cam_;
   int frame;
 };
-struct select_input {
-  select_input(vpImage<vpRGBa> &I) : I(I) {}
+struct select_input
+{
+  select_input(vpImage<vpRGBa> &I) : I(I) { }
   vpImage<vpRGBa> &I;
 };
-struct finished {
-};
+struct finished
+{ };
 } // namespace tracking
 #endif

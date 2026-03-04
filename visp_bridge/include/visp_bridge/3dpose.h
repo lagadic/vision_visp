@@ -49,6 +49,10 @@
 #ifndef VISP_BRIDGE__3DPOSE_H_
 #define VISP_BRIDGE__3DPOSE_H_
 
+#ifdef ENABLE_VISP_NAMESPACE
+using namespace VISP_NAMESPACE_NAME;
+#endif
+
 namespace visp_bridge
 {
 /*!

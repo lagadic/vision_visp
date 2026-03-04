@@ -67,7 +67,8 @@ AutoTracker::AutoTracker()
   resource_retriever::MemoryResource res;
   try {
     res = r.get(std::string("file://") + cmd_.get_mbt_cad_file());
-  } catch (resource_retriever::Exception &e) {
+  }
+  catch (resource_retriever::Exception &e) {
     RCLCPP_ERROR_STREAM(rclcpp::get_logger("rclcpp"), "Failed to retrieve file:" << e.what());
   }
   model_description_.resize(res.size);
@@ -136,21 +137,24 @@ void AutoTracker::spin()
 #endif
   }
 
-  else if ((cmd_.get_detector_type() == CmdLine::APRIL) || (cmd_.get_detector_type() == CmdLine::APRILTAG)){
+  else if ((cmd_.get_detector_type() == CmdLine::APRIL) || (cmd_.get_detector_type() == CmdLine::APRILTAG)) {
 
 #if defined(VISP_HAVE_APRILTAG)
     vpDetectorAprilTag::vpAprilTagFamily tag_family = vpDetectorAprilTag::vpAprilTagFamily::TAG_36h11;
     std::string tag_family_str = cmd_.get_detector_subtype();
     if (tag_family_str.find("16h5") != std::string::npos)
       tag_family = vpDetectorAprilTag::vpAprilTagFamily::TAG_16h5;
-    else if (tag_family_str.find("25h7") != std::string::npos)
-      tag_family = vpDetectorAprilTag::vpAprilTagFamily::TAG_25h7;
     else if (tag_family_str.find("25h9") != std::string::npos)
       tag_family = vpDetectorAprilTag::vpAprilTagFamily::TAG_25h9;
+#if VISP_VERSION_INT <= VP_VERSION_INT(3, 7, 0)
+    // Following tags were removed after visp 3.7.0
     else if (tag_family_str.find("36ARTOOLKIT") != std::string::npos)
       tag_family = vpDetectorAprilTag::vpAprilTagFamily::TAG_36ARTOOLKIT;
+    else if (tag_family_str.find("25h7") != std::string::npos)
+      tag_family = vpDetectorAprilTag::vpAprilTagFamily::TAG_25h7;
     else if (tag_family_str.find("36h10") != std::string::npos)
       tag_family = vpDetectorAprilTag::vpAprilTagFamily::TAG_36h10;
+#endif
     else if (tag_family_str.find("36h11") != std::string::npos)
       tag_family = vpDetectorAprilTag::vpAprilTagFamily::TAG_36h11;
     detector = new vpDetectorAprilTag(tag_family);
@@ -195,7 +199,7 @@ void AutoTracker::spin()
   object_pose_covariance_publisher = this->create_publisher<geometry_msgs::msg::PoseWithCovarianceStamped>(
       object_position_covariance_topic, queue_size_);
   moving_edge_sites_publisher =
-      this->create_publisher<visp_tracker::msg::MovingEdgeSites>(moving_edge_sites_topic, queue_size_);
+    this->create_publisher<visp_tracker::msg::MovingEdgeSites>(moving_edge_sites_topic, queue_size_);
   klt_points_publisher = this->create_publisher<visp_tracker::msg::KltPoints>(klt_points_topic, queue_size_);
   status_publisher = this->create_publisher<std_msgs::msg::Int8>(status_topic, queue_size_);
   code_message_publisher = this->create_publisher<std_msgs::msg::String>(code_message_topic, queue_size_);
@@ -288,7 +292,8 @@ void AutoTracker::spin()
       std_msgs::msg::String message;
       if (*(t_->current_state()) == 3) { // Tracking successful
         message.data = detector->getMessage(cmd_.get_code_message_index());
-      } else {
+      }
+      else {
         message.data = std::string();
       }
       code_message_publisher->publish(message);

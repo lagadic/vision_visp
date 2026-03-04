@@ -19,6 +19,10 @@
 #include <visp3/klt/vpKltOpencv.h>
 #include <visp3/me/vpMe.h>
 
+#ifdef ENABLE_VISP_NAMESPACE
+using namespace VISP_NAMESPACE_NAME;
+#endif
+
 /// \brief Convert a ROS image into a ViSP one.
 ///
 /// This function copy a ROS image into a ViSP image.
@@ -30,7 +34,7 @@
 /// \param dst ViSP destination image
 /// \param src ROS source image
 void
-rosImageToVisp( vpImage< unsigned char > &dst, const sensor_msgs::msg::Image::ConstSharedPtr &src );
+rosImageToVisp(vpImage< unsigned char > &dst, const sensor_msgs::msg::Image::ConstSharedPtr &src);
 
 /// \brief Convert a ViSP image into a ROS one.
 ///
@@ -43,55 +47,55 @@ rosImageToVisp( vpImage< unsigned char > &dst, const sensor_msgs::msg::Image::Co
 /// \param dst ROS destination image
 /// \param src ViSP source image
 void
-vispImageToRos( sensor_msgs::msg::Image &dst, const vpImage< unsigned char > &src );
+vispImageToRos(sensor_msgs::msg::Image &dst, const vpImage< unsigned char > &src);
 
 std::string
-convertVpMbTrackerToRosMessage( const vpMbGenericTracker &tracker );
+convertVpMbTrackerToRosMessage(const vpMbGenericTracker &tracker);
 
 std::string
-convertVpMeToRosMessage( const vpMbGenericTracker &tracker, const vpMe &moving_edge );
+convertVpMeToRosMessage(const vpMbGenericTracker &tracker, const vpMe &moving_edge);
 
 std::string
-convertVpKltOpencvToRosMessage( const vpMbGenericTracker &tracker, const vpKltOpencv &klt );
+convertVpKltOpencvToRosMessage(const vpMbGenericTracker &tracker, const vpKltOpencv &klt);
 
 void
-vpHomogeneousMatrixToTransform( geometry_msgs::msg::Transform &dst, const vpHomogeneousMatrix &src );
+vpHomogeneousMatrixToTransform(geometry_msgs::msg::Transform &dst, const vpHomogeneousMatrix &src);
 
 void
-transformToVpHomogeneousMatrix( vpHomogeneousMatrix &dst, const geometry_msgs::msg::Transform &src );
+transformToVpHomogeneousMatrix(vpHomogeneousMatrix &dst, const geometry_msgs::msg::Transform &src);
 
 void
-transformToVpHomogeneousMatrix( vpHomogeneousMatrix &dst, const geometry_msgs::msg::Pose &src );
+transformToVpHomogeneousMatrix(vpHomogeneousMatrix &dst, const geometry_msgs::msg::Pose &src);
 
 void
-convertVpMbTrackerToInitRequest( const vpMbGenericTracker &tracker,
-                                 std::shared_ptr< visp_tracker::srv::Init::Request > srv );
+convertVpMbTrackerToInitRequest(const vpMbGenericTracker &tracker,
+                                 std::shared_ptr< visp_tracker::srv::Init::Request > srv);
 
 void
-convertInitRequestToVpMbTracker( const std::shared_ptr< visp_tracker::srv::Init::Request > req,
-                                 vpMbGenericTracker &tracker );
+convertInitRequestToVpMbTracker(const std::shared_ptr< visp_tracker::srv::Init::Request > req,
+                                 vpMbGenericTracker &tracker);
 
 void
-convertVpMeToInitRequest( const vpMe &moving_edge, const vpMbGenericTracker &tracker,
-                          std::shared_ptr< visp_tracker::srv::Init::Request > srv );
+convertVpMeToInitRequest(const vpMe &moving_edge, const vpMbGenericTracker &tracker,
+                          std::shared_ptr< visp_tracker::srv::Init::Request > srv);
 
 void
-convertInitRequestToVpMe( const std::shared_ptr< visp_tracker::srv::Init::Request > req, vpMbGenericTracker &tracker,
-                          vpMe &moving_edge );
+convertInitRequestToVpMe(const std::shared_ptr< visp_tracker::srv::Init::Request > req, vpMbGenericTracker &tracker,
+                          vpMe &moving_edge);
 
 void
-convertVpKltOpencvToInitRequest( const vpKltOpencv &klt, const vpMbGenericTracker &tracker,
-                                 std::shared_ptr< visp_tracker::srv::Init::Request > srv );
+convertVpKltOpencvToInitRequest(const vpKltOpencv &klt, const vpMbGenericTracker &tracker,
+                                 std::shared_ptr< visp_tracker::srv::Init::Request > srv);
 
 void
-convertInitRequestToVpKltOpencv( const std::shared_ptr< visp_tracker::srv::Init::Request > req,
-                                 vpMbGenericTracker &tracker, vpKltOpencv &klt );
+convertInitRequestToVpKltOpencv(const std::shared_ptr< visp_tracker::srv::Init::Request > req,
+                                 vpMbGenericTracker &tracker, vpKltOpencv &klt);
 
 void
-initializeVpCameraFromCameraInfo( vpCameraParameters &cam, sensor_msgs::msg::CameraInfo::ConstSharedPtr info );
+initializeVpCameraFromCameraInfo(vpCameraParameters &cam, sensor_msgs::msg::CameraInfo::ConstSharedPtr info);
 
 bool
-setTrackerParametersFromRosParameters( std::shared_ptr< rclcpp::SyncParametersClient > parameters_mbt,
-                                       vpMbGenericTracker &tracker, vpMe &moving_edge );
+setTrackerParametersFromRosParameters(std::shared_ptr< rclcpp::SyncParametersClient > parameters_mbt,
+                                       vpMbGenericTracker &tracker, vpMe &moving_edge);
 
 #endif //! VISP_TRACKER_CONVERSION_HH

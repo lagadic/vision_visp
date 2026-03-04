@@ -55,6 +55,10 @@
 #include "visp_camera_calibration/srv/calibrate.hpp"
 #include "visp_camera_calibration/visibility.h"
 
+#ifdef ENABLE_VISP_NAMESPACE
+using namespace VISP_NAMESPACE_NAME;
+#endif
+
 namespace visp_camera_calibration
 {
 class ImageProcessing : public rclcpp::Node

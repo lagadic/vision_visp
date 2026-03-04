@@ -6,9 +6,9 @@
 #include <image_transport/image_transport.hpp>
 #include <image_transport/subscriber_filter.hpp>
 
-#include <message_filters/subscriber.h>
-#include <message_filters/sync_policies/approximate_time.h>
-#include <message_filters/synchronizer.h>
+#include <message_filters/subscriber.hpp>
+#include <message_filters/sync_policies/approximate_time.hpp>
+#include <message_filters/synchronizer.hpp>
 
 #include <sensor_msgs/msg/camera_info.hpp>
 #include <sensor_msgs/msg/image.hpp>
@@ -25,6 +25,10 @@
 #include <rclcpp/timer.hpp>
 
 #include <filesystem>
+
+#ifdef ENABLE_VISP_NAMESPACE
+using namespace VISP_NAMESPACE_NAME;
+#endif
 
 namespace visp_tracker
 {
@@ -52,16 +56,16 @@ protected:
   /// \brief Hang until the first image is received.
   void waitForImage();
 
-  bool initCallback( const std::shared_ptr< rmw_request_id_t > request_header,
+  bool initCallback(const std::shared_ptr< rmw_request_id_t > request_header,
                      const std::shared_ptr< visp_tracker::srv::Init::Request > req,
-                     std::shared_ptr< visp_tracker::srv::Init::Response > res );
+                     std::shared_ptr< visp_tracker::srv::Init::Response > res);
 
   /// \brief Callback used to received synchronized data.
-  void viewerCallback( const sensor_msgs::msg::Image::ConstSharedPtr &imageConst,
+  void viewerCallback(const sensor_msgs::msg::Image::ConstSharedPtr &imageConst,
                        const sensor_msgs::msg::CameraInfo::ConstSharedPtr &infoConst,
                        const geometry_msgs::msg::PoseWithCovarianceStamped::ConstSharedPtr &trackingResult,
                        const visp_tracker::msg::MovingEdgeSites::ConstSharedPtr &sitesConst,
-                       const visp_tracker::msg::KltPoints::ConstSharedPtr &kltConst );
+                       const visp_tracker::msg::KltPoints::ConstSharedPtr &kltConst);
 
   void timerCallback();
 
@@ -135,8 +139,8 @@ private:
   /// which are not critical as this is only a viewer.
   /// \{
   using SyncPolicy = message_filters::sync_policies::ApproximateTime<
-      sensor_msgs::msg::Image, sensor_msgs::msg::CameraInfo, geometry_msgs::msg::PoseWithCovarianceStamped,
-      visp_tracker::msg::MovingEdgeSites, visp_tracker::msg::KltPoints >;
+    sensor_msgs::msg::Image, sensor_msgs::msg::CameraInfo, geometry_msgs::msg::PoseWithCovarianceStamped,
+    visp_tracker::msg::MovingEdgeSites, visp_tracker::msg::KltPoints >;
 
   using Synchronizer = message_filters::Synchronizer< SyncPolicy >;
   std::shared_ptr< Synchronizer > synchronizer_;

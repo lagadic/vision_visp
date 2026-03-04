@@ -12,10 +12,15 @@
 #include <visp3/core/vpRect.h>
 #include <visp3/gui/vpPlot.h>
 
+#ifdef ENABLE_VISP_NAMESPACE
+using namespace VISP_NAMESPACE_NAME;
+#endif
+
 namespace msm = boost::msm;
 namespace tracking
 {
-struct WaitingForInput : public msm::front::state<> {
+struct WaitingForInput : public msm::front::state<>
+{
   template <class Event, class Fsm> void on_entry(Event const &, Fsm &fsm)
   {
     if (fsm.get_cmd().get_verbose())
@@ -32,7 +37,8 @@ struct WaitingForInput : public msm::front::state<> {
   }
 };
 
-struct Finished : public msm::front::state<> {
+struct Finished : public msm::front::state<>
+{
   template <class Event, class Fsm> void on_entry(Event const & /*evt*/, Fsm &fsm)
   {
     if (fsm.get_cmd().get_verbose()) {
@@ -87,15 +93,16 @@ struct Finished : public msm::front::state<> {
   }
 };
 
-struct DetectFlashcodeGeneric : public msm::front::state<> {
+struct DetectFlashcodeGeneric : public msm::front::state<>
+{
   vpImagePoint corner0;
   vpImagePoint corner1;
   vpImagePoint corner2;
   vpImagePoint corner3;
   virtual vpColor getColor() = 0;
-  template <class Fsm> void on_entry(finished const &evt, Fsm &fsm) {}
+  template <class Fsm> void on_entry(finished const &evt, Fsm &fsm) { }
 
-  template <class Fsm> void on_exit(finished const & /*evt*/, Fsm & /*fsm*/) {}
+  template <class Fsm> void on_exit(finished const & /*evt*/, Fsm & /*fsm*/) { }
 
   template <class Event, class Fsm> void on_entry(Event const &, Fsm &fsm)
   {
@@ -130,10 +137,12 @@ struct DetectFlashcodeGeneric : public msm::front::state<> {
   }
 };
 
-struct DetectFlashcode : public DetectFlashcodeGeneric {
+struct DetectFlashcode : public DetectFlashcodeGeneric
+{
   vpColor getColor() { return vpColor::green; }
 };
-struct ReDetectFlashcode : public DetectFlashcodeGeneric {
+struct ReDetectFlashcode : public DetectFlashcodeGeneric
+{
   template <class Event, class Fsm> void on_entry(Event const &, Fsm &fsm)
   {
     if (fsm.get_cmd().get_verbose())
@@ -142,15 +151,16 @@ struct ReDetectFlashcode : public DetectFlashcodeGeneric {
   vpColor getColor() { return vpColor::orange; }
 };
 
-struct DetectModel : public msm::front::state<> {
+struct DetectModel : public msm::front::state<>
+{
   std::vector<vpImagePoint> model_inner_corner;
   std::vector<vpImagePoint> model_outer_corner;
   vpHomogeneousMatrix cMo;
 
-  DetectModel() : model_inner_corner(4), model_outer_corner(4) {}
-  template <class Fsm> void on_entry(finished const &evt, Fsm &fsm) {}
+  DetectModel() : model_inner_corner(4), model_outer_corner(4) { }
+  template <class Fsm> void on_entry(finished const &evt, Fsm &fsm) { }
 
-  template <class Fsm> void on_exit(finished const & /*evt*/, Fsm & /*fsm*/) {}
+  template <class Fsm> void on_exit(finished const & /*evt*/, Fsm & /*fsm*/) { }
 
   template <class Event, class Fsm> void on_entry(Event const &, Fsm &fsm)
   {
@@ -194,7 +204,8 @@ struct DetectModel : public msm::front::state<> {
 
       try {
         fsm.get_mbt().display(I, cMo, fsm.get_cam(), vpColor::blue, 1); // display the model at the computed pose.
-      } catch (vpException &e) {
+      }
+      catch (vpException &e) {
         RCLCPP_INFO_STREAM(rclcpp::get_logger("rclcpp"), "Cannot display the model");
       }
 
@@ -215,7 +226,7 @@ public:
 
   ~TrackModel() { delete plot_; }
 
-  TrackModel() : plot_(NULL), iter_(0) {}
+  TrackModel() : plot_(NULL), iter_(0) { }
 
   template <class Fsm> void on_entry(finished const &evt, Fsm &fsm)
   {
@@ -223,7 +234,7 @@ public:
     covariance = fsm.get_mbt().getCovarianceMatrix();
   }
 
-  template <class Fsm> void on_exit(finished const & /*evt*/, Fsm & /*fsm*/) {}
+  template <class Fsm> void on_exit(finished const & /*evt*/, Fsm & /*fsm*/) { }
 
   template <class Event, class Fsm> void on_entry(Event const & /*evt*/, Fsm &fsm)
   {

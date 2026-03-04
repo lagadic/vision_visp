@@ -5,26 +5,30 @@
 
 #include "visp_tracker/names.h"
 
-std::string
-getInitFileFromModelName( const std::string &modelName, const std::string &defaultPath );
+#ifdef ENABLE_VISP_NAMESPACE
+using namespace VISP_NAMESPACE_NAME;
+#endif
 
 std::string
-getHelpImageFileFromModelName( const std::string &modelName, const std::string &defaultPath );
+getInitFileFromModelName(const std::string &modelName, const std::string &defaultPath);
 
 std::string
-getConfigurationFileFromModelName( const std::string &modelName, const std::string &configurationName,
-                                   const std::string &defaultPath );
+getHelpImageFileFromModelName(const std::string &modelName, const std::string &defaultPath);
 
 std::string
-getModelFileFromModelName( const std::string &modelName, const std::string &defaultPath );
+getConfigurationFileFromModelName(const std::string &modelName, const std::string &configurationName,
+                                   const std::string &defaultPath);
 
 std::string
-getConfigurationFileFromModelName( const std::string &modelName, const std::string &defaultPath );
+getModelFileFromModelName(const std::string &modelName, const std::string &defaultPath);
 
 std::string
-getInitialPoseFileFromModelName( const std::string &modelName, const std::string &defaultPath );
+getConfigurationFileFromModelName(const std::string &modelName, const std::string &defaultPath);
+
+std::string
+getInitialPoseFileFromModelName(const std::string &modelName, const std::string &defaultPath);
 
 bool
-makeModelFile( std::string, std::ofstream &stream, std::string &fullModelPath );
+makeModelFile(std::string, std::ofstream &stream, std::string &fullModelPath);
 
 #endif //! VISP_TRACKER_FILE_HH

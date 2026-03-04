@@ -11,13 +11,17 @@
 #include <visp3/mbt/vpMbGenericTracker.h>
 #include <visp3/me/vpMe.h>
 
-void
-imageCallback_master( vpImage< unsigned char > &image, const sensor_msgs::msg::Image::ConstSharedPtr &msg,
-                      const sensor_msgs::msg::CameraInfo::ConstSharedPtr &info );
+#ifdef ENABLE_VISP_NAMESPACE
+using namespace VISP_NAMESPACE_NAME;
+#endif
 
 void
-imageCallback( vpImage< unsigned char > &image, std_msgs::msg::Header &header,
+imageCallback_master(vpImage< unsigned char > &image, const sensor_msgs::msg::Image::ConstSharedPtr &msg,
+                      const sensor_msgs::msg::CameraInfo::ConstSharedPtr &info);
+
+void
+imageCallback(vpImage< unsigned char > &image, std_msgs::msg::Header &header,
                sensor_msgs::msg::CameraInfo::ConstSharedPtr &info, const sensor_msgs::msg::Image::ConstSharedPtr &msg,
-               const sensor_msgs::msg::CameraInfo::ConstSharedPtr &infoConst );
+               const sensor_msgs::msg::CameraInfo::ConstSharedPtr &infoConst);
 
 #endif //! VISP_TRACKER_CALLBACKS_HH

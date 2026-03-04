@@ -29,6 +29,10 @@
 #include <rclcpp/rclcpp.hpp>
 #include <string>
 
+#ifdef ENABLE_VISP_NAMESPACE
+using namespace VISP_NAMESPACE_NAME;
+#endif
+
 namespace visp_tracker
 {
 class TrackerMbt : public rclcpp::Node
@@ -49,24 +53,24 @@ public:
   void spin();
 
 protected:
-  bool initCallback( const std::shared_ptr< rmw_request_id_t > request_header,
+  bool initCallback(const std::shared_ptr< rmw_request_id_t > request_header,
                      const std::shared_ptr< visp_tracker::srv::Init::Request > req,
-                     std::shared_ptr< visp_tracker::srv::Init::Response > res );
+                     std::shared_ptr< visp_tracker::srv::Init::Response > res);
 
-  void updateMovingEdgeSites( visp_tracker::msg::MovingEdgeSites &sites );
-  void updateKltPoints( visp_tracker::msg::KltPoints &klt );
+  void updateMovingEdgeSites(visp_tracker::msg::MovingEdgeSites &sites);
+  void updateKltPoints(visp_tracker::msg::KltPoints &klt);
 
   void waitForImage();
 
-  void objectPositionHintCallback( const geometry_msgs::msg::TransformStamped::SharedPtr );
+  void objectPositionHintCallback(const geometry_msgs::msg::TransformStamped::SharedPtr);
 
 private:
   bool exiting() { return !rclcpp::ok(); }
 
-  void declareDoubleParameter( const double min, const double max, const double deflt, const double step,
-                               const std::string descr );
-  void declareIntegerParameter( const int min, const int max, const int deflt, const int step,
-                                const std::string descr );
+  void declareDoubleParameter(const double min, const double max, const double deflt, const double step,
+                               const std::string descr);
+  void declareIntegerParameter(const int min, const int max, const int deflt, const int step,
+                                const std::string descr);
 
   unsigned queueSize_;
 

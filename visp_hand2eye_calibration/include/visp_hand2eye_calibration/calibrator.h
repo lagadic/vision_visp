@@ -60,6 +60,10 @@
 
 #include <visp3/core/vpHomogeneousMatrix.h>
 
+#ifdef ENABLE_VISP_NAMESPACE
+using namespace VISP_NAMESPACE_NAME;
+#endif
+
 namespace visp_hand2eye_calibration
 {
 class Calibrator : public rclcpp::Node
@@ -72,7 +76,7 @@ private:
   // subscribers. Must be class-persistant
   rclcpp::Service<visp_hand2eye_calibration::srv::ComputeEffectorCamera>::SharedPtr compute_effector_camera_service_;
   rclcpp::Service<visp_hand2eye_calibration::srv::ComputeEffectorCameraQuick>::SharedPtr
-      compute_effector_camera_quick_service_;
+    compute_effector_camera_quick_service_;
   rclcpp::Service<visp_hand2eye_calibration::srv::Reset>::SharedPtr reset_service_;
 
   rclcpp::Subscription<geometry_msgs::msg::Transform>::SharedPtr camera_object_subscriber_;
