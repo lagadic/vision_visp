@@ -52,6 +52,10 @@
 #include "visp_hand2eye_calibration/srv/reset.hpp"
 #include "visp_hand2eye_calibration/visibility.h"
 
+#ifdef ENABLE_VISP_NAMESPACE
+using namespace VISP_NAMESPACE_NAME;
+#endif
+
 namespace visp_hand2eye_calibration
 {
 class Client : public rclcpp::Node
@@ -69,7 +73,7 @@ private:
   rclcpp::Client<visp_hand2eye_calibration::srv::Reset>::SharedPtr reset_service_;
   rclcpp::Client<visp_hand2eye_calibration::srv::ComputeEffectorCamera>::SharedPtr compute_effector_camera_service_;
   rclcpp::Client<visp_hand2eye_calibration::srv::ComputeEffectorCameraQuick>::SharedPtr
-      compute_effector_camera_quick_service_;
+    compute_effector_camera_quick_service_;
 
   std::shared_ptr<visp_hand2eye_calibration::srv::ComputeEffectorCameraQuick::Request> emc_quick_comm;
 };

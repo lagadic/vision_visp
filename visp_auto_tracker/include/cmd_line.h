@@ -6,6 +6,10 @@
 #include <visp3/core/vpConfig.h>
 #include <visp3/core/vpPoint.h>
 
+#ifdef ENABLE_VISP_NAMESPACE
+using namespace VISP_NAMESPACE_NAME;
+#endif
+
 class CmdLine
 {
 private:
@@ -54,7 +58,7 @@ private:
   void common();
 
 public:
-  enum DETECTOR_TYPE { DMTX, ZBAR, APRILTAG, APRIL=APRILTAG };
+  enum DETECTOR_TYPE { DMTX, ZBAR, APRILTAG, APRIL = APRILTAG };
   enum TRACKER_TYPE { KLT, MBT, KLT_MBT };
 
   CmdLine();

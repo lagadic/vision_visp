@@ -11,15 +11,17 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 endif()
 
 find_package(ament_cmake_ros REQUIRED)
+find_package(ament_index_cpp REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(camera_calibration_parsers REQUIRED)
 find_package(VISP REQUIRED COMPONENTS visp_core)
 
-# add library 
+# add library
 add_library(${PROJECT_NAME} src/3dpose.cpp src/camera.cpp src/image.cpp src/path_retriever.cpp)
 
 ament_target_dependencies(${PROJECT_NAME}
+  ament_index_cpp
   geometry_msgs
   rclcpp
   sensor_msgs

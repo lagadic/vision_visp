@@ -6,9 +6,9 @@
 #include <string>
 #include <visp3/core/vpConfig.h>
 
-#include <message_filters/subscriber.h>
-#include <message_filters/sync_policies/approximate_time.h>
-#include <message_filters/synchronizer.h>
+#include <message_filters/subscriber.hpp>
+#include <message_filters/sync_policies/approximate_time.hpp>
+#include <message_filters/synchronizer.hpp>
 
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
@@ -18,6 +18,10 @@
 #include <sensor_msgs/msg/image.hpp>
 #include <sstream>
 #include <std_msgs/msg/header.hpp>
+
+#ifdef ENABLE_VISP_NAMESPACE
+using namespace VISP_NAMESPACE_NAME;
+#endif
 
 namespace visp_auto_tracker
 {
@@ -38,7 +42,7 @@ private:
   message_filters::Subscriber<sensor_msgs::msg::CameraInfo> camera_info_subscriber;
 
   using SyncPolicy =
-      message_filters::sync_policies::ApproximateTime<sensor_msgs::msg::Image, sensor_msgs::msg::CameraInfo>;
+    message_filters::sync_policies::ApproximateTime<sensor_msgs::msg::Image, sensor_msgs::msg::CameraInfo>;
 
   using Synchronizer = message_filters::Synchronizer<SyncPolicy>;
   std::shared_ptr<Synchronizer> synchronizer_;

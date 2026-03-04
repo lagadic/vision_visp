@@ -46,6 +46,10 @@
 
 #include <string>
 
+#ifdef ENABLE_VISP_NAMESPACE
+using namespace VISP_NAMESPACE_NAME;
+#endif
+
 // define topic and service names for the visp_hand2eye_calibration package.
 namespace visp_hand2eye_calibration
 {

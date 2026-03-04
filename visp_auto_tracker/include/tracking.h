@@ -37,18 +37,24 @@
 using namespace boost::accumulators;
 namespace msm = boost::msm;
 namespace mpl = boost::mpl;
+
+#ifdef ENABLE_VISP_NAMESPACE
+using namespace VISP_NAMESPACE_NAME;
+#endif
+
 namespace tracking
 {
 
 class Tracker_ : public msm::front::state_machine_def<Tracker_>
 {
 public:
-  typedef struct {
+  typedef struct
+  {
     boost::accumulators::accumulator_set<
-        double,
-        boost::accumulators::stats<boost::accumulators::tag::median(boost::accumulators::with_p_square_quantile),
-                                   boost::accumulators::tag::max, boost::accumulators::tag::mean> >
-        var, var_x, var_y, var_z, var_wx, var_wy, var_wz, checkpoints;
+      double,
+      boost::accumulators::stats<boost::accumulators::tag::median(boost::accumulators::with_p_square_quantile),
+      boost::accumulators::tag::max, boost::accumulators::tag::mean> >
+      var, var_x, var_y, var_z, var_wx, var_wy, var_wz, checkpoints;
 
   } statistics_t;
 
@@ -132,42 +138,42 @@ public:
     : mpl::vector<
           //    Start               Event              Target                       Action                         Guard
           //   +------------------+--------------------+-----------------------+------------------------------+------------------------------+
-          g_row<WaitingForInput, input_ready, WaitingForInput, &Tracker_::no_input_selected>,
-          //   +------------------+--------------------+-----------------------+------------------------------+------------------------------+
-          g_row<WaitingForInput, input_ready, DetectFlashcode, &Tracker_::input_selected>,
-          //   +------------------+--------------------+-----------------------+------------------------------+------------------------------+
-          _row<WaitingForInput, select_input, DetectFlashcode>,
-          //   +------------------+--------------------+-----------------------+------------------------------+------------------------------+
-          _row<DetectFlashcode, input_ready, DetectFlashcode /* default behaviour */>,
-          //   +------------------+--------------------+-----------------------+------------------------------+------------------------------+
-          row<DetectFlashcode, input_ready, DetectModel, &Tracker_::find_flashcode_pos, &Tracker_::flashcode_detected>,
-          //   +------------------+--------------------+-----------------------+------------------------------+------------------------------+
-          _row<DetectModel, msm::front::none, DetectFlashcode /* default behaviour */>,
-          //   +------------------+--------------------+-----------------------+------------------------------+------------------------------+
-          g_row<DetectModel, msm::front::none, TrackModel, &Tracker_::model_detected>,
-          //   +------------------+--------------------+-----------------------+------------------------------+------------------------------+
-          _row<TrackModel, input_ready, ReDetectFlashcode /* default behaviour */>,
-          //   +------------------+--------------------+-----------------------+------------------------------+------------------------------+
-          row<TrackModel, input_ready, TrackModel, &Tracker_::track_model, &Tracker_::mbt_success>,
-          //   +------------------+--------------------+-----------------------+------------------------------+------------------------------+
-          _row<ReDetectFlashcode, input_ready, DetectFlashcode /* default behaviour */>,
-          //   +------------------+--------------------+-----------------------+------------------------------+------------------------------+
-          row<ReDetectFlashcode, input_ready, DetectModel, &Tracker_::find_flashcode_pos,
-              &Tracker_::flashcode_redetected>,
-          //   +------------------+--------------------+-----------------------+------------------------------+------------------------------+
-          // row< ReDetectFlashcode, input_ready        , TrackModel            , &Tracker_::track_model
-          // ,&Tracker_::mbt_success          >,
-          //   +------------------+--------------------+-----------------------+------------------------------+------------------------------+
-          _row<TrackModel, finished, Finished>,
-          //   +------------------+--------------------+-----------------------+------------------------------+------------------------------+
-          _row<DetectModel, finished, Finished>,
-          //   +------------------+--------------------+-----------------------+------------------------------+------------------------------+
-          _row<DetectFlashcode, finished, Finished>,
-          //   +------------------+--------------------+-----------------------+------------------------------+------------------------------+
-          _row<ReDetectFlashcode, finished, Finished>
-          //   +------------------+--------------------+-----------------------+------------------------------+------------------------------+
-          > {
-  };
+    g_row<WaitingForInput, input_ready, WaitingForInput, &Tracker_::no_input_selected>,
+    //   +------------------+--------------------+-----------------------+------------------------------+------------------------------+
+    g_row<WaitingForInput, input_ready, DetectFlashcode, &Tracker_::input_selected>,
+    //   +------------------+--------------------+-----------------------+------------------------------+------------------------------+
+    _row<WaitingForInput, select_input, DetectFlashcode>,
+    //   +------------------+--------------------+-----------------------+------------------------------+------------------------------+
+    _row<DetectFlashcode, input_ready, DetectFlashcode /* default behaviour */>,
+    //   +------------------+--------------------+-----------------------+------------------------------+------------------------------+
+    row<DetectFlashcode, input_ready, DetectModel, &Tracker_::find_flashcode_pos, &Tracker_::flashcode_detected>,
+    //   +------------------+--------------------+-----------------------+------------------------------+------------------------------+
+    _row<DetectModel, msm::front::none, DetectFlashcode /* default behaviour */>,
+    //   +------------------+--------------------+-----------------------+------------------------------+------------------------------+
+    g_row<DetectModel, msm::front::none, TrackModel, &Tracker_::model_detected>,
+    //   +------------------+--------------------+-----------------------+------------------------------+------------------------------+
+    _row<TrackModel, input_ready, ReDetectFlashcode /* default behaviour */>,
+    //   +------------------+--------------------+-----------------------+------------------------------+------------------------------+
+    row<TrackModel, input_ready, TrackModel, &Tracker_::track_model, &Tracker_::mbt_success>,
+    //   +------------------+--------------------+-----------------------+------------------------------+------------------------------+
+    _row<ReDetectFlashcode, input_ready, DetectFlashcode /* default behaviour */>,
+    //   +------------------+--------------------+-----------------------+------------------------------+------------------------------+
+    row<ReDetectFlashcode, input_ready, DetectModel, &Tracker_::find_flashcode_pos,
+    &Tracker_::flashcode_redetected>,
+//   +------------------+--------------------+-----------------------+------------------------------+------------------------------+
+// row< ReDetectFlashcode, input_ready        , TrackModel            , &Tracker_::track_model
+// ,&Tracker_::mbt_success          >,
+//   +------------------+--------------------+-----------------------+------------------------------+------------------------------+
+_row<TrackModel, finished, Finished>,
+//   +------------------+--------------------+-----------------------+------------------------------+------------------------------+
+_row<DetectModel, finished, Finished>,
+//   +------------------+--------------------+-----------------------+------------------------------+------------------------------+
+_row<DetectFlashcode, finished, Finished>,
+//   +------------------+--------------------+-----------------------+------------------------------+------------------------------+
+_row<ReDetectFlashcode, finished, Finished>
+//   +------------------+--------------------+-----------------------+------------------------------+------------------------------+
+    >
+  { };
 };
 
 typedef msm::back::state_machine<Tracker_> Tracker;

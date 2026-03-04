@@ -4,9 +4,9 @@
 #include <image_transport/image_transport.hpp>
 #include <image_transport/subscriber_filter.hpp>
 
-#include <message_filters/subscriber.h>
-#include <message_filters/sync_policies/approximate_time.h>
-#include <message_filters/synchronizer.h>
+#include <message_filters/subscriber.hpp>
+#include <message_filters/sync_policies/approximate_time.hpp>
+#include <message_filters/synchronizer.hpp>
 
 #include <sensor_msgs/msg/camera_info.hpp>
 #include <sensor_msgs/msg/image.hpp>
@@ -26,6 +26,10 @@
 
 #include <filesystem>
 
+#ifdef ENABLE_VISP_NAMESPACE
+using namespace VISP_NAMESPACE_NAME;
+#endif
+
 namespace visp_tracker
 {
 class TrackerClient : public rclcpp::Node
@@ -44,20 +48,20 @@ public:
 protected:
   void loadModel();
 
-  bool validatePose( const vpHomogeneousMatrix &cMo );
+  bool validatePose(const vpHomogeneousMatrix &cMo);
   vpHomogeneousMatrix loadInitialPose();
-  void saveInitialPose( const vpHomogeneousMatrix &cMo );
+  void saveInitialPose(const vpHomogeneousMatrix &cMo);
   points_t loadInitializationPoints();
 
   void init();
-  void initPoint( unsigned &i, points_t &points, imagePoints_t &imagePoints, rclcpp::Rate &rate, vpPose &pose );
+  void initPoint(unsigned &i, points_t &points, imagePoints_t &imagePoints, rclcpp::Rate &rate, vpPose &pose);
 
   void waitForImage();
 
-  void sendcMo( const vpHomogeneousMatrix &cMo );
+  void sendcMo(const vpHomogeneousMatrix &cMo);
 
-  std::string fetchResource( const std::string & );
-  bool makeModelFile( std::ofstream &modelStream, const std::string &resourcePath, std::string &fullModelPath );
+  std::string fetchResource(const std::string &);
+  bool makeModelFile(std::ofstream &modelStream, const std::string &resourcePath, std::string &fullModelPath);
 
 private:
   bool exiting() { return !rclcpp::ok(); }
